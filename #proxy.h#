@@ -1,0 +1,10 @@
+/* part of what's needed to implement POST and other stuff,
+ * also will need function pointer array
+ */
+/* 
+#define N_METHODS 1
+static char methods[N_METHODS] = {
+  "GET",
+};
+ */
+

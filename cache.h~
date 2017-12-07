@@ -1,0 +1,27 @@
+#include <stdbool.h>
+/* 
+ * Sets up the free list of open cache space
+ * and the storage location for each cache object
+ */
+typedef struct {
+  char *location;
+  size_t size;
+  char type[MAXLINE];
+  char host[MAXLINE];
+  char filename[MAXLINE];
+} CacheOb;
+
+
+int cache_init();
+int add_to_cache(void *object, size_t size, char *host, char *filename, char *type);
+int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *size_buf);
+void free_cache_ob(CacheOb *cp);
+
+/* zero out the least recently used object in the cache 
+ * and place it in free list */
+//void evict_object();
+
+/* copies object into the cache. returns 0 on success,
+ * negative if size is invalid or object null. */
+//int set_object(void *object, size_t size);
+
