@@ -1,4 +1,17 @@
 ####################################################################
+Brian's Proxy Web Server
+
+Everything passes the autograder 100%, so I started adding other features.
+
+The server uses IO multiplexing to respond to keyboard input with info on
+the cache.
+
+The cache uses the LinkedList API I coded for UW's CSE 333, with some
+additional code I put in to implement a least-recently-used (LRU) 
+algorithm in the linked list - LLIteratorMoveToHead moves the current
+node pointed to by the iterator to the head of the list.
+
+####################################################################
 # CS:APP Proxy Lab
 #
 # Student Source Files
