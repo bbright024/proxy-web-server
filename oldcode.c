@@ -1,3 +1,9 @@
+static void segflt_handler(int sig);
+static int check_request_errors(int connfd, char *method, char *uri, char *version);
+static int parse_uri(char *url, char *file, char *host, char *port);
+static void clienterror(int fd, char *cause, char *errnum,
+		 char *shortmsg, char *longmsg);
+
 /* 
  * Parse the uri to extract hostname, filename, and port.
  * Uses defaults localhost, /, and 80 if any are excluded.
@@ -97,14 +103,37 @@ static int check_request_errors(int connfd, char *method, char *uri, char *versi
   }
   return 1;
 }
-
-
 static inline void thread_uninit(void *obj_buf, int connfd)
 {
   Close(connfd);
   free(obj_buf);
 }
  */
+/* builds and sends an error-response html page to the client  */
+static void clienterror(int fd, char *cause, char *errnum,
+		 char *shortmsg, char *longmsg)
+{
+  char buf[MAXLINE], body[MAXBUF];
+
+  /* build the HTTP response body */
+  sprintf(body, "<html><title>Proxy Error</title>");
+  sprintf(body, "%s<body bgcolor=""ffffff"">\r\n", body);
+  sprintf(body, "%s%s: %s\r\n", body, errnum, shortmsg);
+  sprintf(body, "%s<p>%s: %s\r\n", body, longmsg, cause);
+  sprintf(body, "%s<hr><em>The Bright Proxy</em>\r\n", body);
+
+  /* build & print the HTTP response headers*/
+  sprintf(buf, "HTTP/1.0 %s %s\r\n", errnum, shortmsg);
+  Rio_writen(fd, buf, strlen(buf));
+  sprintf(buf, "Content type: text/html\r\n");
+  Rio_writen(fd, buf, strlen(buf));
+  sprintf(buf, "Content-length: %d\r\n\r\n", (int)strlen(body));
+  Rio_writen(fd, buf, strlen(buf));
+
+  /* Print the response body */
+  Rio_writen(fd, body, strlen(body));
+}
+
 
 
 

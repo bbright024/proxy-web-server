@@ -38,8 +38,6 @@ static const char *proxy_con = "Proxy-Connection: close\r\n";
 /* Global static variables */
 static char *proxy_port;
 
-
-
 /* Function definitions */
 static void run_proxy();
 static void *command(void *vargp);
@@ -47,13 +45,9 @@ static void *process_client(void *vargp);
 static void ret_cached_obj(void *obj_buf, int connfd, int size, char *type);
 static int open_next_hop(int connfd, char *host, char *filename,
 			 char *dest_port, void *obj_buf);
-
-
 static void read_requesthdrs(rio_t *rp);
-
-
-static inline void thread_uninit(void *obj_buf, int connfd);
-
+static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d);
+static inline int client_init(int connfd, ReqData **req_d, void **obj_buf);
 
 /* Check args, set up signal handlers, init the cache, and start the proxy */
 int main(int argc, char *argv[])
@@ -80,7 +74,6 @@ int main(int argc, char *argv[])
   proxy_port = argv[1];
 
   Signal(SIGPIPE, SIG_IGN); //ignores any sigpipe errors
-
   
   cache_init();
   run_proxy();
@@ -142,76 +135,49 @@ static void *command(void *vargp)
   return NULL;
 }
 
-/* 
- *  process the request, forward to the destination, and pass back the response.
+/*  Main thread for a client request.
+ *  process the client's request - forward to the destination if not cached
  */
 static void *process_client(void *vargp)
 {
   /* thread initialization */
   int connfd = *((int *)vargp);
   Pthread_detach(pthread_self());
-  Free(vargp);
+  free(vargp);
+
+  ReqData *req_d;
+  void *obj_buf;
+  if ((client_init(connfd, &req_d, &obj_buf)) < 0)
+    return NULL;
 
   /* variables for caching/retrieving objects */
-  int is_cached = 0;
-  void *obj_buf;
   char type[MAXLINE];
   size_t size;
-  obj_buf = Malloc(MAX_OBJECT_SIZE);
-  memset(obj_buf, 0, MAX_OBJECT_SIZE);
-  
   rio_t rio_origin; 		/* rio for originating request */
-  char buf[MAXLINE];		/* buf for originating request */
-
-  /* integration code */
-
   const char *errmsg;
   Rio_readinitb(&rio_origin, connfd);
-  /* dont forget to free it! */
-  ReqData *req_d = malloc(sizeof(ReqData));
-  memset(req_d, 0, sizeof(ReqData));
+
   if ((errmsg = http_request_line(&rio_origin, req_d))){
-    free(req_d);
     http_err(connfd, 500, "http_request_line: %s %s", errmsg, req_d->url);
-    close(connfd);
+    thread_uninit(obj_buf, connfd, req_d);
     return NULL;
   }
-
-  char *host = req_d->host;
-  char *filename = req_d->filename;
-  //char *type = req_d->type;
-  char *dest_port = req_d->dest_port;
-  /* end integration */
   
-  /* getting here means the request line is OK.
-   * now check the request headers. */
   read_requesthdrs(&rio_origin);
 
   /* check host/filename for a match in the cache before opening a new conn */
-
-  is_cached = check_cache(host, filename, obj_buf, type, &size);
-  if (is_cached < 0) {
-    printf("error");
-    thread_uninit(obj_buf, connfd);
-    return NULL;
-  }
-  else if (is_cached) {
+  if ((check_cache(req_d->host, req_d->filename, obj_buf, type, &size))) {
     /* write the obj_buf to the connfd rio after  */
-    ret_cached_obj(obj_buf, connfd, (int)size, type);
+      ret_cached_obj(obj_buf, connfd, (int)size, type);
   }
-  else if (!is_cached) {
+  else {
     /* open a connection to the next hop server */
-    int r;
-    r = open_next_hop(connfd, host, filename, dest_port, obj_buf);
-    if (r == -E_NEXTHOP_CONN) {
-      //      clienterror(connfd, method, "400", "Bad request",
-      //		"request could not be understood by the server");
-      thread_uninit(obj_buf, connfd);
-      return NULL;      
+    if ((open_next_hop(connfd, req_d->host, req_d->filename, req_d->dest_port, obj_buf)) < 0) {
+      http_err(connfd,  400, "Bad request: request could not be undesrtood by the server");
     }
   }
 
-  thread_uninit(obj_buf, connfd);
+  thread_uninit(obj_buf, connfd, req_d);
   return NULL;
 }
 
@@ -312,31 +278,6 @@ static int open_next_hop(int connfd, char *host, char *filename, char *dest_port
   return 0;
 }
 
-/* builds and sends an error-response html page to the client  */
-static void clienterror(int fd, char *cause, char *errnum,
-		 char *shortmsg, char *longmsg)
-{
-  char buf[MAXLINE], body[MAXBUF];
-
-  /* build the HTTP response body */
-  sprintf(body, "<html><title>Proxy Error</title>");
-  sprintf(body, "%s<body bgcolor=""ffffff"">\r\n", body);
-  sprintf(body, "%s%s: %s\r\n", body, errnum, shortmsg);
-  sprintf(body, "%s<p>%s: %s\r\n", body, longmsg, cause);
-  sprintf(body, "%s<hr><em>The Bright Proxy</em>\r\n", body);
-
-  /* build & print the HTTP response headers*/
-  sprintf(buf, "HTTP/1.0 %s %s\r\n", errnum, shortmsg);
-  Rio_writen(fd, buf, strlen(buf));
-  sprintf(buf, "Content type: text/html\r\n");
-  Rio_writen(fd, buf, strlen(buf));
-  sprintf(buf, "Content-length: %d\r\n\r\n", (int)strlen(body));
-  Rio_writen(fd, buf, strlen(buf));
-
-  /* Print the response body */
-  Rio_writen(fd, body, strlen(body));
-}
-
 /* read out the rest of the request headers from the client.
  * TODO: have this do something. maybe eliminate this method and 
  * incorporate it into the main flow.
@@ -353,8 +294,31 @@ static void read_requesthdrs(rio_t *rp)
  
 }
 
-static inline void thread_uninit(void *obj_buf, int connfd)
+static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d)
 {
   Close(connfd);
   free(obj_buf);
+  free(req_d);
+}
+
+/* allocate objects used by proxy threads */
+static inline int client_init(int connfd, ReqData **req_d, void **obj_buf) {
+  
+  if ((*obj_buf = malloc(MAX_OBJECT_SIZE)) == NULL) {
+    http_err(connfd, 500, "Proxy internal error");
+    fprintf(stderr, "out of memory processing client\n");
+    close(connfd);
+    return -1;
+  }
+
+  if ((*req_d = malloc(sizeof(ReqData))) == NULL){
+    http_err(connfd, 500, "Proxy internal error");
+    fprintf(stderr, "out of memory processing client\n");
+    close(connfd);
+    free(*obj_buf);
+    return -1;
+  }
+  memset(*obj_buf, 0, MAX_OBJECT_SIZE);
+  memset(*req_d, 0, sizeof(ReqData));
+  return 0;
 }

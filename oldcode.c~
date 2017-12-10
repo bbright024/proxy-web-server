@@ -1,9 +1,3 @@
-static void segflt_handler(int sig);
-static int check_request_errors(int connfd, char *method, char *uri, char *version);
-static int parse_uri(char *url, char *file, char *host, char *port);
-static void clienterror(int fd, char *cause, char *errnum,
-		 char *shortmsg, char *longmsg);
-
 /* 
  * Parse the uri to extract hostname, filename, and port.
  * Uses defaults localhost, /, and 80 if any are excluded.
