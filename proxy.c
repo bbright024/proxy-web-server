@@ -161,7 +161,7 @@ static void *process_client(void *vargp)
   
   /* TODO: change flow here based on req_d->method & version
    *  i.e. a POST request cannot be cached   //  read_requesthdrs(&rio_origin);   */
-
+  
   /* check cache for host/filename, get type/size if there  */
   if ((check_cache(req_d->host, req_d->filename, obj_buf, type, &size))) {
     http_serve(connfd, obj_buf, (int)size, type);
