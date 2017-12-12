@@ -30,11 +30,6 @@
 #define INVALID_URL 1
 #define E_NEXTHOP_CONN 3
 
-/* Strings for response/request headers */
-static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/100.3\r\n";
-static const char *connection = "Connection: close\r\n";
-static const char *proxy_con = "Proxy-Connection: close\r\n";
-
 /* Global static variables */
 static char *proxy_port;
 
@@ -42,10 +37,7 @@ static char *proxy_port;
 static void run_proxy();
 static void *command(void *vargp);
 static void *process_client(void *vargp);
-static void ret_cached_obj(void *obj_buf, int connfd, int size, char *type);
-static int open_next_hop(int connfd, char *host, char *filename,
-			 char *dest_port, void *obj_buf);
-static void read_requesthdrs(rio_t *rp);
+static int open_next_hop(int connfd, ReqData *req_d, rio_t *rio);
 static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d);
 static inline int client_init(int connfd, ReqData **req_d, void **obj_buf);
 
@@ -95,7 +87,7 @@ static void run_proxy()
   pthread_t tid;
   char client_hostname[MAXLINE], client_port[MAXLINE];
   fd_set read_set,  ready_set;
-  
+
   // open a listening socket to accept client requests
   listenfd = Open_listenfd(proxy_port);
 
@@ -131,7 +123,7 @@ static void *command(void *vargp)
   char buf[MAXLINE];
   if (!Fgets(buf, MAXLINE, stdin))
     return NULL;
-  print_cache(1);
+  print_cache(0);
   return NULL;
 }
 
@@ -145,153 +137,98 @@ static void *process_client(void *vargp)
   Pthread_detach(pthread_self());
   free(vargp);
 
+  /* allocate space for the metadata and the object itself.  */
+  /* obj space is allocated here because faster & more secure to grab obj
+   * immediately in cache search if found, and quits immediately if no mem. */
   ReqData *req_d;
-  void *obj_buf;
+  void *obj_buf;		
   if ((client_init(connfd, &req_d, &obj_buf)) < 0)
     return NULL;
 
   /* variables for caching/retrieving objects */
   char type[MAXLINE];
-  size_t size;
-  rio_t rio_origin; 		/* rio for originating request */
+  size_t size = 0;
+  int cacheable = 0;
+  rio_t rio_origin; 	
   const char *errmsg;
   Rio_readinitb(&rio_origin, connfd);
 
-  if ((errmsg = http_request_line(&rio_origin, req_d))){
-    http_err(connfd, 500, "http_request_line: %s %s", errmsg, req_d->url);
+  if ((errmsg = http_read_request_line(&rio_origin, req_d))){
+    http_err(connfd, "invalid request", "403", "Forbidden", errmsg);
     thread_uninit(obj_buf, connfd, req_d);
     return NULL;
   }
   
-  read_requesthdrs(&rio_origin);
+  /* TODO: change flow here based on req_d->method & version
+   *  i.e. a POST request cannot be cached   //  read_requesthdrs(&rio_origin);   */
 
-  /* check host/filename for a match in the cache before opening a new conn */
+  /* check cache for host/filename, get type/size if there  */
   if ((check_cache(req_d->host, req_d->filename, obj_buf, type, &size))) {
-    /* write the obj_buf to the connfd rio after  */
-      ret_cached_obj(obj_buf, connfd, (int)size, type);
+    http_serve(connfd, obj_buf, (int)size, type);
+    thread_uninit(obj_buf, connfd, req_d);
+    return NULL;
   }
-  else {
-    /* open a connection to the next hop server */
-    if ((open_next_hop(connfd, req_d->host, req_d->filename, req_d->dest_port, obj_buf)) < 0) {
-      http_err(connfd,  400, "Bad request: request could not be undesrtood by the server");
-    }
+  /* not in cache; open a connection to the next hop server */
+  int destfd;
+  rio_t rio_dest;
+  if ((destfd = open_next_hop(connfd, req_d, &rio_dest)) < 0) {
+    thread_uninit(obj_buf, connfd, req_d);
+    return NULL;
   }
 
-  thread_uninit(obj_buf, connfd, req_d);
-  return NULL;
-}
-
-/* builds & sends the response to a client when the object is cached */
-static void ret_cached_obj(void *obj_buf, int connfd, int size, char *type)
-{
-    char ret_buf[MAXLINE];
-    sprintf(ret_buf, "HTTP/1.0 200 OK \r\n");
-    sprintf(ret_buf, "%sServer: Brian's Web Proxy\r\n", ret_buf);
-    sprintf(ret_buf, "%s%s", ret_buf, connection);
-    sprintf(ret_buf, "%sContent-length: %d\r\n", ret_buf, (int)size);
-    sprintf(ret_buf, "%sContent-type: %s\r\n", ret_buf, type); //heads up, a \r\n is saved in type
-    Rio_writen(connfd, ret_buf, strlen(ret_buf));
-    printf("%s", ret_buf);
-    Rio_writen(connfd, obj_buf, size);
-}
-
-/* Opens a connection to the requested server to grab the object.
- * This is called if the requested object is not present in the cache.
- */
-static int open_next_hop(int connfd, char *host, char *filename, char *dest_port, void *obj_buf)
-{
-  rio_t rio_destin;		/* rio for destination server */
-  int destin_fd;		/* socket for destination server */
-  char dest_buf[MAXLINE];	/* buffer for destination comm */
-  
-  if ((destin_fd = open_clientfd(host, dest_port)) < 0)
-    return -E_NEXTHOP_CONN;
-  
-  Rio_readinitb(&rio_destin, destin_fd);
-  
-  /* craft the request line & headers & write to the server */
-  sprintf(dest_buf, "GET %s HTTP/1.0\r\n", filename);
-  sprintf(dest_buf, "%sHost: %s\r\n", dest_buf, host);
-  sprintf(dest_buf, "%s%s", dest_buf, user_agent_hdr);
-  sprintf(dest_buf, "%s%s", dest_buf, connection);
-  sprintf(dest_buf, "%s%s", dest_buf, proxy_con);
-  // might need to get the rest of the headers
-  // that are currently inside rio_rec
-  sprintf(dest_buf, "%s\r\n", dest_buf);
-  Rio_writen(destin_fd, dest_buf, strlen(dest_buf));
-
-  char rec_buf[MAXLINE];
-  int length = 0;
-  char type[MAXLINE];
-  int l;
-  char *pp;
-  Rio_readlineb(&rio_destin, rec_buf, MAXLINE);
-  Rio_writen(connfd, rec_buf, strlen(rec_buf));
-  /* proxy puts response line/headers into rec_buf & writes to client */
-  while(strcmp(rec_buf, "\r\n")) {
-    Rio_readlineb(&rio_destin, rec_buf, MAXLINE);
-    printf("%s", rec_buf);
-
-
-    /* save response info - type of file and filesize */
-    if (strstr(rec_buf, "Content-Length") || strstr(rec_buf, "Content-length")) {
-      l = strlen("Content-length: ");
-      pp = rec_buf + l;
-      length = atoi(pp);
-    }
-    else if (strstr(rec_buf, "Content-Type:") || strstr(rec_buf, "Content-type:")) {
-      l = strlen("Content-type: ");
-      pp = rec_buf + l;
-      strncpy(type, pp, MAXLINE);
-    }
-    Rio_writen(connfd, rec_buf, strlen(rec_buf));
-  }
-  int cacheable = 0;
-  char *p = NULL;
-  if (length < MAX_OBJECT_SIZE) {
+  http_relay_resp_headers(connfd, &rio_dest, (int *)&size, type);
+  if (size  && size < MAX_OBJECT_SIZE) {
+    printf("cacheable set, size is %d\n", size);
     cacheable = 1;
-    p = (char *)obj_buf;
   }
-    
-  char body[MAXLINE];
-  int n;
-
-  /* proxy puts the file into body while # of bytes read is nonzero */
-  while ((n = Rio_readlineb(&rio_destin, body, MAXLINE))) {
-    if (cacheable) {
-      memcpy(p, body, n);
-      p += n;
+  else if (size){
+    /* make sure obj buff will be able to hold the object, even if not cacheable*/
+    free(obj_buf);
+    if ((obj_buf = malloc(size)) == NULL) {
+      http_err(connfd, "memory", "500", "Proxy internal error", "proxy is out of memory");
+      free(req_d);
+      close(connfd);
+      close(destfd);
+      return NULL;
     }
-
-    Rio_writen(connfd, body, n);
   }
+  
+  http_relay_resp_body(connfd, &rio_dest, size, obj_buf);
+
   if (cacheable) {
-    printf("adding to cache:\n obj = %p \nlength = %u \nhost = %s \nfile = %s \ntype = %s\n", obj_buf,
-	   length, host, filename, type);
-    int r = add_to_cache(obj_buf, (size_t)length, host, filename, type);
+    fprintf(stdout,
+	    "adding to cache:\nobj = %p\nlength = %u\nhost = %s\nfile = %s\ntype = %s\n",
+	    obj_buf, size, req_d->host, req_d->filename, type);
+    int r = add_to_cache(obj_buf, size, req_d->host, req_d->filename, type);
     if (r < 0)
       printf("error - was not cached");
   }
-  
-  printf("closing both connections, done!\n");
-  Close(destin_fd);
-  return 0;
+  close(destfd);
+  close(connfd);
+  free(req_d);
+  free(obj_buf);
+  return NULL;
 }
 
-/* read out the rest of the request headers from the client.
- * TODO: have this do something. maybe eliminate this method and 
- * incorporate it into the main flow.
+/* Opens a connection to the requested server to grab the object.
+ * Called if object is not present in the cache. Save obj if small enough.
  */
-static void read_requesthdrs(rio_t *rp)
+static int open_next_hop(int connfd, ReqData *req_d, rio_t *rio)
 {
-  char buf[MAXLINE];
-  Rio_readlineb(rp, buf, MAXLINE);
-  printf("%s", buf);
-  while(strcmp(buf, "\r\n")) {
-    Rio_readlineb(rp, buf, MAXLINE);
-    printf("%s", buf);
+  const char *errmsg;
+  int destfd;
+  if ((destfd = open_clientfd(req_d->host, req_d->dest_port)) < 0) {
+    http_err(connfd, req_d->host, "500", "Upstream error", "Proxy couldn't connect to host");
+    return -1;
   }
- 
+  if ((errmsg = http_write_request(destfd, req_d))) {
+    http_err(connfd, "bad request", "400", "Bad request", errmsg);
+    return -1;
+  }
+
+  Rio_readinitb(rio, destfd);
+  
+  return destfd;
 }
 
 static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d)
@@ -302,18 +239,17 @@ static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d)
 }
 
 /* allocate objects used by proxy threads */
-static inline int client_init(int connfd, ReqData **req_d, void **obj_buf) {
+static inline int client_init(int connfd, ReqData **req_d, void **obj_buf)
+{
   
   if ((*obj_buf = malloc(MAX_OBJECT_SIZE)) == NULL) {
-    http_err(connfd, 500, "Proxy internal error");
-    fprintf(stderr, "out of memory processing client\n");
+    http_err(connfd, "memory", "500", "Proxy internal error", "proxy is out of memory");
     close(connfd);
     return -1;
   }
 
   if ((*req_d = malloc(sizeof(ReqData))) == NULL){
-    http_err(connfd, 500, "Proxy internal error");
-    fprintf(stderr, "out of memory processing client\n");
+    http_err(connfd, "memory", "500", "Proxy internal error", "proxy is out of memory");
     close(connfd);
     free(*obj_buf);
     return -1;

@@ -4,9 +4,6 @@
 #include "cache.h"
 #include "LinkedList.h"
 
-#define MAX_CACHE_SIZE 1049000
-#define MAX_OBJECT_SIZE 102400
-
 #define E_NO_MEM 1
 #define E_NO_SPACE 2
 
@@ -151,7 +148,8 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
 
   /* unlock access here */
   V(&cache_mutex);
-  
+  printf("successfully added to cache\n");
+
   return 0;
 }
 

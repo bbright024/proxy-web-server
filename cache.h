@@ -3,8 +3,8 @@
  * Sets up the free list of open cache space
  * and the storage location for each cache object
  */
-
-#define HUMAN_READABLE 1
+#define MAX_CACHE_SIZE 1049000
+#define MAX_OBJECT_SIZE 102400
 
 int cache_init();
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type);
