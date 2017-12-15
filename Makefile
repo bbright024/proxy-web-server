@@ -1,14 +1,21 @@
 
 # Makefile for Brian's Proxy
 #
-
+AR = ar
 CC = gcc
 
 # flags for cc/ld/etc.
 CFLAGS += -g -Wall -I. -I.. -O0 -fprofile-arcs -ftest-coverage -pg
 LDFLAGS += -lpthread -L. #-fprofile-arcs -ftest-coverage
+ARFLAGS = rcs
 
-all: proxy 
+# define common dependencies
+OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
+HEADERS = LinkedList.h http.h csapp.h cache.h
+
+all: clean proxy
+
+coverage: proxy
 	./proxy 8000
 	gprof proxy > proxyoutput.stats
 	gcov LinkedList.c
@@ -19,34 +26,40 @@ all: proxy
 	lcov -c -d . -o proxyinfo.info
 	genhtml proxyinfo.info -o cov_html/
 
-proxy: proxy.o csapp.o cache.o LinkedList.o http.o csapp.h cache.h LinkedList.h http.h
+proxy: $(OBJS) $(HEADERS) FORCE
 	$(CC) $(CFLAGS) -o proxy proxy.o csapp.o cache.o http.o LinkedList.o $(LDFLAGS)
 
-csapp.o: csapp.c csapp.h
-	$(CC) $(CFLAGS) -c csapp.c 
+%.o: %.c $(HEADERS) FORCE
+	$(CC) $(CFLAGS) -c $<
 
-proxy.o: proxy.c csapp.h cache.h
-	$(CC) $(CFLAGS) -c proxy.c $(LDFLAGS)
+#csapp.o: csapp.c csapp.h
+#	$(CC) -g -Wall -O0 -c csapp.c 
 
-cache.o: cache.c cache.h csapp.h
-	$(CC) $(CFLAGS) -c cache.c $(LDFLAGS)
+#proxy.o: proxy.c csapp.h cache.h
+#	$(CC) $(CFLAGS) -c proxy.c $(LDFLAGS)
 
-test_proxy.o: test_proxy.c csapp.h
-	$(CC) $(CFLAGS) -c test_proxy.c
+#cache.o: cache.c cache.h csapp.h
+#	$(CC) $(CFLAGS) -c cache.c $(LDFLAGS)
 
-LinkedList.o: LinkedList.c LinkedList.h
-	$(CC) $(CFLAGS) -c LinkedList.c $(LDFLAGS)
+#test_proxy.o: test_proxy.c csapp.h
+#	$(CC) $(CFLAGS) -c test_proxy.c
 
-http.o: http.c http.h
-	$(CC) $(CFLAGS) -c http.c $(LDFLAGS)
+#LinkedList.o: LinkedList.c LinkedList.h
+#	$(CC) $(CFLAGS) -c LinkedList.c $(LDFLAGS)
+
+#http.o: http.c http.h
+#	$(CC) $(CFLAGS) -c http.c $(LDFLAGS)
 
 #proxy: proxy.o csapp.o cache.o LinkedList.o http.o
 #	$(CC) $(CFLAGS) proxy.o csapp.o cache.o http.o LinkedList.o -o proxy $(LDFLAGS)
 
 
-test_proxy: test_proxy.o csapp.o
-	$(CC) $(CFLAGS) test_proxy.o csapp.o -o test_proxy $(LDFLAGS)
+#test_proxy: test_proxy.o csapp.o
+#	$(CC) $(CFLAGS) test_proxy.o csapp.o -o test_proxy $(LDFLAGS)
 
 clean:
-	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz
+	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz *.gcda *.gcno *.info
+	rm -Rf ./cov_html
+
+FORCE:
 
