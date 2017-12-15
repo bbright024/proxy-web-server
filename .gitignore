@@ -19,6 +19,7 @@ oldcode.c
 *.gcno
 *.gcov
 *.gcda
+gmon.out
 
 # Packages #
 ############
