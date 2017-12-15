@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "csapp.h"
-#include "cache.h"
-#include "LinkedList.h"
+#include <includes/csapp.h>
+#include <includes/cache.h>
+#include <includes/LinkedList.h>
 
 #define E_NO_MEM 1
 #define E_NO_SPACE 2

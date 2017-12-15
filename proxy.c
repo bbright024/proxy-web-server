@@ -21,9 +21,9 @@
  */
 #include <sys/select.h>
 #include <stdio.h>
-#include "csapp.h"
-#include "cache.h"
-#include "http.h"
+#include <includes/csapp.h>
+#include <includes/cache.h>
+#include <includes/http.h>
 
 /* Recommended max cache and object sizes */
 #define MAX_CACHE_SIZE 1049000

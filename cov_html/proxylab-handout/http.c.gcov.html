@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-14 19:25:39</td>
+            <td class="headerValue">2017-12-14 19:57:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">8</td>
@@ -60,288 +60,289 @@
       <td>
 <pre class="sourceHeading">          Line data    Source code</pre>
 <pre class="source">
-<a name="1"><span class="lineNum">       1 </span>            : #include &quot;http.h&quot;</a>
-<span class="lineNum">       2 </span>            : #include &quot;csapp.h&quot;
-<span class="lineNum">       3 </span>            : #include &lt;sys/param.h&gt;
-<span class="lineNum">       4 </span>            : #ifndef BSD
-<span class="lineNum">       5 </span>            : #include &lt;sys/sendfile.h&gt;
-<span class="lineNum">       6 </span>            : #endif
-<span class="lineNum">       7 </span>            : #include &lt;sys/uio.h&gt;
-<span class="lineNum">       8 </span>            : #include &lt;ctype.h&gt;
-<span class="lineNum">       9 </span>            : #include &lt;errno.h&gt;
-<span class="lineNum">      10 </span>            : #include &lt;fcntl.h&gt;
-<span class="lineNum">      11 </span>            : #include &lt;signal.h&gt;
-<span class="lineNum">      12 </span>            : #include &lt;stdarg.h&gt;
-<span class="lineNum">      13 </span>            : #include &lt;stdio.h&gt;
-<span class="lineNum">      14 </span>            : #include &lt;stdlib.h&gt;
-<span class="lineNum">      15 </span>            : #include &lt;string.h&gt;
-<span class="lineNum">      16 </span>            : #include &lt;unistd.h&gt;
-<span class="lineNum">      17 </span>            : 
-<span class="lineNum">      18 </span>            : /* Strings for response/request headers */
-<span class="lineNum">      19 </span>            : static const char *user_agent_hdr = &quot;User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/100.3\r\n&quot;;
-<span class="lineNum">      20 </span>            : static const char *connection_close = &quot;Connection: close\r\n&quot;;
-<span class="lineNum">      21 </span>            : static const char *proxy_con_close = &quot;Proxy-Connection: close\r\n&quot;;
-<span class="lineNum">      22 </span>            : 
-<span class="lineNum">      23 </span>            : static inline void add_crlfnull(char *buf, int l);
-<span class="lineNum">      24 </span>            :   
-<span class="lineNum">      25 </span>            : /* Read the request line like &quot;GET /xxx HTTP/1.0&quot; 
-<a name="26"><span class="lineNum">      26 </span>            :  *  - return Error message, or NULL if succeed</a>
-<span class="lineNum">      27 </span>            :  */
-<span class="lineNum">      28 </span><span class="lineCov">        291 : const char *http_read_request_line(rio_t *rio, ReqData *req_d)</span>
-<span class="lineNum">      29 </span>            : {
-<span class="lineNum">      30 </span>            :   char buf[MAXLINE];
-<span class="lineNum">      31 </span><span class="lineCov">        291 :   Rio_readlineb(rio, buf, MAXLINE);</span>
-<span class="lineNum">      32 </span><span class="lineCov">        290 :   sscanf(buf,  &quot;%s %s %s&quot;, req_d-&gt;method, req_d-&gt;url, req_d-&gt;version);</span>
-<span class="lineNum">      33 </span>            : 
-<span class="lineNum">      34 </span><span class="lineCov">        290 :   if (!req_d-&gt;method || !req_d-&gt;url)</span>
-<span class="lineNum">      35 </span><span class="lineNoCov">          0 :     return &quot;Cannot parse HTTP request&quot;;</span>
-<span class="lineNum">      36 </span>            : 
-<span class="lineNum">      37 </span><span class="lineCov">        290 :   if (strcmp(req_d-&gt;method, &quot;GET&quot;)) //&amp;&amp; strcmp(req_d-&gt;method, &quot;POST&quot;))</span>
-<span class="lineNum">      38 </span><span class="lineCov">         12 :     return &quot;Unsupported request (not GET)&quot;;// or POST)&quot;;</span>
-<span class="lineNum">      39 </span>            : 
-<span class="lineNum">      40 </span><span class="lineCov">        278 :   if (strstr(req_d-&gt;url, &quot;https://&quot;))</span>
-<span class="lineNum">      41 </span>            : 
-<span class="lineNum">      42 </span><span class="lineNoCov">          0 :     return &quot;This proxy does not support HTTPS&quot;;</span>
-<span class="lineNum">      43 </span>            : 
-<span class="lineNum">      44 </span><span class="lineCov">        278 :   if (!req_d-&gt;version) {</span>
-<span class="lineNum">      45 </span><span class="lineNoCov">          0 :     strcpy(req_d-&gt;version, &quot;HTTP/0.9&quot;);</span>
-<span class="lineNum">      46 </span>            :   }
-<span class="lineNum">      47 </span><span class="lineCov">        278 :   else if (strcmp(req_d-&gt;version, &quot;HTTP/1.1&quot;) &amp;&amp;</span>
-<span class="lineNum">      48 </span><span class="lineNoCov">          0 :       strcmp(req_d-&gt;version, &quot;HTTP/1.0&quot;))</span>
-<span class="lineNum">      49 </span><span class="lineNoCov">          0 :     return &quot;Unsupported server protocol (not HTTP/1.1 or 1.0)&quot;;</span>
-<span class="lineNum">      50 </span>            : 
-<span class="lineNum">      51 </span><span class="lineCov">        278 :   if ((url_parse(req_d, req_d-&gt;url)))</span>
-<span class="lineNum">      52 </span><span class="lineNoCov">          0 :     return &quot;Cannot parse URL request&quot;;</span>
-<span class="lineNum">      53 </span>            :   
-<span class="lineNum">      54 </span><span class="lineCov">        279 :   return NULL;</span>
-<span class="lineNum">      55 </span>            : }
-<span class="lineNum">      56 </span>            : 
-<span class="lineNum">      57 </span>            : /* Write a request line + headers to next hop server. 
-<span class="lineNum">      58 </span>            :  *  - currently, only HTTP/1.0 is supported. 
-<a name="59"><span class="lineNum">      59 </span>            :  *  - returns NULL on success, err message on fail</a>
-<span class="lineNum">      60 </span>            :  */
-<span class="lineNum">      61 </span><span class="lineCov">         63 : const char *http_write_request(int destfd, ReqData *req_d)</span>
-<span class="lineNum">      62 </span>            : {
-<span class="lineNum">      63 </span>            :   /* rare corner - if snprintf reaches MAXBUF the final \r\n wont be added */
-<span class="lineNum">      64 </span>            :   char dest_buf[MAXBUF];
-<span class="lineNum">      65 </span>            :   /* Gotta do a rio_write after each user-provided string, protect from overflow. */
-<span class="lineNum">      66 </span><span class="lineCov">         63 :   snprintf(dest_buf, MAXBUF, &quot;%s %s HTTP/1.0\r\n&quot;, req_d-&gt;method, req_d-&gt;filename);</span>
-<span class="lineNum">      67 </span><span class="lineCov">         63 :   add_crlfnull(dest_buf, MAXBUF);</span>
-<span class="lineNum">      68 </span><span class="lineCov">         63 :   Rio_writen(destfd, dest_buf, strlen(dest_buf));</span>
-<span class="lineNum">      69 </span><span class="lineCov">         63 :   snprintf(dest_buf, MAXBUF, &quot;Host: %s\r\n&quot;, req_d-&gt;host);</span>
-<span class="lineNum">      70 </span><span class="lineCov">         63 :   add_crlfnull(dest_buf, MAXBUF);</span>
-<span class="lineNum">      71 </span><span class="lineCov">         63 :   Rio_writen(destfd, dest_buf, strlen(dest_buf));</span>
-<span class="lineNum">      72 </span>            :   /* TODO: add in all other user-provided request headers here */
-<span class="lineNum">      73 </span>            : 
-<span class="lineNum">      74 </span><span class="lineCov">         63 :   snprintf(dest_buf, MAXBUF, &quot;%s%s%s\r\n&quot;, user_agent_hdr, connection_close,</span>
-<span class="lineNum">      75 </span>            :            proxy_con_close);
-<span class="lineNum">      76 </span><span class="lineCov">         63 :   add_crlfnull(dest_buf, MAXBUF);</span>
-<span class="lineNum">      77 </span><span class="lineCov">         63 :   Rio_writen(destfd, dest_buf, strlen(dest_buf));</span>
-<span class="lineNum">      78 </span>            : 
-<span class="lineNum">      79 </span><span class="lineCov">         63 :   return NULL;</span>
-<span class="lineNum">      80 </span>            : }
-<span class="lineNum">      81 </span>            : /* Read all HTTP request headers.
-<a name="82"><span class="lineNum">      82 </span>            :  *  - return Error message, or NULL if succeed.</a>
-<span class="lineNum">      83 </span>            :  */
-<span class="lineNum">      84 </span><span class="lineNoCov">          0 : const char *http_read_request_headers(rio_t *rp, ReqData *req_d)</span>
-<span class="lineNum">      85 </span>            : {
-<span class="lineNum">      86 </span>            :   char buf[MAXLINE];
-<span class="lineNum">      87 </span><span class="lineNoCov">          0 :   Rio_readlineb(rp, buf, MAXLINE);</span>
-<span class="lineNum">      88 </span><span class="lineNoCov">          0 :   printf(&quot;%s&quot;, buf);</span>
-<span class="lineNum">      89 </span><span class="lineNoCov">          0 :   while(strcmp(buf, &quot;\r\n&quot;)) {</span>
-<span class="lineNum">      90 </span><span class="lineNoCov">          0 :     Rio_readlineb(rp, buf, MAXLINE);</span>
-<span class="lineNum">      91 </span><span class="lineNoCov">          0 :     printf(&quot;%s&quot;, buf);</span>
-<span class="lineNum">      92 </span>            :   }
-<span class="lineNum">      93 </span><span class="lineNoCov">          0 :   return NULL;</span>
-<span class="lineNum">      94 </span>            : }
-<a name="95"><span class="lineNum">      95 </span>            : </a>
-<span class="lineNum">      96 </span>            : /* read the body of the response into the obj_buf */
-<span class="lineNum">      97 </span><span class="lineCov">         63 : const char *http_relay_resp_body(int connfd, rio_t *rio_dest, int size, void *obj_buf)</span>
-<span class="lineNum">      98 </span>            : {
-<span class="lineNum">      99 </span><span class="lineCov">         63 :   char *p = NULL;</span>
-<span class="lineNum">     100 </span><span class="lineCov">         63 :   p = (char *)obj_buf;</span>
-<span class="lineNum">     101 </span>            :   int n;
-<span class="lineNum">     102 </span>            : 
-<span class="lineNum">     103 </span>            :   /* proxy puts the file into body while # of bytes read is nonzero */
-<span class="lineNum">     104 </span><span class="lineCov">        327 :   while ((n = Rio_readnb(rio_dest, p, MAXLINE))) {</span>
-<span class="lineNum">     105 </span><span class="lineCov">        200 :       Rio_writen(connfd, p, n);</span>
-<span class="lineNum">     106 </span><span class="lineCov">        201 :       p += n;</span>
-<span class="lineNum">     107 </span>            :   }
-<span class="lineNum">     108 </span><span class="lineCov">         63 :   return NULL;</span>
-<span class="lineNum">     109 </span>            : }
-<span class="lineNum">     110 </span>            : /* Read the response HTTP headers from the upstream server 
-<a name="111"><span class="lineNum">     111 </span>            :  * returns NULL on success, or error message.</a>
-<span class="lineNum">     112 </span>            :  */
-<span class="lineNum">     113 </span><span class="lineCov">         63 : const char *http_relay_resp_headers(int connfd, ReqData *req_d,</span>
-<span class="lineNum">     114 </span>            :                                     rio_t *rio_dest, int *size, char *type)
-<span class="lineNum">     115 </span>            : {
-<span class="lineNum">     116 </span>            :   char rec_buf[MAXLINE];
-<span class="lineNum">     117 </span>            :   int stat_code, l;
-<span class="lineNum">     118 </span>            :   char *pp;
-<span class="lineNum">     119 </span>            :   char resp_ver[MAXLINE], stat_mesg[MAXLINE];
-<span class="lineNum">     120 </span>            :   
-<span class="lineNum">     121 </span>            :   /* pass along response line */
-<span class="lineNum">     122 </span><span class="lineCov">         63 :   Rio_readlineb(rio_dest, rec_buf, MAXLINE);</span>
-<span class="lineNum">     123 </span>            :   /* read response version to ensure compatibility */
-<span class="lineNum">     124 </span><span class="lineCov">         63 :   sscanf(rec_buf, &quot;%s %d %s&quot;, resp_ver, &amp;stat_code, stat_mesg);</span>
-<span class="lineNum">     125 </span><span class="lineCov">         63 :   if (!strcmp(req_d-&gt;version, resp_ver))</span>
-<span class="lineNum">     126 </span><span class="lineCov">         63 :     fprintf(stdout, &quot;error, ver mismatch. client=%s, host=%s\n&quot;,</span>
-<span class="lineNum">     127 </span><span class="lineCov">         63 :             req_d-&gt;version, resp_ver);</span>
-<span class="lineNum">     128 </span>            :   /* if i had code to downgrade the response to fit the client, 
-<span class="lineNum">     129 </span>            :   * here's where the function call would go. also to check and see
-<span class="lineNum">     130 </span>            :   * if it's an upgrade or a downgrade; don't know from strcmp. although
-<span class="lineNum">     131 </span>            :   * if you save the response value you could tell, but that assumes ascii.
-<span class="lineNum">     132 </span>            :   */
-<span class="lineNum">     133 </span><span class="lineCov">         63 :   Rio_writen(connfd, rec_buf, strlen(rec_buf));</span>
-<span class="lineNum">     134 </span>            :   //  fprintf(stdout, &quot;%s&quot;, rec_buf);
-<span class="lineNum">     135 </span>            :   
-<span class="lineNum">     136 </span>            :   /* extract size/type from headers and relay to client  */
-<span class="lineNum">     137 </span><span class="lineCov">        686 :   while(strcmp(rec_buf, &quot;\r\n&quot;)) {</span>
-<span class="lineNum">     138 </span><span class="lineCov">        560 :     Rio_readlineb(rio_dest, rec_buf, MAXLINE);</span>
-<span class="lineNum">     139 </span>            : 
-<span class="lineNum">     140 </span>            :     /* TODO: should change this to log later */
-<span class="lineNum">     141 </span><span class="lineCov">        560 :     fprintf(stdout, &quot;%s&quot;, rec_buf);</span>
-<span class="lineNum">     142 </span>            : 
-<span class="lineNum">     143 </span>            :     /* save response info - type of file and filesize */
-<span class="lineNum">     144 </span><span class="lineCov">       1080 :     if ( (strstr(rec_buf, &quot;Content-Length&quot;) ||</span>
-<span class="lineNum">     145 </span><span class="lineCov">        520 :                  strstr(rec_buf, &quot;Content-length&quot;))) {</span>
-<span class="lineNum">     146 </span><span class="lineCov">         40 :       l = strlen(&quot;Content-length: &quot;);</span>
-<span class="lineNum">     147 </span><span class="lineCov">         40 :       pp = rec_buf + l;</span>
-<span class="lineNum">     148 </span><span class="lineCov">         40 :       *size = atoi(pp);</span>
-<span class="lineNum">     149 </span>            :     }
-<span class="lineNum">     150 </span><span class="lineCov">        977 :     else if (type &amp;&amp; (strstr(rec_buf, &quot;Content-Type:&quot;) ||</span>
-<span class="lineNum">     151 </span><span class="lineCov">        457 :                       strstr(rec_buf, &quot;Content-type:&quot;))) {</span>
-<span class="lineNum">     152 </span><span class="lineCov">         63 :       l = strlen(&quot;Content-type: &quot;);</span>
-<span class="lineNum">     153 </span><span class="lineCov">         63 :       pp = rec_buf + l;</span>
-<span class="lineNum">     154 </span>            :       //int i = 0;
-<span class="lineNum">     155 </span>            :       //      while (*pp &amp;&amp; (*pp != '\r')) {
-<span class="lineNum">     156 </span>            :       //        type[i] = *pp;
-<span class="lineNum">     157 </span>            :       //        i++;
-<span class="lineNum">     158 </span>            :       //      }
-<span class="lineNum">     159 </span><span class="lineCov">         63 :       strncpy(type, pp, MAXLINE);</span>
-<span class="lineNum">     160 </span>            :       //      int i = strlen(type);
-<span class="lineNum">     161 </span>            :       //      type[i - 3] = '\0';
-<span class="lineNum">     162 </span>            :     }
-<span class="lineNum">     163 </span>            : 
-<span class="lineNum">     164 </span><span class="lineCov">        560 :     Rio_writen(connfd, rec_buf, strlen(rec_buf));</span>
-<span class="lineNum">     165 </span>            :   }
-<span class="lineNum">     166 </span><span class="lineCov">         63 :   return NULL; </span>
-<a name="167"><span class="lineNum">     167 </span>            : }</a>
-<span class="lineNum">     168 </span>            : 
-<span class="lineNum">     169 </span><span class="lineCov">        216 : void http_serve(int connfd, void *obj_buf, int size, char *type)</span>
-<span class="lineNum">     170 </span>            : {
-<span class="lineNum">     171 </span>            :   char ret_buf1[MAXLINE];
-<span class="lineNum">     172 </span>            :   char ret_buf2[MAXLINE];
-<span class="lineNum">     173 </span><span class="lineCov">        216 :   sprintf(ret_buf1, &quot;HTTP/1.0 200 OK \r\n&quot;);</span>
-<span class="lineNum">     174 </span><span class="lineCov">        216 :   sprintf(ret_buf2, &quot;%sServer: Brian's Web Proxy\r\n&quot;, ret_buf1);</span>
-<span class="lineNum">     175 </span><span class="lineCov">        216 :   sprintf(ret_buf1, &quot;%s%s&quot;, ret_buf2, connection_close);</span>
-<span class="lineNum">     176 </span><span class="lineCov">        216 :   sprintf(ret_buf2, &quot;%sContent-length: %d\r\n&quot;, ret_buf1, size);</span>
-<span class="lineNum">     177 </span><span class="lineCov">        216 :   sprintf(ret_buf1, &quot;%sContent-type: %s\r\n&quot;, ret_buf2, type); </span>
-<span class="lineNum">     178 </span><span class="lineCov">        216 :   Rio_writen(connfd, ret_buf1, strlen(ret_buf1));</span>
-<span class="lineNum">     179 </span><span class="lineCov">        216 :   printf(&quot;%s&quot;, ret_buf1);</span>
-<span class="lineNum">     180 </span><span class="lineCov">        216 :   Rio_writen(connfd, obj_buf, size);</span>
-<span class="lineNum">     181 </span><span class="lineCov">        216 : }</span>
-<a name="182"><span class="lineNum">     182 </span>            : </a>
-<span class="lineNum">     183 </span>            : /* Send an HTTP error message. */
-<span class="lineNum">     184 </span><span class="lineCov">         12 : void http_err(int fd, char *cause, char *errnum,</span>
-<span class="lineNum">     185 </span>            :                  char *shortmsg, const char *longmsg)
-<span class="lineNum">     186 </span>            : {
-<span class="lineNum">     187 </span>            :   char buf[MAXLINE], body[MAXBUF], body2[MAXBUF];
-<span class="lineNum">     188 </span>            :   
-<span class="lineNum">     189 </span>            :   /* build the HTTP response body */
-<span class="lineNum">     190 </span>            :   /* heads up - assumes everything in total &lt; MAXBUFF */
-<span class="lineNum">     191 </span><span class="lineCov">         12 :   sprintf(body, &quot;&lt;html&gt;&lt;title&gt;Proxy Error&lt;/title&gt;&quot;);</span>
-<span class="lineNum">     192 </span><span class="lineCov">         12 :   sprintf(body2, &quot;%s&lt;body bgcolor=&quot;&quot;ffffff&quot;&quot;&gt;\r\n&quot;, body);</span>
-<span class="lineNum">     193 </span><span class="lineCov">         12 :   sprintf(body, &quot;%s%s: %s\r\n&quot;, body2, errnum, shortmsg);</span>
-<span class="lineNum">     194 </span><span class="lineCov">         12 :   sprintf(body2, &quot;%s&lt;p&gt;%s: %s\r\n&quot;, body, longmsg, cause);</span>
-<span class="lineNum">     195 </span><span class="lineCov">         12 :   sprintf(body, &quot;%s&lt;hr&gt;&lt;em&gt;The Bright Proxy&lt;/em&gt;\r\n&quot;, body2);</span>
-<span class="lineNum">     196 </span>            : 
+<a name="1"><span class="lineNum">       1 </span>            : #include &lt;includes/http.h&gt;</a>
+<span class="lineNum">       2 </span>            : #include &lt;includes/csapp.h&gt;
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &lt;sys/param.h&gt;
+<span class="lineNum">       5 </span>            : #ifndef BSD
+<span class="lineNum">       6 </span>            : #include &lt;sys/sendfile.h&gt;
+<span class="lineNum">       7 </span>            : #endif
+<span class="lineNum">       8 </span>            : #include &lt;sys/uio.h&gt;
+<span class="lineNum">       9 </span>            : #include &lt;ctype.h&gt;
+<span class="lineNum">      10 </span>            : #include &lt;errno.h&gt;
+<span class="lineNum">      11 </span>            : #include &lt;fcntl.h&gt;
+<span class="lineNum">      12 </span>            : #include &lt;signal.h&gt;
+<span class="lineNum">      13 </span>            : #include &lt;stdarg.h&gt;
+<span class="lineNum">      14 </span>            : #include &lt;stdio.h&gt;
+<span class="lineNum">      15 </span>            : #include &lt;stdlib.h&gt;
+<span class="lineNum">      16 </span>            : #include &lt;string.h&gt;
+<span class="lineNum">      17 </span>            : #include &lt;unistd.h&gt;
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : /* Strings for response/request headers */
+<span class="lineNum">      20 </span>            : static const char *user_agent_hdr = &quot;User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/100.3\r\n&quot;;
+<span class="lineNum">      21 </span>            : static const char *connection_close = &quot;Connection: close\r\n&quot;;
+<span class="lineNum">      22 </span>            : static const char *proxy_con_close = &quot;Proxy-Connection: close\r\n&quot;;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : static inline void add_crlfnull(char *buf, int l);
+<span class="lineNum">      25 </span>            :   
+<span class="lineNum">      26 </span>            : /* Read the request line like &quot;GET /xxx HTTP/1.0&quot; 
+<a name="27"><span class="lineNum">      27 </span>            :  *  - return Error message, or NULL if succeed</a>
+<span class="lineNum">      28 </span>            :  */
+<span class="lineNum">      29 </span><span class="lineCov">        179 : const char *http_read_request_line(rio_t *rio, ReqData *req_d)</span>
+<span class="lineNum">      30 </span>            : {
+<span class="lineNum">      31 </span>            :   char buf[MAXLINE];
+<span class="lineNum">      32 </span><span class="lineCov">        179 :   Rio_readlineb(rio, buf, MAXLINE);</span>
+<span class="lineNum">      33 </span><span class="lineCov">        177 :   sscanf(buf,  &quot;%s %s %s&quot;, req_d-&gt;method, req_d-&gt;url, req_d-&gt;version);</span>
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span><span class="lineCov">        177 :   if (!req_d-&gt;method || !req_d-&gt;url)</span>
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :     return &quot;Cannot parse HTTP request&quot;;</span>
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span><span class="lineCov">        177 :   if (strcmp(req_d-&gt;method, &quot;GET&quot;)) //&amp;&amp; strcmp(req_d-&gt;method, &quot;POST&quot;))</span>
+<span class="lineNum">      39 </span><span class="lineCov">          2 :     return &quot;Unsupported request (not GET)&quot;;// or POST)&quot;;</span>
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span><span class="lineCov">        175 :   if (strstr(req_d-&gt;url, &quot;https://&quot;))</span>
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :     return &quot;This proxy does not support HTTPS&quot;;</span>
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span><span class="lineCov">        175 :   if (!req_d-&gt;version) {</span>
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :     strcpy(req_d-&gt;version, &quot;HTTP/0.9&quot;);</span>
+<span class="lineNum">      47 </span>            :   }
+<span class="lineNum">      48 </span><span class="lineCov">        175 :   else if (strcmp(req_d-&gt;version, &quot;HTTP/1.1&quot;) &amp;&amp;</span>
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :       strcmp(req_d-&gt;version, &quot;HTTP/1.0&quot;))</span>
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 :     return &quot;Unsupported server protocol (not HTTP/1.1 or 1.0)&quot;;</span>
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span><span class="lineCov">        175 :   if ((url_parse(req_d, req_d-&gt;url)))</span>
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :     return &quot;Cannot parse URL request&quot;;</span>
+<span class="lineNum">      54 </span>            :   
+<span class="lineNum">      55 </span><span class="lineCov">        177 :   return NULL;</span>
+<span class="lineNum">      56 </span>            : }
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : /* Write a request line + headers to next hop server. 
+<span class="lineNum">      59 </span>            :  *  - currently, only HTTP/1.0 is supported. 
+<a name="60"><span class="lineNum">      60 </span>            :  *  - returns NULL on success, err message on fail</a>
+<span class="lineNum">      61 </span>            :  */
+<span class="lineNum">      62 </span><span class="lineCov">         50 : const char *http_write_request(int destfd, ReqData *req_d)</span>
+<span class="lineNum">      63 </span>            : {
+<span class="lineNum">      64 </span>            :   /* rare corner - if snprintf reaches MAXBUF the final \r\n wont be added */
+<span class="lineNum">      65 </span>            :   char dest_buf[MAXBUF];
+<span class="lineNum">      66 </span>            :   /* Gotta do a rio_write after each user-provided string, protect from overflow. */
+<span class="lineNum">      67 </span><span class="lineCov">         50 :   snprintf(dest_buf, MAXBUF, &quot;%s %s HTTP/1.0\r\n&quot;, req_d-&gt;method, req_d-&gt;filename);</span>
+<span class="lineNum">      68 </span><span class="lineCov">         50 :   add_crlfnull(dest_buf, MAXBUF);</span>
+<span class="lineNum">      69 </span><span class="lineCov">         50 :   Rio_writen(destfd, dest_buf, strlen(dest_buf));</span>
+<span class="lineNum">      70 </span><span class="lineCov">         50 :   snprintf(dest_buf, MAXBUF, &quot;Host: %s\r\n&quot;, req_d-&gt;host);</span>
+<span class="lineNum">      71 </span><span class="lineCov">         50 :   add_crlfnull(dest_buf, MAXBUF);</span>
+<span class="lineNum">      72 </span><span class="lineCov">         50 :   Rio_writen(destfd, dest_buf, strlen(dest_buf));</span>
+<span class="lineNum">      73 </span>            :   /* TODO: add in all other user-provided request headers here */
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span><span class="lineCov">         50 :   snprintf(dest_buf, MAXBUF, &quot;%s%s%s\r\n&quot;, user_agent_hdr, connection_close,</span>
+<span class="lineNum">      76 </span>            :            proxy_con_close);
+<span class="lineNum">      77 </span><span class="lineCov">         50 :   add_crlfnull(dest_buf, MAXBUF);</span>
+<span class="lineNum">      78 </span><span class="lineCov">         50 :   Rio_writen(destfd, dest_buf, strlen(dest_buf));</span>
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span><span class="lineCov">         50 :   return NULL;</span>
+<span class="lineNum">      81 </span>            : }
+<span class="lineNum">      82 </span>            : /* Read all HTTP request headers.
+<a name="83"><span class="lineNum">      83 </span>            :  *  - return Error message, or NULL if succeed.</a>
+<span class="lineNum">      84 </span>            :  */
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 : const char *http_read_request_headers(rio_t *rp, ReqData *req_d)</span>
+<span class="lineNum">      86 </span>            : {
+<span class="lineNum">      87 </span>            :   char buf[MAXLINE];
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :   Rio_readlineb(rp, buf, MAXLINE);</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :   printf(&quot;%s&quot;, buf);</span>
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :   while(strcmp(buf, &quot;\r\n&quot;)) {</span>
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :     Rio_readlineb(rp, buf, MAXLINE);</span>
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :     printf(&quot;%s&quot;, buf);</span>
+<span class="lineNum">      93 </span>            :   }
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :   return NULL;</span>
+<span class="lineNum">      95 </span>            : }
+<a name="96"><span class="lineNum">      96 </span>            : </a>
+<span class="lineNum">      97 </span>            : /* read the body of the response into the obj_buf */
+<span class="lineNum">      98 </span><span class="lineCov">         50 : const char *http_relay_resp_body(int connfd, rio_t *rio_dest, int size, void *obj_buf)</span>
+<span class="lineNum">      99 </span>            : {
+<span class="lineNum">     100 </span><span class="lineCov">         50 :   char *p = NULL;</span>
+<span class="lineNum">     101 </span><span class="lineCov">         50 :   p = (char *)obj_buf;</span>
+<span class="lineNum">     102 </span>            :   int n;
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            :   /* proxy puts the file into body while # of bytes read is nonzero */
+<span class="lineNum">     105 </span><span class="lineCov">        272 :   while ((n = Rio_readnb(rio_dest, p, MAXLINE))) {</span>
+<span class="lineNum">     106 </span><span class="lineCov">        172 :       Rio_writen(connfd, p, n);</span>
+<span class="lineNum">     107 </span><span class="lineCov">        172 :       p += n;</span>
+<span class="lineNum">     108 </span>            :   }
+<span class="lineNum">     109 </span><span class="lineCov">         50 :   return NULL;</span>
+<span class="lineNum">     110 </span>            : }
+<span class="lineNum">     111 </span>            : /* Read the response HTTP headers from the upstream server 
+<a name="112"><span class="lineNum">     112 </span>            :  * returns NULL on success, or error message.</a>
+<span class="lineNum">     113 </span>            :  */
+<span class="lineNum">     114 </span><span class="lineCov">         50 : const char *http_relay_resp_headers(int connfd, ReqData *req_d,</span>
+<span class="lineNum">     115 </span>            :                                     rio_t *rio_dest, int *size, char *type)
+<span class="lineNum">     116 </span>            : {
+<span class="lineNum">     117 </span>            :   char rec_buf[MAXLINE];
+<span class="lineNum">     118 </span>            :   int stat_code, l;
+<span class="lineNum">     119 </span>            :   char *pp;
+<span class="lineNum">     120 </span>            :   char resp_ver[MAXLINE], stat_mesg[MAXLINE];
+<span class="lineNum">     121 </span>            :   
+<span class="lineNum">     122 </span>            :   /* pass along response line */
+<span class="lineNum">     123 </span><span class="lineCov">         50 :   Rio_readlineb(rio_dest, rec_buf, MAXLINE);</span>
+<span class="lineNum">     124 </span>            :   /* read response version to ensure compatibility */
+<span class="lineNum">     125 </span><span class="lineCov">         50 :   sscanf(rec_buf, &quot;%s %d %s&quot;, resp_ver, &amp;stat_code, stat_mesg);</span>
+<span class="lineNum">     126 </span><span class="lineCov">         50 :   if (!strcmp(req_d-&gt;version, resp_ver))</span>
+<span class="lineNum">     127 </span><span class="lineCov">         50 :     fprintf(stdout, &quot;error, ver mismatch. client=%s, host=%s\n&quot;,</span>
+<span class="lineNum">     128 </span><span class="lineCov">         50 :             req_d-&gt;version, resp_ver);</span>
+<span class="lineNum">     129 </span>            :   /* if i had code to downgrade the response to fit the client, 
+<span class="lineNum">     130 </span>            :   * here's where the function call would go. also to check and see
+<span class="lineNum">     131 </span>            :   * if it's an upgrade or a downgrade; don't know from strcmp. although
+<span class="lineNum">     132 </span>            :   * if you save the response value you could tell, but that assumes ascii.
+<span class="lineNum">     133 </span>            :   */
+<span class="lineNum">     134 </span><span class="lineCov">         50 :   Rio_writen(connfd, rec_buf, strlen(rec_buf));</span>
+<span class="lineNum">     135 </span>            :   //  fprintf(stdout, &quot;%s&quot;, rec_buf);
+<span class="lineNum">     136 </span>            :   
+<span class="lineNum">     137 </span>            :   /* extract size/type from headers and relay to client  */
+<span class="lineNum">     138 </span><span class="lineCov">        566 :   while(strcmp(rec_buf, &quot;\r\n&quot;)) {</span>
+<span class="lineNum">     139 </span><span class="lineCov">        466 :     Rio_readlineb(rio_dest, rec_buf, MAXLINE);</span>
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span>            :     /* TODO: should change this to log later */
+<span class="lineNum">     142 </span><span class="lineCov">        466 :     fprintf(stdout, &quot;%s&quot;, rec_buf);</span>
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            :     /* save response info - type of file and filesize */
+<span class="lineNum">     145 </span><span class="lineCov">        891 :     if ( (strstr(rec_buf, &quot;Content-Length&quot;) ||</span>
+<span class="lineNum">     146 </span><span class="lineCov">        425 :                  strstr(rec_buf, &quot;Content-length&quot;))) {</span>
+<span class="lineNum">     147 </span><span class="lineCov">         41 :       l = strlen(&quot;Content-length: &quot;);</span>
+<span class="lineNum">     148 </span><span class="lineCov">         41 :       pp = rec_buf + l;</span>
+<span class="lineNum">     149 </span><span class="lineCov">         41 :       *size = atoi(pp);</span>
+<span class="lineNum">     150 </span>            :     }
+<span class="lineNum">     151 </span><span class="lineCov">        800 :     else if (type &amp;&amp; (strstr(rec_buf, &quot;Content-Type:&quot;) ||</span>
+<span class="lineNum">     152 </span><span class="lineCov">        375 :                       strstr(rec_buf, &quot;Content-type:&quot;))) {</span>
+<span class="lineNum">     153 </span><span class="lineCov">         50 :       l = strlen(&quot;Content-type: &quot;);</span>
+<span class="lineNum">     154 </span><span class="lineCov">         50 :       pp = rec_buf + l;</span>
+<span class="lineNum">     155 </span>            :       //int i = 0;
+<span class="lineNum">     156 </span>            :       //      while (*pp &amp;&amp; (*pp != '\r')) {
+<span class="lineNum">     157 </span>            :       //        type[i] = *pp;
+<span class="lineNum">     158 </span>            :       //        i++;
+<span class="lineNum">     159 </span>            :       //      }
+<span class="lineNum">     160 </span><span class="lineCov">         50 :       strncpy(type, pp, MAXLINE);</span>
+<span class="lineNum">     161 </span>            :       //      int i = strlen(type);
+<span class="lineNum">     162 </span>            :       //      type[i - 3] = '\0';
+<span class="lineNum">     163 </span>            :     }
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span><span class="lineCov">        466 :     Rio_writen(connfd, rec_buf, strlen(rec_buf));</span>
+<span class="lineNum">     166 </span>            :   }
+<span class="lineNum">     167 </span><span class="lineCov">         50 :   return NULL; </span>
+<a name="168"><span class="lineNum">     168 </span>            : }</a>
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span><span class="lineCov">        127 : void http_serve(int connfd, void *obj_buf, int size, char *type)</span>
+<span class="lineNum">     171 </span>            : {
+<span class="lineNum">     172 </span>            :   char ret_buf1[MAXLINE];
+<span class="lineNum">     173 </span>            :   char ret_buf2[MAXLINE];
+<span class="lineNum">     174 </span><span class="lineCov">        127 :   sprintf(ret_buf1, &quot;HTTP/1.0 200 OK \r\n&quot;);</span>
+<span class="lineNum">     175 </span><span class="lineCov">        127 :   sprintf(ret_buf2, &quot;%sServer: Brian's Web Proxy\r\n&quot;, ret_buf1);</span>
+<span class="lineNum">     176 </span><span class="lineCov">        127 :   sprintf(ret_buf1, &quot;%s%s&quot;, ret_buf2, connection_close);</span>
+<span class="lineNum">     177 </span><span class="lineCov">        127 :   sprintf(ret_buf2, &quot;%sContent-length: %d\r\n&quot;, ret_buf1, size);</span>
+<span class="lineNum">     178 </span><span class="lineCov">        127 :   sprintf(ret_buf1, &quot;%sContent-type: %s\r\n&quot;, ret_buf2, type); </span>
+<span class="lineNum">     179 </span><span class="lineCov">        127 :   Rio_writen(connfd, ret_buf1, strlen(ret_buf1));</span>
+<span class="lineNum">     180 </span><span class="lineCov">        127 :   printf(&quot;%s&quot;, ret_buf1);</span>
+<span class="lineNum">     181 </span><span class="lineCov">        127 :   Rio_writen(connfd, obj_buf, size);</span>
+<span class="lineNum">     182 </span><span class="lineCov">        127 : }</span>
+<a name="183"><span class="lineNum">     183 </span>            : </a>
+<span class="lineNum">     184 </span>            : /* Send an HTTP error message. */
+<span class="lineNum">     185 </span><span class="lineCov">          2 : void http_err(int fd, char *cause, char *errnum,</span>
+<span class="lineNum">     186 </span>            :                  char *shortmsg, const char *longmsg)
+<span class="lineNum">     187 </span>            : {
+<span class="lineNum">     188 </span>            :   char buf[MAXLINE], body[MAXBUF], body2[MAXBUF];
+<span class="lineNum">     189 </span>            :   
+<span class="lineNum">     190 </span>            :   /* build the HTTP response body */
+<span class="lineNum">     191 </span>            :   /* heads up - assumes everything in total &lt; MAXBUFF */
+<span class="lineNum">     192 </span><span class="lineCov">          2 :   sprintf(body, &quot;&lt;html&gt;&lt;title&gt;Proxy Error&lt;/title&gt;&quot;);</span>
+<span class="lineNum">     193 </span><span class="lineCov">          2 :   sprintf(body2, &quot;%s&lt;body bgcolor=&quot;&quot;ffffff&quot;&quot;&gt;\r\n&quot;, body);</span>
+<span class="lineNum">     194 </span><span class="lineCov">          2 :   sprintf(body, &quot;%s%s: %s\r\n&quot;, body2, errnum, shortmsg);</span>
+<span class="lineNum">     195 </span><span class="lineCov">          2 :   sprintf(body2, &quot;%s&lt;p&gt;%s: %s\r\n&quot;, body, longmsg, cause);</span>
+<span class="lineNum">     196 </span><span class="lineCov">          2 :   sprintf(body, &quot;%s&lt;hr&gt;&lt;em&gt;The Bright Proxy&lt;/em&gt;\r\n&quot;, body2);</span>
 <span class="lineNum">     197 </span>            : 
-<span class="lineNum">     198 </span>            :   /* build &amp; print the HTTP response headers*/
-<span class="lineNum">     199 </span><span class="lineCov">         12 :   sprintf(buf, &quot;HTTP/1.0 %s %s\r\n&quot;, errnum, shortmsg);</span>
-<span class="lineNum">     200 </span><span class="lineCov">         12 :   Rio_writen(fd, buf, strlen(buf));</span>
-<span class="lineNum">     201 </span><span class="lineCov">         12 :   sprintf(buf, &quot;Content type: text/html\r\n&quot;);</span>
-<span class="lineNum">     202 </span><span class="lineCov">         12 :   Rio_writen(fd, buf, strlen(buf));</span>
-<span class="lineNum">     203 </span><span class="lineCov">         12 :   sprintf(buf, &quot;Content-length: %d\r\n\r\n&quot;, (int)strlen(body));</span>
-<span class="lineNum">     204 </span><span class="lineCov">         12 :   Rio_writen(fd, buf, strlen(buf));</span>
-<span class="lineNum">     205 </span>            : 
-<span class="lineNum">     206 </span>            :   /* Print the response body */
-<span class="lineNum">     207 </span><span class="lineCov">         12 :   Rio_writen(fd, body, strlen(body));</span>
-<span class="lineNum">     208 </span>            : 
-<span class="lineNum">     209 </span><span class="lineCov">         12 :   fprintf(stderr, &quot;%s: %s\n&quot;, errnum, shortmsg);</span>
-<span class="lineNum">     210 </span><span class="lineCov">         12 :   fprintf(stderr, &quot;%s: %s\n&quot;, longmsg, cause);</span>
-<span class="lineNum">     211 </span><span class="lineCov">         12 : }</span>
-<a name="212"><span class="lineNum">     212 </span>            : </a>
-<span class="lineNum">     213 </span>            : /* URL decoder */
-<span class="lineNum">     214 </span><span class="lineCov">        279 : int url_parse(ReqData *req_d, char *url)</span>
-<span class="lineNum">     215 </span>            : {
-<span class="lineNum">     216 </span><span class="lineCov">        279 :   char *host_pos = req_d-&gt;host;</span>
-<span class="lineNum">     217 </span><span class="lineCov">        279 :   char *file_pos = req_d-&gt;filename;</span>
-<span class="lineNum">     218 </span><span class="lineCov">        279 :   char *port_pos = req_d-&gt;dest_port;</span>
-<span class="lineNum">     219 </span><span class="lineCov">        279 :   char *pos = url;</span>
-<span class="lineNum">     220 </span>            : 
-<span class="lineNum">     221 </span><span class="lineCov">        279 :   const char *http = &quot;http://&quot;;</span>
-<span class="lineNum">     222 </span><span class="lineCov">        279 :   int l = strlen(http);</span>
-<span class="lineNum">     223 </span>            :   
-<span class="lineNum">     224 </span><span class="lineCov">        279 :   if (!strncmp(url, http, l)) {</span>
-<span class="lineNum">     225 </span><span class="lineCov">        279 :     pos += l;</span>
-<span class="lineNum">     226 </span>            :   }
-<span class="lineNum">     227 </span>            : 
-<span class="lineNum">     228 </span><span class="lineCov">        279 :   if (!(*pos) || (*pos == ' ') || (*pos == '/') || (*pos == '\r'))</span>
-<span class="lineNum">     229 </span><span class="lineNoCov">          0 :     return -INVALID_URL;</span>
-<span class="lineNum">     230 </span>            : 
-<span class="lineNum">     231 </span>            :   /* copy the host name */
-<span class="lineNum">     232 </span><span class="lineCov">       4848 :   while (*pos &amp;&amp; (*pos != ' ') &amp;&amp; (*pos != '/') &amp;&amp; (*pos != ':')</span>
-<span class="lineNum">     233 </span><span class="lineCov">       4292 :          &amp;&amp; (*pos != '\r')){</span>
-<span class="lineNum">     234 </span><span class="lineCov">       4290 :     *host_pos = *pos;</span>
-<span class="lineNum">     235 </span><span class="lineCov">       4290 :     pos++;</span>
-<span class="lineNum">     236 </span><span class="lineCov">       4290 :     host_pos++;</span>
-<span class="lineNum">     237 </span>            :   }
-<span class="lineNum">     238 </span><span class="lineCov">        279 :   *host_pos = '\0';</span>
-<span class="lineNum">     239 </span>            :   
-<span class="lineNum">     240 </span>            :   /* copy in the port, or set to 80 if none found */
-<span class="lineNum">     241 </span><span class="lineCov">        279 :   if (*pos == ':') {</span>
-<span class="lineNum">     242 </span><span class="lineNoCov">          0 :     pos++;</span>
-<span class="lineNum">     243 </span><span class="lineNoCov">          0 :     while (*pos &amp;&amp; (*pos != '/') &amp;&amp; (*pos != ' ') &amp;&amp; (*pos != '\r')) {</span>
-<span class="lineNum">     244 </span><span class="lineNoCov">          0 :       *port_pos = *pos;</span>
-<span class="lineNum">     245 </span><span class="lineNoCov">          0 :       pos++;</span>
-<span class="lineNum">     246 </span><span class="lineNoCov">          0 :       port_pos++;</span>
-<span class="lineNum">     247 </span>            :     }
-<span class="lineNum">     248 </span><span class="lineNoCov">          0 :     *port_pos = '\0';</span>
-<span class="lineNum">     249 </span>            :   }
-<span class="lineNum">     250 </span>            :   else
-<span class="lineNum">     251 </span><span class="lineCov">        279 :     strcpy(port_pos, &quot;80&quot;);</span>
-<span class="lineNum">     252 </span>            : 
-<span class="lineNum">     253 </span>            :   /* now pos is at a / or a space, if / copy the URI */
-<span class="lineNum">     254 </span><span class="lineCov">        279 :   if (*pos == '/') {</span>
-<span class="lineNum">     255 </span><span class="lineCov">       8769 :       while (*pos &amp;&amp; (*pos != ' ') &amp;&amp; (*pos != '\r')) {</span>
-<span class="lineNum">     256 </span><span class="lineCov">       8211 :         *file_pos = *pos;</span>
-<span class="lineNum">     257 </span><span class="lineCov">       8211 :         pos++;</span>
-<span class="lineNum">     258 </span><span class="lineCov">       8211 :         file_pos++;</span>
-<span class="lineNum">     259 </span>            :       }
-<span class="lineNum">     260 </span><span class="lineCov">        279 :       *file_pos = '\0';</span>
-<span class="lineNum">     261 </span>            :   }
-<span class="lineNum">     262 </span>            :   else                          /* no URI found, use default of / */
-<span class="lineNum">     263 </span><span class="lineNoCov">          0 :     strcpy(file_pos, &quot;/&quot;);</span>
-<span class="lineNum">     264 </span>            : 
-<span class="lineNum">     265 </span><span class="lineCov">        279 :   return 0;</span>
-<span class="lineNum">     266 </span>            : }
-<span class="lineNum">     267 </span>            : 
-<span class="lineNum">     268 </span>            : /* Manually add carriage-return-line-feed to end of a string 
-<a name="269"><span class="lineNum">     269 </span>            : * and null out any extra stuff that was added in the overflow.</a>
-<span class="lineNum">     270 </span>            : */
-<span class="lineNum">     271 </span><span class="lineCov">        189 : static inline void add_crlfnull(char *buf, int max)</span>
-<span class="lineNum">     272 </span>            : {
-<span class="lineNum">     273 </span>            :   int l;
-<span class="lineNum">     274 </span><span class="lineCov">        189 :   if ((l = strlen(buf)) &gt;= max) {</span>
-<span class="lineNum">     275 </span><span class="lineNoCov">          0 :     buf[max - 3] = '\r';</span>
-<span class="lineNum">     276 </span><span class="lineNoCov">          0 :     buf[max - 2] = '\n';</span>
-<span class="lineNum">     277 </span><span class="lineNoCov">          0 :     buf[max - 1] = '\0';</span>
-<span class="lineNum">     278 </span><span class="lineNoCov">          0 :     for (; max &lt;= l; l--) {</span>
-<span class="lineNum">     279 </span><span class="lineNoCov">          0 :       buf[l] = '\0';</span>
-<span class="lineNum">     280 </span>            :     }
-<span class="lineNum">     281 </span>            :   }
-<span class="lineNum">     282 </span><span class="lineCov">        189 : }</span>
+<span class="lineNum">     198 </span>            : 
+<span class="lineNum">     199 </span>            :   /* build &amp; print the HTTP response headers*/
+<span class="lineNum">     200 </span><span class="lineCov">          2 :   sprintf(buf, &quot;HTTP/1.0 %s %s\r\n&quot;, errnum, shortmsg);</span>
+<span class="lineNum">     201 </span><span class="lineCov">          2 :   Rio_writen(fd, buf, strlen(buf));</span>
+<span class="lineNum">     202 </span><span class="lineCov">          2 :   sprintf(buf, &quot;Content type: text/html\r\n&quot;);</span>
+<span class="lineNum">     203 </span><span class="lineCov">          2 :   Rio_writen(fd, buf, strlen(buf));</span>
+<span class="lineNum">     204 </span><span class="lineCov">          2 :   sprintf(buf, &quot;Content-length: %d\r\n\r\n&quot;, (int)strlen(body));</span>
+<span class="lineNum">     205 </span><span class="lineCov">          2 :   Rio_writen(fd, buf, strlen(buf));</span>
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span>            :   /* Print the response body */
+<span class="lineNum">     208 </span><span class="lineCov">          2 :   Rio_writen(fd, body, strlen(body));</span>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span><span class="lineCov">          2 :   fprintf(stderr, &quot;%s: %s\n&quot;, errnum, shortmsg);</span>
+<span class="lineNum">     211 </span><span class="lineCov">          2 :   fprintf(stderr, &quot;%s: %s\n&quot;, longmsg, cause);</span>
+<span class="lineNum">     212 </span><span class="lineCov">          2 : }</span>
+<a name="213"><span class="lineNum">     213 </span>            : </a>
+<span class="lineNum">     214 </span>            : /* URL decoder */
+<span class="lineNum">     215 </span><span class="lineCov">        177 : int url_parse(ReqData *req_d, char *url)</span>
+<span class="lineNum">     216 </span>            : {
+<span class="lineNum">     217 </span><span class="lineCov">        177 :   char *host_pos = req_d-&gt;host;</span>
+<span class="lineNum">     218 </span><span class="lineCov">        177 :   char *file_pos = req_d-&gt;filename;</span>
+<span class="lineNum">     219 </span><span class="lineCov">        177 :   char *port_pos = req_d-&gt;dest_port;</span>
+<span class="lineNum">     220 </span><span class="lineCov">        177 :   char *pos = url;</span>
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span><span class="lineCov">        177 :   const char *http = &quot;http://&quot;;</span>
+<span class="lineNum">     223 </span><span class="lineCov">        177 :   int l = strlen(http);</span>
+<span class="lineNum">     224 </span>            :   
+<span class="lineNum">     225 </span><span class="lineCov">        177 :   if (!strncmp(url, http, l)) {</span>
+<span class="lineNum">     226 </span><span class="lineCov">        176 :     pos += l;</span>
+<span class="lineNum">     227 </span>            :   }
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineCov">        177 :   if (!(*pos) || (*pos == ' ') || (*pos == '/') || (*pos == '\r'))</span>
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :     return -INVALID_URL;</span>
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            :   /* copy the host name */
+<span class="lineNum">     233 </span><span class="lineCov">       3109 :   while (*pos &amp;&amp; (*pos != ' ') &amp;&amp; (*pos != '/') &amp;&amp; (*pos != ':')</span>
+<span class="lineNum">     234 </span><span class="lineCov">       2755 :          &amp;&amp; (*pos != '\r')){</span>
+<span class="lineNum">     235 </span><span class="lineCov">       2755 :     *host_pos = *pos;</span>
+<span class="lineNum">     236 </span><span class="lineCov">       2755 :     pos++;</span>
+<span class="lineNum">     237 </span><span class="lineCov">       2755 :     host_pos++;</span>
+<span class="lineNum">     238 </span>            :   }
+<span class="lineNum">     239 </span><span class="lineCov">        177 :   *host_pos = '\0';</span>
+<span class="lineNum">     240 </span>            :   
+<span class="lineNum">     241 </span>            :   /* copy in the port, or set to 80 if none found */
+<span class="lineNum">     242 </span><span class="lineCov">        177 :   if (*pos == ':') {</span>
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :     pos++;</span>
+<span class="lineNum">     244 </span><span class="lineNoCov">          0 :     while (*pos &amp;&amp; (*pos != '/') &amp;&amp; (*pos != ' ') &amp;&amp; (*pos != '\r')) {</span>
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :       *port_pos = *pos;</span>
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :       pos++;</span>
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :       port_pos++;</span>
+<span class="lineNum">     248 </span>            :     }
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :     *port_pos = '\0';</span>
+<span class="lineNum">     250 </span>            :   }
+<span class="lineNum">     251 </span>            :   else
+<span class="lineNum">     252 </span><span class="lineCov">        177 :     strcpy(port_pos, &quot;80&quot;);</span>
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span>            :   /* now pos is at a / or a space, if / copy the URI */
+<span class="lineNum">     255 </span><span class="lineCov">        177 :   if (*pos == '/') {</span>
+<span class="lineNum">     256 </span><span class="lineCov">       6859 :       while (*pos &amp;&amp; (*pos != ' ') &amp;&amp; (*pos != '\r')) {</span>
+<span class="lineNum">     257 </span><span class="lineCov">       6505 :         *file_pos = *pos;</span>
+<span class="lineNum">     258 </span><span class="lineCov">       6505 :         pos++;</span>
+<span class="lineNum">     259 </span><span class="lineCov">       6505 :         file_pos++;</span>
+<span class="lineNum">     260 </span>            :       }
+<span class="lineNum">     261 </span><span class="lineCov">        177 :       *file_pos = '\0';</span>
+<span class="lineNum">     262 </span>            :   }
+<span class="lineNum">     263 </span>            :   else                          /* no URI found, use default of / */
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :     strcpy(file_pos, &quot;/&quot;);</span>
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span><span class="lineCov">        177 :   return 0;</span>
+<span class="lineNum">     267 </span>            : }
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            : /* Manually add carriage-return-line-feed to end of a string 
+<a name="270"><span class="lineNum">     270 </span>            : * and null out any extra stuff that was added in the overflow.</a>
+<span class="lineNum">     271 </span>            : */
+<span class="lineNum">     272 </span><span class="lineCov">        150 : static inline void add_crlfnull(char *buf, int max)</span>
+<span class="lineNum">     273 </span>            : {
+<span class="lineNum">     274 </span>            :   int l;
+<span class="lineNum">     275 </span><span class="lineCov">        150 :   if ((l = strlen(buf)) &gt;= max) {</span>
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :     buf[max - 3] = '\r';</span>
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :     buf[max - 2] = '\n';</span>
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :     buf[max - 1] = '\0';</span>
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :     for (; max &lt;= l; l--) {</span>
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :       buf[l] = '\0';</span>
+<span class="lineNum">     281 </span>            :     }
+<span class="lineNum">     282 </span>            :   }
+<span class="lineNum">     283 </span><span class="lineCov">        150 : }</span>
 </pre>
       </td>
     </tr>

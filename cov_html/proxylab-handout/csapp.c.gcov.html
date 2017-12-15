@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-14 19:25:39</td>
+            <td class="headerValue">2017-12-14 19:57:27</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">23</td>
@@ -81,7 +81,7 @@
 <span class="lineNum">      19 </span>            :  *   - rio_readnb: removed redundant EINTR check
 <span class="lineNum">      20 </span>            :  */
 <span class="lineNum">      21 </span>            : /* $begin csapp.c */
-<span class="lineNum">      22 </span>            : #include &quot;csapp.h&quot;
+<span class="lineNum">      22 </span>            : #include &lt;includes/csapp.h&gt;
 <span class="lineNum">      23 </span>            : 
 <span class="lineNum">      24 </span>            : /************************** 
 <span class="lineNum">      25 </span>            :  * Error-handling functions
@@ -405,22 +405,22 @@
 <span class="lineNum">     343 </span><span class="lineNoCov">          0 :     return rc;</span>
 <a name="344"><span class="lineNum">     344 </span>            : }</a>
 <span class="lineNum">     345 </span>            : 
-<span class="lineNum">     346 </span><span class="lineCov">        228 : void Close(int fd) </span>
+<span class="lineNum">     346 </span><span class="lineCov">        129 : void Close(int fd) </span>
 <span class="lineNum">     347 </span>            : {
 <span class="lineNum">     348 </span>            :     int rc;
 <span class="lineNum">     349 </span>            : 
-<span class="lineNum">     350 </span><span class="lineCov">        228 :     if ((rc = close(fd)) &lt; 0)</span>
+<span class="lineNum">     350 </span><span class="lineCov">        129 :     if ((rc = close(fd)) &lt; 0)</span>
 <span class="lineNum">     351 </span><span class="lineNoCov">          0 :         unix_error(&quot;Close error&quot;);</span>
-<a name="352"><span class="lineNum">     352 </span><span class="lineCov">        228 : }</span></a>
+<a name="352"><span class="lineNum">     352 </span><span class="lineCov">        129 : }</span></a>
 <span class="lineNum">     353 </span>            : 
-<span class="lineNum">     354 </span><span class="lineCov">        295 : int Select(int  n, fd_set *readfds, fd_set *writefds,</span>
+<span class="lineNum">     354 </span><span class="lineCov">        182 : int Select(int  n, fd_set *readfds, fd_set *writefds,</span>
 <span class="lineNum">     355 </span>            :            fd_set *exceptfds, struct timeval *timeout) 
 <span class="lineNum">     356 </span>            : {
 <span class="lineNum">     357 </span>            :     int rc;
 <span class="lineNum">     358 </span>            : 
-<span class="lineNum">     359 </span><span class="lineCov">        295 :     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) &lt; 0);</span>
+<span class="lineNum">     359 </span><span class="lineCov">        182 :     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) &lt; 0);</span>
 <span class="lineNum">     360 </span>            :       //        unix_error(&quot;Select error&quot;);
-<span class="lineNum">     361 </span><span class="lineCov">        295 :     return rc;</span>
+<span class="lineNum">     361 </span><span class="lineCov">        182 :     return rc;</span>
 <a name="362"><span class="lineNum">     362 </span>            : }</a>
 <span class="lineNum">     363 </span>            : 
 <span class="lineNum">     364 </span><span class="lineNoCov">          0 : int Dup2(int fd1, int fd2) </span>
@@ -499,13 +499,13 @@
 <span class="lineNum">     437 </span>            :  * Wrappers for dynamic storage allocation functions
 <a name="438"><span class="lineNum">     438 </span>            :  ***************************************************/</a>
 <span class="lineNum">     439 </span>            : 
-<span class="lineNum">     440 </span><span class="lineCov">        291 : void *Malloc(size_t size) </span>
+<span class="lineNum">     440 </span><span class="lineCov">        179 : void *Malloc(size_t size) </span>
 <span class="lineNum">     441 </span>            : {
 <span class="lineNum">     442 </span>            :     void *p;
 <span class="lineNum">     443 </span>            : 
-<span class="lineNum">     444 </span><span class="lineCov">        291 :     if ((p  = malloc(size)) == NULL)</span>
+<span class="lineNum">     444 </span><span class="lineCov">        179 :     if ((p  = malloc(size)) == NULL)</span>
 <span class="lineNum">     445 </span><span class="lineNoCov">          0 :         unix_error(&quot;Malloc error&quot;);</span>
-<span class="lineNum">     446 </span><span class="lineCov">        291 :     return p;</span>
+<span class="lineNum">     446 </span><span class="lineCov">        179 :     return p;</span>
 <a name="447"><span class="lineNum">     447 </span>            : }</a>
 <span class="lineNum">     448 </span>            : 
 <span class="lineNum">     449 </span><span class="lineNoCov">          0 : void *Realloc(void *ptr, size_t size) </span>
@@ -629,13 +629,13 @@
 <span class="lineNum">     567 </span><span class="lineNoCov">          0 :         unix_error(&quot;Listen error&quot;);</span>
 <a name="568"><span class="lineNum">     568 </span><span class="lineNoCov">          0 : }</span></a>
 <span class="lineNum">     569 </span>            : 
-<span class="lineNum">     570 </span><span class="lineCov">        291 : int Accept(int s, struct sockaddr *addr, socklen_t *addrlen) </span>
+<span class="lineNum">     570 </span><span class="lineCov">        179 : int Accept(int s, struct sockaddr *addr, socklen_t *addrlen) </span>
 <span class="lineNum">     571 </span>            : {
 <span class="lineNum">     572 </span>            :     int rc;
 <span class="lineNum">     573 </span>            : 
-<span class="lineNum">     574 </span><span class="lineCov">        291 :     if ((rc = accept(s, addr, addrlen)) &lt; 0)</span>
+<span class="lineNum">     574 </span><span class="lineCov">        179 :     if ((rc = accept(s, addr, addrlen)) &lt; 0)</span>
 <span class="lineNum">     575 </span><span class="lineNoCov">          0 :         unix_error(&quot;Accept error&quot;);</span>
-<span class="lineNum">     576 </span><span class="lineCov">        291 :     return rc;</span>
+<span class="lineNum">     576 </span><span class="lineCov">        179 :     return rc;</span>
 <a name="577"><span class="lineNum">     577 </span>            : }</a>
 <span class="lineNum">     578 </span>            : 
 <span class="lineNum">     579 </span><span class="lineNoCov">          0 : void Connect(int sockfd, struct sockaddr *serv_addr, int addrlen) </span>
@@ -660,15 +660,15 @@
 <span class="lineNum">     598 </span><span class="lineNoCov">          0 : }</span>
 <a name="599"><span class="lineNum">     599 </span>            : /* $end getaddrinfo */</a>
 <span class="lineNum">     600 </span>            : 
-<span class="lineNum">     601 </span><span class="lineCov">        291 : void Getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host, </span>
+<span class="lineNum">     601 </span><span class="lineCov">        179 : void Getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host, </span>
 <span class="lineNum">     602 </span>            :                  size_t hostlen, char *serv, size_t servlen, int flags)
 <span class="lineNum">     603 </span>            : {
 <span class="lineNum">     604 </span>            :     int rc;
 <span class="lineNum">     605 </span>            : 
-<span class="lineNum">     606 </span><span class="lineCov">        291 :     if ((rc = getnameinfo(sa, salen, host, hostlen, serv, </span>
+<span class="lineNum">     606 </span><span class="lineCov">        179 :     if ((rc = getnameinfo(sa, salen, host, hostlen, serv, </span>
 <span class="lineNum">     607 </span>            :                           servlen, flags)) != 0) 
 <span class="lineNum">     608 </span><span class="lineNoCov">          0 :         gai_error(rc, &quot;Getnameinfo error&quot;);</span>
-<a name="609"><span class="lineNum">     609 </span><span class="lineCov">        291 : }</span></a>
+<a name="609"><span class="lineNum">     609 </span><span class="lineCov">        179 : }</span></a>
 <span class="lineNum">     610 </span>            : 
 <span class="lineNum">     611 </span><span class="lineNoCov">          0 : void Freeaddrinfo(struct addrinfo *res)</span>
 <span class="lineNum">     612 </span>            : {
@@ -723,14 +723,14 @@
 <span class="lineNum">     661 </span>            :  * Wrappers for Pthreads thread control functions
 <a name="662"><span class="lineNum">     662 </span>            :  ************************************************/</a>
 <span class="lineNum">     663 </span>            : 
-<span class="lineNum">     664 </span><span class="lineCov">        294 : void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, </span>
+<span class="lineNum">     664 </span><span class="lineCov">        182 : void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, </span>
 <span class="lineNum">     665 </span>            :                     void * (*routine)(void *), void *argp) 
 <span class="lineNum">     666 </span>            : {
 <span class="lineNum">     667 </span>            :     int rc;
 <span class="lineNum">     668 </span>            : 
-<span class="lineNum">     669 </span><span class="lineCov">        294 :     if ((rc = pthread_create(tidp, attrp, routine, argp)) != 0)</span>
+<span class="lineNum">     669 </span><span class="lineCov">        182 :     if ((rc = pthread_create(tidp, attrp, routine, argp)) != 0)</span>
 <span class="lineNum">     670 </span><span class="lineNoCov">          0 :         posix_error(rc, &quot;Pthread_create error&quot;);</span>
-<a name="671"><span class="lineNum">     671 </span><span class="lineCov">        294 : }</span></a>
+<a name="671"><span class="lineNum">     671 </span><span class="lineCov">        182 : }</span></a>
 <span class="lineNum">     672 </span>            : 
 <span class="lineNum">     673 </span><span class="lineNoCov">          0 : void Pthread_cancel(pthread_t tid) {</span>
 <span class="lineNum">     674 </span>            :     int rc;
@@ -747,12 +747,12 @@
 <span class="lineNum">     685 </span><span class="lineNoCov">          0 : }</span>
 <a name="686"><span class="lineNum">     686 </span>            : </a>
 <span class="lineNum">     687 </span>            : /* $begin detach */
-<span class="lineNum">     688 </span><span class="lineCov">        294 : void Pthread_detach(pthread_t tid) {</span>
+<span class="lineNum">     688 </span><span class="lineCov">        182 : void Pthread_detach(pthread_t tid) {</span>
 <span class="lineNum">     689 </span>            :     int rc;
 <span class="lineNum">     690 </span>            : 
-<span class="lineNum">     691 </span><span class="lineCov">        294 :     if ((rc = pthread_detach(tid)) != 0)</span>
+<span class="lineNum">     691 </span><span class="lineCov">        182 :     if ((rc = pthread_detach(tid)) != 0)</span>
 <span class="lineNum">     692 </span><span class="lineNoCov">          0 :         posix_error(rc, &quot;Pthread_detach error&quot;);</span>
-<span class="lineNum">     693 </span><span class="lineCov">        294 : }</span>
+<span class="lineNum">     693 </span><span class="lineCov">        182 : }</span>
 <a name="694"><span class="lineNum">     694 </span>            : /* $end detach */</a>
 <span class="lineNum">     695 </span>            : 
 <span class="lineNum">     696 </span><span class="lineNoCov">          0 : void Pthread_exit(void *retval) {</span>
@@ -777,17 +777,17 @@
 <span class="lineNum">     715 </span><span class="lineNoCov">          0 :         unix_error(&quot;Sem_init error&quot;);</span>
 <a name="716"><span class="lineNum">     716 </span><span class="lineNoCov">          0 : }</span></a>
 <span class="lineNum">     717 </span>            : 
-<span class="lineNum">     718 </span><span class="lineCov">        313 : void P(sem_t *sem) </span>
+<span class="lineNum">     718 </span><span class="lineCov">        214 : void P(sem_t *sem) </span>
 <span class="lineNum">     719 </span>            : {
-<span class="lineNum">     720 </span><span class="lineCov">        313 :     if (sem_wait(sem) &lt; 0)</span>
+<span class="lineNum">     720 </span><span class="lineCov">        214 :     if (sem_wait(sem) &lt; 0)</span>
 <span class="lineNum">     721 </span><span class="lineNoCov">          0 :         unix_error(&quot;P error&quot;);</span>
-<a name="722"><span class="lineNum">     722 </span><span class="lineCov">        314 : }</span></a>
+<a name="722"><span class="lineNum">     722 </span><span class="lineCov">        214 : }</span></a>
 <span class="lineNum">     723 </span>            : 
-<span class="lineNum">     724 </span><span class="lineCov">        314 : void V(sem_t *sem) </span>
+<span class="lineNum">     724 </span><span class="lineCov">        214 : void V(sem_t *sem) </span>
 <span class="lineNum">     725 </span>            : {
-<span class="lineNum">     726 </span><span class="lineCov">        314 :     if (sem_post(sem) &lt; 0)</span>
+<span class="lineNum">     726 </span><span class="lineCov">        214 :     if (sem_post(sem) &lt; 0)</span>
 <span class="lineNum">     727 </span><span class="lineNoCov">          0 :         unix_error(&quot;V error&quot;);</span>
-<span class="lineNum">     728 </span><span class="lineCov">        314 : }</span>
+<span class="lineNum">     728 </span><span class="lineCov">        214 : }</span>
 <span class="lineNum">     729 </span>            : 
 <span class="lineNum">     730 </span>            : /****************************************
 <span class="lineNum">     731 </span>            :  * The Rio package - Robust I/O functions
@@ -823,23 +823,23 @@
 <span class="lineNum">     761 </span>            :  * rio_writen - Robustly write n bytes (unbuffered)
 <a name="762"><span class="lineNum">     762 </span>            :  */</a>
 <span class="lineNum">     763 </span>            : /* $begin rio_writen */
-<span class="lineNum">     764 </span><span class="lineCov">       1493 : ssize_t rio_writen(int fd, void *usrbuf, size_t n) </span>
+<span class="lineNum">     764 </span><span class="lineCov">       1100 : ssize_t rio_writen(int fd, void *usrbuf, size_t n) </span>
 <span class="lineNum">     765 </span>            : {
-<span class="lineNum">     766 </span><span class="lineCov">       1493 :     size_t nleft = n;</span>
+<span class="lineNum">     766 </span><span class="lineCov">       1100 :     size_t nleft = n;</span>
 <span class="lineNum">     767 </span>            :     ssize_t nwritten;
-<span class="lineNum">     768 </span><span class="lineCov">       1493 :     char *bufp = usrbuf;</span>
+<span class="lineNum">     768 </span><span class="lineCov">       1100 :     char *bufp = usrbuf;</span>
 <span class="lineNum">     769 </span>            : 
-<span class="lineNum">     770 </span><span class="lineCov">       4325 :     while (nleft &gt; 0) {</span>
-<span class="lineNum">     771 </span><span class="lineCov">       1493 :         if ((nwritten = write(fd, bufp, nleft)) &lt;= 0) {</span>
-<span class="lineNum">     772 </span><span class="lineCov">        153 :             if (errno == EINTR)  /* Interrupted by sig handler return */</span>
+<span class="lineNum">     770 </span><span class="lineCov">       3268 :     while (nleft &gt; 0) {</span>
+<span class="lineNum">     771 </span><span class="lineCov">       1100 :         if ((nwritten = write(fd, bufp, nleft)) &lt;= 0) {</span>
+<span class="lineNum">     772 </span><span class="lineCov">         32 :             if (errno == EINTR)  /* Interrupted by sig handler return */</span>
 <span class="lineNum">     773 </span><span class="lineNoCov">          0 :                 nwritten = 0;    /* and call write() again */</span>
 <span class="lineNum">     774 </span>            :             else
-<span class="lineNum">     775 </span><span class="lineCov">        153 :                 return -1;       /* errno set by write() */</span>
+<span class="lineNum">     775 </span><span class="lineCov">         32 :                 return -1;       /* errno set by write() */</span>
 <span class="lineNum">     776 </span>            :         }
-<span class="lineNum">     777 </span><span class="lineCov">       1339 :         nleft -= nwritten;</span>
-<span class="lineNum">     778 </span><span class="lineCov">       1339 :         bufp += nwritten;</span>
+<span class="lineNum">     777 </span><span class="lineCov">       1068 :         nleft -= nwritten;</span>
+<span class="lineNum">     778 </span><span class="lineCov">       1068 :         bufp += nwritten;</span>
 <span class="lineNum">     779 </span>            :     }
-<span class="lineNum">     780 </span><span class="lineCov">       1339 :     return n;</span>
+<span class="lineNum">     780 </span><span class="lineCov">       1068 :     return n;</span>
 <span class="lineNum">     781 </span>            : }
 <span class="lineNum">     782 </span>            : /* $end rio_writen */
 <span class="lineNum">     783 </span>            : 
@@ -853,31 +853,31 @@
 <span class="lineNum">     791 </span>            :  *    read() if the internal buffer is empty.
 <a name="792"><span class="lineNum">     792 </span>            :  */</a>
 <span class="lineNum">     793 </span>            : /* $begin rio_read */
-<span class="lineNum">     794 </span><span class="lineCov">      37233 : static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n)</span>
+<span class="lineNum">     794 </span><span class="lineCov">      27552 : static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n)</span>
 <span class="lineNum">     795 </span>            : {
 <span class="lineNum">     796 </span>            :     int cnt;
 <span class="lineNum">     797 </span>            : 
-<span class="lineNum">     798 </span><span class="lineCov">      75796 :     while (rp-&gt;rio_cnt &lt;= 0) {  /* Refill if buf is empty */</span>
-<span class="lineNum">     799 </span><span class="lineCov">       1456 :         rp-&gt;rio_cnt = read(rp-&gt;rio_fd, rp-&gt;rio_buf, </span>
+<span class="lineNum">     798 </span><span class="lineCov">      56138 :     while (rp-&gt;rio_cnt &lt;= 0) {  /* Refill if buf is empty */</span>
+<span class="lineNum">     799 </span><span class="lineCov">       1134 :         rp-&gt;rio_cnt = read(rp-&gt;rio_fd, rp-&gt;rio_buf, </span>
 <span class="lineNum">     800 </span>            :                            sizeof(rp-&gt;rio_buf));
-<span class="lineNum">     801 </span><span class="lineCov">       1455 :         if (rp-&gt;rio_cnt &lt; 0) {</span>
+<span class="lineNum">     801 </span><span class="lineCov">       1133 :         if (rp-&gt;rio_cnt &lt; 0) {</span>
 <span class="lineNum">     802 </span><span class="lineNoCov">          0 :             if (errno != EINTR) /* Interrupted by sig handler return */</span>
 <span class="lineNum">     803 </span><span class="lineNoCov">          0 :                 return -1;</span>
 <span class="lineNum">     804 </span>            :         }
-<span class="lineNum">     805 </span><span class="lineCov">       1455 :         else if (rp-&gt;rio_cnt == 0)  /* EOF */</span>
-<span class="lineNum">     806 </span><span class="lineCov">        125 :             return 0;</span>
+<span class="lineNum">     805 </span><span class="lineCov">       1133 :         else if (rp-&gt;rio_cnt == 0)  /* EOF */</span>
+<span class="lineNum">     806 </span><span class="lineCov">         99 :             return 0;</span>
 <span class="lineNum">     807 </span>            :         else 
-<span class="lineNum">     808 </span><span class="lineCov">       1330 :             rp-&gt;rio_bufptr = rp-&gt;rio_buf; /* Reset buffer ptr */</span>
+<span class="lineNum">     808 </span><span class="lineCov">       1034 :             rp-&gt;rio_bufptr = rp-&gt;rio_buf; /* Reset buffer ptr */</span>
 <span class="lineNum">     809 </span>            :     }
 <span class="lineNum">     810 </span>            : 
 <span class="lineNum">     811 </span>            :     /* Copy min(n, rp-&gt;rio_cnt) bytes from internal buf to user buf */
-<span class="lineNum">     812 </span><span class="lineCov">      37107 :     cnt = n;          </span>
-<span class="lineNum">     813 </span><span class="lineCov">      37107 :     if (rp-&gt;rio_cnt &lt; n)   </span>
-<span class="lineNum">     814 </span><span class="lineCov">       1019 :         cnt = rp-&gt;rio_cnt;</span>
-<span class="lineNum">     815 </span><span class="lineCov">      37107 :     memcpy(usrbuf, rp-&gt;rio_bufptr, cnt);</span>
-<span class="lineNum">     816 </span><span class="lineCov">      37107 :     rp-&gt;rio_bufptr += cnt;</span>
-<span class="lineNum">     817 </span><span class="lineCov">      37107 :     rp-&gt;rio_cnt -= cnt;</span>
-<span class="lineNum">     818 </span><span class="lineCov">      37107 :     return cnt;</span>
+<span class="lineNum">     812 </span><span class="lineCov">      27452 :     cnt = n;          </span>
+<span class="lineNum">     813 </span><span class="lineCov">      27452 :     if (rp-&gt;rio_cnt &lt; n)   </span>
+<span class="lineNum">     814 </span><span class="lineCov">        835 :         cnt = rp-&gt;rio_cnt;</span>
+<span class="lineNum">     815 </span><span class="lineCov">      27452 :     memcpy(usrbuf, rp-&gt;rio_bufptr, cnt);</span>
+<span class="lineNum">     816 </span><span class="lineCov">      27452 :     rp-&gt;rio_bufptr += cnt;</span>
+<span class="lineNum">     817 </span><span class="lineCov">      27452 :     rp-&gt;rio_cnt -= cnt;</span>
+<span class="lineNum">     818 </span><span class="lineCov">      27452 :     return cnt;</span>
 <span class="lineNum">     819 </span>            : }
 <span class="lineNum">     820 </span>            : /* $end rio_read */
 <span class="lineNum">     821 </span>            : 
@@ -885,33 +885,33 @@
 <span class="lineNum">     823 </span>            :  * rio_readinitb - Associate a descriptor with a read buffer and reset buffer
 <a name="824"><span class="lineNum">     824 </span>            :  */</a>
 <span class="lineNum">     825 </span>            : /* $begin rio_readinitb */
-<span class="lineNum">     826 </span><span class="lineCov">        354 : void rio_readinitb(rio_t *rp, int fd) </span>
+<span class="lineNum">     826 </span><span class="lineCov">        229 : void rio_readinitb(rio_t *rp, int fd) </span>
 <span class="lineNum">     827 </span>            : {
-<span class="lineNum">     828 </span><span class="lineCov">        354 :     rp-&gt;rio_fd = fd;  </span>
-<span class="lineNum">     829 </span><span class="lineCov">        354 :     rp-&gt;rio_cnt = 0;  </span>
-<span class="lineNum">     830 </span><span class="lineCov">        354 :     rp-&gt;rio_bufptr = rp-&gt;rio_buf;</span>
-<span class="lineNum">     831 </span><span class="lineCov">        354 : }</span>
+<span class="lineNum">     828 </span><span class="lineCov">        229 :     rp-&gt;rio_fd = fd;  </span>
+<span class="lineNum">     829 </span><span class="lineCov">        229 :     rp-&gt;rio_cnt = 0;  </span>
+<span class="lineNum">     830 </span><span class="lineCov">        229 :     rp-&gt;rio_bufptr = rp-&gt;rio_buf;</span>
+<span class="lineNum">     831 </span><span class="lineCov">        229 : }</span>
 <span class="lineNum">     832 </span>            : /* $end rio_readinitb */
 <span class="lineNum">     833 </span>            : 
 <span class="lineNum">     834 </span>            : /*
 <span class="lineNum">     835 </span>            :  * rio_readnb - Robustly read n bytes (buffered)
 <a name="836"><span class="lineNum">     836 </span>            :  */</a>
 <span class="lineNum">     837 </span>            : /* $begin rio_readnb */
-<span class="lineNum">     838 </span><span class="lineCov">        264 : ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n) </span>
+<span class="lineNum">     838 </span><span class="lineCov">        222 : ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n) </span>
 <span class="lineNum">     839 </span>            : {
-<span class="lineNum">     840 </span><span class="lineCov">        264 :     size_t nleft = n;</span>
+<span class="lineNum">     840 </span><span class="lineCov">        222 :     size_t nleft = n;</span>
 <span class="lineNum">     841 </span>            :     ssize_t nread;
-<span class="lineNum">     842 </span><span class="lineCov">        264 :     char *bufp = usrbuf;</span>
+<span class="lineNum">     842 </span><span class="lineCov">        222 :     char *bufp = usrbuf;</span>
 <span class="lineNum">     843 </span>            :     
-<span class="lineNum">     844 </span><span class="lineCov">       1685 :     while (nleft &gt; 0) {</span>
-<span class="lineNum">     845 </span><span class="lineCov">       1283 :         if ((nread = rio_read(rp, bufp, nleft)) &lt; 0) </span>
+<span class="lineNum">     844 </span><span class="lineCov">       1402 :     while (nleft &gt; 0) {</span>
+<span class="lineNum">     845 </span><span class="lineCov">       1057 :         if ((nread = rio_read(rp, bufp, nleft)) &lt; 0) </span>
 <span class="lineNum">     846 </span><span class="lineNoCov">          0 :             return -1;          /* errno set by read() */ </span>
-<span class="lineNum">     847 </span><span class="lineCov">       1281 :         else if (nread == 0)</span>
-<span class="lineNum">     848 </span><span class="lineCov">        124 :             break;              /* EOF */</span>
-<span class="lineNum">     849 </span><span class="lineCov">       1157 :         nleft -= nread;</span>
-<span class="lineNum">     850 </span><span class="lineCov">       1157 :         bufp += nread;</span>
+<span class="lineNum">     847 </span><span class="lineCov">       1057 :         else if (nread == 0)</span>
+<span class="lineNum">     848 </span><span class="lineCov">         99 :             break;              /* EOF */</span>
+<span class="lineNum">     849 </span><span class="lineCov">        958 :         nleft -= nread;</span>
+<span class="lineNum">     850 </span><span class="lineCov">        958 :         bufp += nread;</span>
 <span class="lineNum">     851 </span>            :     }
-<span class="lineNum">     852 </span><span class="lineCov">        262 :     return (n - nleft);         /* return &gt;= 0 */</span>
+<span class="lineNum">     852 </span><span class="lineCov">        222 :     return (n - nleft);         /* return &gt;= 0 */</span>
 <span class="lineNum">     853 </span>            : }
 <span class="lineNum">     854 </span>            : /* $end rio_readnb */
 <span class="lineNum">     855 </span>            : 
@@ -919,17 +919,17 @@
 <span class="lineNum">     857 </span>            :  * rio_readlineb - Robustly read a text line (buffered)
 <a name="858"><span class="lineNum">     858 </span>            :  */</a>
 <span class="lineNum">     859 </span>            : /* $begin rio_readlineb */
-<span class="lineNum">     860 </span><span class="lineCov">        913 : ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) </span>
+<span class="lineNum">     860 </span><span class="lineCov">        695 : ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) </span>
 <span class="lineNum">     861 </span>            : {
 <span class="lineNum">     862 </span>            :     int n, rc;
-<span class="lineNum">     863 </span><span class="lineCov">        913 :     char c, *bufp = usrbuf;</span>
+<span class="lineNum">     863 </span><span class="lineCov">        695 :     char c, *bufp = usrbuf;</span>
 <span class="lineNum">     864 </span>            : 
-<span class="lineNum">     865 </span><span class="lineCov">      35949 :     for (n = 1; n &lt; maxlen; n++) { </span>
-<span class="lineNum">     866 </span><span class="lineCov">      35949 :         if ((rc = rio_read(rp, &amp;c, 1)) == 1) {</span>
-<span class="lineNum">     867 </span><span class="lineCov">      35950 :             *bufp++ = c;</span>
-<span class="lineNum">     868 </span><span class="lineCov">      35950 :             if (c == '\n') {</span>
-<span class="lineNum">     869 </span><span class="lineCov">        914 :                 n++;</span>
-<span class="lineNum">     870 </span><span class="lineCov">        914 :                 break;</span>
+<span class="lineNum">     865 </span><span class="lineCov">      26493 :     for (n = 1; n &lt; maxlen; n++) { </span>
+<span class="lineNum">     866 </span><span class="lineCov">      26493 :         if ((rc = rio_read(rp, &amp;c, 1)) == 1) {</span>
+<span class="lineNum">     867 </span><span class="lineCov">      26493 :             *bufp++ = c;</span>
+<span class="lineNum">     868 </span><span class="lineCov">      26493 :             if (c == '\n') {</span>
+<span class="lineNum">     869 </span><span class="lineCov">        695 :                 n++;</span>
+<span class="lineNum">     870 </span><span class="lineCov">        695 :                 break;</span>
 <span class="lineNum">     871 </span>            :             }
 <span class="lineNum">     872 </span><span class="lineNoCov">          0 :         } else if (rc == 0) {</span>
 <span class="lineNum">     873 </span><span class="lineNoCov">          0 :             if (n == 1)</span>
@@ -939,8 +939,8 @@
 <span class="lineNum">     877 </span>            :         } else
 <span class="lineNum">     878 </span><span class="lineNoCov">          0 :             return -1;    /* Error */</span>
 <span class="lineNum">     879 </span>            :     }
-<span class="lineNum">     880 </span><span class="lineCov">        914 :     *bufp = 0;</span>
-<span class="lineNum">     881 </span><span class="lineCov">        914 :     return n-1;</span>
+<span class="lineNum">     880 </span><span class="lineCov">        695 :     *bufp = 0;</span>
+<span class="lineNum">     881 </span><span class="lineCov">        695 :     return n-1;</span>
 <span class="lineNum">     882 </span>            : }
 <span class="lineNum">     883 </span>            : /* $end rio_readlineb */
 <span class="lineNum">     884 </span>            : 
@@ -961,47 +961,47 @@
 <span class="lineNum">     899 </span><span class="lineNoCov">          0 :     return n;</span>
 <a name="900"><span class="lineNum">     900 </span>            : }</a>
 <span class="lineNum">     901 </span>            : 
-<span class="lineNum">     902 </span><span class="lineCov">       1493 : void Rio_writen(int fd, void *usrbuf, size_t n) </span>
+<span class="lineNum">     902 </span><span class="lineCov">       1100 : void Rio_writen(int fd, void *usrbuf, size_t n) </span>
 <span class="lineNum">     903 </span>            : {
 <span class="lineNum">     904 </span>            : 
-<span class="lineNum">     905 </span><span class="lineCov">       1493 :   if (rio_writen(fd, usrbuf, n) != n) {</span>
-<span class="lineNum">     906 </span><span class="lineCov">        153 :     if (strcmp(strerror(errno), &quot;Broken pipe&quot;) &amp;&amp;</span>
+<span class="lineNum">     905 </span><span class="lineCov">       1100 :   if (rio_writen(fd, usrbuf, n) != n) {</span>
+<span class="lineNum">     906 </span><span class="lineCov">         32 :     if (strcmp(strerror(errno), &quot;Broken pipe&quot;) &amp;&amp;</span>
 <span class="lineNum">     907 </span><span class="lineNoCov">          0 :         (strcmp(strerror(errno), &quot;Connection refused&quot;)))</span>
 <span class="lineNum">     908 </span><span class="lineNoCov">          0 :         unix_error(&quot;Rio_writen error&quot;);</span>
 <span class="lineNum">     909 </span>            :   }
-<a name="910"><span class="lineNum">     910 </span><span class="lineCov">       1492 : }</span></a>
+<a name="910"><span class="lineNum">     910 </span><span class="lineCov">       1100 : }</span></a>
 <span class="lineNum">     911 </span>            : 
-<span class="lineNum">     912 </span><span class="lineCov">        354 : void Rio_readinitb(rio_t *rp, int fd)</span>
+<span class="lineNum">     912 </span><span class="lineCov">        229 : void Rio_readinitb(rio_t *rp, int fd)</span>
 <span class="lineNum">     913 </span>            : {
-<span class="lineNum">     914 </span><span class="lineCov">        354 :     rio_readinitb(rp, fd);</span>
-<a name="915"><span class="lineNum">     915 </span><span class="lineCov">        354 : } </span></a>
+<span class="lineNum">     914 </span><span class="lineCov">        229 :     rio_readinitb(rp, fd);</span>
+<a name="915"><span class="lineNum">     915 </span><span class="lineCov">        229 : } </span></a>
 <span class="lineNum">     916 </span>            : 
-<span class="lineNum">     917 </span><span class="lineCov">        264 : ssize_t Rio_readnb(rio_t *rp, void *usrbuf, size_t n) </span>
+<span class="lineNum">     917 </span><span class="lineCov">        222 : ssize_t Rio_readnb(rio_t *rp, void *usrbuf, size_t n) </span>
 <span class="lineNum">     918 </span>            : {
 <span class="lineNum">     919 </span>            :     ssize_t rc;
 <span class="lineNum">     920 </span>            : 
-<span class="lineNum">     921 </span><span class="lineCov">        264 :     if ((rc = rio_readnb(rp, usrbuf, n)) &lt; 0) {</span>
+<span class="lineNum">     921 </span><span class="lineCov">        222 :     if ((rc = rio_readnb(rp, usrbuf, n)) &lt; 0) {</span>
 <span class="lineNum">     922 </span><span class="lineNoCov">          0 :       if (errno == ECONNRESET) {</span>
 <span class="lineNum">     923 </span><span class="lineNoCov">          0 :         return 0;</span>
 <span class="lineNum">     924 </span>            :       }
 <span class="lineNum">     925 </span><span class="lineNoCov">          0 :       unix_error(&quot;Rio_readnb error&quot;);</span>
 <span class="lineNum">     926 </span>            :     }
 <span class="lineNum">     927 </span>            :       
-<span class="lineNum">     928 </span><span class="lineCov">        262 :     return rc;</span>
+<span class="lineNum">     928 </span><span class="lineCov">        222 :     return rc;</span>
 <a name="929"><span class="lineNum">     929 </span>            : }</a>
 <span class="lineNum">     930 </span>            : 
-<span class="lineNum">     931 </span><span class="lineCov">        914 : ssize_t Rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) </span>
+<span class="lineNum">     931 </span><span class="lineCov">        695 : ssize_t Rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) </span>
 <span class="lineNum">     932 </span>            : {
 <span class="lineNum">     933 </span>            :     ssize_t rc;
 <span class="lineNum">     934 </span>            :     
-<span class="lineNum">     935 </span><span class="lineCov">        914 :     if ((rc = rio_readlineb(rp, usrbuf, maxlen)) &lt; 0) {</span>
+<span class="lineNum">     935 </span><span class="lineCov">        695 :     if ((rc = rio_readlineb(rp, usrbuf, maxlen)) &lt; 0) {</span>
 <span class="lineNum">     936 </span><span class="lineNoCov">          0 :       if (errno == ECONNRESET) {</span>
 <span class="lineNum">     937 </span><span class="lineNoCov">          0 :         return 0;</span>
 <span class="lineNum">     938 </span>            :       }
 <span class="lineNum">     939 </span><span class="lineNoCov">          0 :       unix_error(&quot;Rio_readlineb error&quot;);</span>
 <span class="lineNum">     940 </span>            :     }
 <span class="lineNum">     941 </span>            : 
-<span class="lineNum">     942 </span><span class="lineCov">        914 :     return rc;</span>
+<span class="lineNum">     942 </span><span class="lineCov">        695 :     return rc;</span>
 <span class="lineNum">     943 </span>            : } 
 <span class="lineNum">     944 </span>            : 
 <span class="lineNum">     945 </span>            : /******************************** 
@@ -1017,29 +1017,29 @@
 <span class="lineNum">     955 </span>            :  *       -1 with errno set for other errors.
 <a name="956"><span class="lineNum">     956 </span>            :  */</a>
 <span class="lineNum">     957 </span>            : /* $begin open_clientfd */
-<span class="lineNum">     958 </span><span class="lineCov">         63 : int open_clientfd(char *hostname, char *port) {</span>
+<span class="lineNum">     958 </span><span class="lineCov">         50 : int open_clientfd(char *hostname, char *port) {</span>
 <span class="lineNum">     959 </span>            :     int clientfd, rc;
 <span class="lineNum">     960 </span>            :     struct addrinfo hints, *listp, *p;
 <span class="lineNum">     961 </span>            : 
 <span class="lineNum">     962 </span>            :     /* Get a list of potential server addresses */
-<span class="lineNum">     963 </span><span class="lineCov">         63 :     memset(&amp;hints, 0, sizeof(struct addrinfo));</span>
-<span class="lineNum">     964 </span><span class="lineCov">         63 :     hints.ai_socktype = SOCK_STREAM;  /* Open a connection */</span>
-<span class="lineNum">     965 </span><span class="lineCov">         63 :     hints.ai_flags = AI_NUMERICSERV;  /* ... using a numeric port arg. */</span>
-<span class="lineNum">     966 </span><span class="lineCov">         63 :     hints.ai_flags |= AI_ADDRCONFIG;  /* Recommended for connections */</span>
-<span class="lineNum">     967 </span><span class="lineCov">         63 :     if ((rc = getaddrinfo(hostname, port, &amp;hints, &amp;listp)) != 0) {</span>
+<span class="lineNum">     963 </span><span class="lineCov">         50 :     memset(&amp;hints, 0, sizeof(struct addrinfo));</span>
+<span class="lineNum">     964 </span><span class="lineCov">         50 :     hints.ai_socktype = SOCK_STREAM;  /* Open a connection */</span>
+<span class="lineNum">     965 </span><span class="lineCov">         50 :     hints.ai_flags = AI_NUMERICSERV;  /* ... using a numeric port arg. */</span>
+<span class="lineNum">     966 </span><span class="lineCov">         50 :     hints.ai_flags |= AI_ADDRCONFIG;  /* Recommended for connections */</span>
+<span class="lineNum">     967 </span><span class="lineCov">         50 :     if ((rc = getaddrinfo(hostname, port, &amp;hints, &amp;listp)) != 0) {</span>
 <span class="lineNum">     968 </span><span class="lineNoCov">          0 :         fprintf(stderr, &quot;getaddrinfo failed (%s:%s): %s\n&quot;, hostname, port, gai_strerror(rc));</span>
 <span class="lineNum">     969 </span><span class="lineNoCov">          0 :         return -2;</span>
 <span class="lineNum">     970 </span>            :     }
 <span class="lineNum">     971 </span>            :   
 <span class="lineNum">     972 </span>            :     /* Walk the list for one that we can successfully connect to */
-<span class="lineNum">     973 </span><span class="lineCov">         63 :     for (p = listp; p; p = p-&gt;ai_next) {</span>
+<span class="lineNum">     973 </span><span class="lineCov">         50 :     for (p = listp; p; p = p-&gt;ai_next) {</span>
 <span class="lineNum">     974 </span>            :         /* Create a socket descriptor */
-<span class="lineNum">     975 </span><span class="lineCov">         63 :         if ((clientfd = socket(p-&gt;ai_family, p-&gt;ai_socktype, p-&gt;ai_protocol)) &lt; 0) </span>
+<span class="lineNum">     975 </span><span class="lineCov">         50 :         if ((clientfd = socket(p-&gt;ai_family, p-&gt;ai_socktype, p-&gt;ai_protocol)) &lt; 0) </span>
 <span class="lineNum">     976 </span><span class="lineNoCov">          0 :             continue; /* Socket failed, try the next */</span>
 <span class="lineNum">     977 </span>            : 
 <span class="lineNum">     978 </span>            :         /* Connect to the server */
-<span class="lineNum">     979 </span><span class="lineCov">         63 :         if (connect(clientfd, p-&gt;ai_addr, p-&gt;ai_addrlen) != -1) </span>
-<span class="lineNum">     980 </span><span class="lineCov">         63 :             break; /* Success */</span>
+<span class="lineNum">     979 </span><span class="lineCov">         50 :         if (connect(clientfd, p-&gt;ai_addr, p-&gt;ai_addrlen) != -1) </span>
+<span class="lineNum">     980 </span><span class="lineCov">         50 :             break; /* Success */</span>
 <span class="lineNum">     981 </span><span class="lineNoCov">          0 :         if (close(clientfd) &lt; 0) { /* Connect failed, try another */  //line:netp:openclientfd:closefd</span>
 <span class="lineNum">     982 </span><span class="lineNoCov">          0 :             fprintf(stderr, &quot;open_clientfd: close failed: %s\n&quot;, strerror(errno));</span>
 <span class="lineNum">     983 </span><span class="lineNoCov">          0 :             return -1;</span>
@@ -1047,11 +1047,11 @@
 <span class="lineNum">     985 </span>            :     } 
 <span class="lineNum">     986 </span>            : 
 <span class="lineNum">     987 </span>            :     /* Clean up */
-<span class="lineNum">     988 </span><span class="lineCov">         63 :     freeaddrinfo(listp);</span>
-<span class="lineNum">     989 </span><span class="lineCov">         63 :     if (!p) /* All connects failed */</span>
+<span class="lineNum">     988 </span><span class="lineCov">         50 :     freeaddrinfo(listp);</span>
+<span class="lineNum">     989 </span><span class="lineCov">         50 :     if (!p) /* All connects failed */</span>
 <span class="lineNum">     990 </span><span class="lineNoCov">          0 :         return -1;</span>
 <span class="lineNum">     991 </span>            :     else    /* The last connect succeeded */
-<span class="lineNum">     992 </span><span class="lineCov">         63 :         return clientfd;</span>
+<span class="lineNum">     992 </span><span class="lineCov">         50 :         return clientfd;</span>
 <span class="lineNum">     993 </span>            : }
 <span class="lineNum">     994 </span>            : /* $end open_clientfd */
 <span class="lineNum">     995 </span>            : 

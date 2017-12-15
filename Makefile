@@ -4,13 +4,13 @@ AR = ar
 CC = gcc
 
 # flags for cc/ld/etc.
-CFLAGS += -g -Wall -I. -I.. -O0 -fprofile-arcs -ftest-coverage -pg
+CFLAGS += -g -Wall -I. -I./includes/ -O0 -fprofile-arcs -ftest-coverage -pg
 LDFLAGS += -lpthread -L. 
 ARFLAGS = rcs
 
 # define common dependencies
 OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
-HEADERS = LinkedList.h http.h csapp.h cache.h
+HEADERS = #LinkedList.h http.h csapp.h cache.h
 
 all: clean proxy
 
