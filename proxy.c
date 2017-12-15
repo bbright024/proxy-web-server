@@ -14,11 +14,15 @@
 
 /* TODO:  
  *  - fix the dangling \r\n in type in http
- *  - add support for POST
+ *  - add support for POST and HEAD
  *  - fix the size_t size thing for objects
  *  - write test code to find the free bug
  *  - change the linked list to a hash bucket chain
+ *  - modify code a bit to be able to run AFL 
+ *  - add a log, this stuff is getting messy
+ *  - have master dispatcher fork log & proxy & kb input
  */
+
 #include <sys/select.h>
 #include <stdio.h>
 #include <includes/csapp.h>
