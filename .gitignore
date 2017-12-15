@@ -1,6 +1,8 @@
 # Unique to proxy #
 ###################
 oldcode.c
+.proxy
+.noproxy
 
 # Compiled source #
 ###################
@@ -10,13 +12,13 @@ oldcode.c
 *.exe
 *.o
 *.so
-*.gcno
-*.gcov
-*.gcda
 
 # Test Data #
 #############
-
+*.info
+*.gcno
+*.gcov
+*.gcda
 
 # Packages #
 ############
