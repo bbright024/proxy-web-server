@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-14 18:35:43</td>
+            <td class="headerValue">2017-12-14 18:42:04</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">7</td>
@@ -413,14 +413,14 @@
 <span class="lineNum">     351 </span><span class="lineNoCov">          0 :         unix_error(&quot;Close error&quot;);</span>
 <a name="352"><span class="lineNum">     352 </span><span class="lineNoCov">          0 : }</span></a>
 <span class="lineNum">     353 </span>            : 
-<span class="lineNum">     354 </span><span class="lineCov">          4 : int Select(int  n, fd_set *readfds, fd_set *writefds,</span>
+<span class="lineNum">     354 </span><span class="lineCov">          3 : int Select(int  n, fd_set *readfds, fd_set *writefds,</span>
 <span class="lineNum">     355 </span>            :            fd_set *exceptfds, struct timeval *timeout) 
 <span class="lineNum">     356 </span>            : {
 <span class="lineNum">     357 </span>            :     int rc;
 <span class="lineNum">     358 </span>            : 
-<span class="lineNum">     359 </span><span class="lineCov">          4 :     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) &lt; 0)</span>
+<span class="lineNum">     359 </span><span class="lineCov">          3 :     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) &lt; 0)</span>
 <span class="lineNum">     360 </span><span class="lineNoCov">          0 :         unix_error(&quot;Select error&quot;);</span>
-<span class="lineNum">     361 </span><span class="lineCov">          4 :     return rc;</span>
+<span class="lineNum">     361 </span><span class="lineCov">          3 :     return rc;</span>
 <a name="362"><span class="lineNum">     362 </span>            : }</a>
 <span class="lineNum">     363 </span>            : 
 <span class="lineNum">     364 </span><span class="lineNoCov">          0 : int Dup2(int fd1, int fd2) </span>
@@ -550,14 +550,14 @@
 <span class="lineNum">     488 </span><span class="lineNoCov">          0 :     return fp;</span>
 <a name="489"><span class="lineNum">     489 </span>            : }</a>
 <span class="lineNum">     490 </span>            : 
-<span class="lineNum">     491 </span><span class="lineCov">          4 : char *Fgets(char *ptr, int n, FILE *stream) </span>
+<span class="lineNum">     491 </span><span class="lineCov">          3 : char *Fgets(char *ptr, int n, FILE *stream) </span>
 <span class="lineNum">     492 </span>            : {
 <span class="lineNum">     493 </span>            :     char *rptr;
 <span class="lineNum">     494 </span>            : 
-<span class="lineNum">     495 </span><span class="lineCov">          4 :     if (((rptr = fgets(ptr, n, stream)) == NULL) &amp;&amp; ferror(stream))</span>
+<span class="lineNum">     495 </span><span class="lineCov">          3 :     if (((rptr = fgets(ptr, n, stream)) == NULL) &amp;&amp; ferror(stream))</span>
 <span class="lineNum">     496 </span><span class="lineNoCov">          0 :         app_error(&quot;Fgets error&quot;);</span>
 <span class="lineNum">     497 </span>            : 
-<span class="lineNum">     498 </span><span class="lineCov">          4 :     return rptr;</span>
+<span class="lineNum">     498 </span><span class="lineCov">          3 :     return rptr;</span>
 <a name="499"><span class="lineNum">     499 </span>            : }</a>
 <span class="lineNum">     500 </span>            : 
 <span class="lineNum">     501 </span><span class="lineNoCov">          0 : FILE *Fopen(const char *filename, const char *mode) </span>
@@ -723,14 +723,14 @@
 <span class="lineNum">     661 </span>            :  * Wrappers for Pthreads thread control functions
 <a name="662"><span class="lineNum">     662 </span>            :  ************************************************/</a>
 <span class="lineNum">     663 </span>            : 
-<span class="lineNum">     664 </span><span class="lineCov">          4 : void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, </span>
+<span class="lineNum">     664 </span><span class="lineCov">          3 : void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, </span>
 <span class="lineNum">     665 </span>            :                     void * (*routine)(void *), void *argp) 
 <span class="lineNum">     666 </span>            : {
 <span class="lineNum">     667 </span>            :     int rc;
 <span class="lineNum">     668 </span>            : 
-<span class="lineNum">     669 </span><span class="lineCov">          4 :     if ((rc = pthread_create(tidp, attrp, routine, argp)) != 0)</span>
+<span class="lineNum">     669 </span><span class="lineCov">          3 :     if ((rc = pthread_create(tidp, attrp, routine, argp)) != 0)</span>
 <span class="lineNum">     670 </span><span class="lineNoCov">          0 :         posix_error(rc, &quot;Pthread_create error&quot;);</span>
-<a name="671"><span class="lineNum">     671 </span><span class="lineCov">          4 : }</span></a>
+<a name="671"><span class="lineNum">     671 </span><span class="lineCov">          3 : }</span></a>
 <span class="lineNum">     672 </span>            : 
 <span class="lineNum">     673 </span><span class="lineNoCov">          0 : void Pthread_cancel(pthread_t tid) {</span>
 <span class="lineNum">     674 </span>            :     int rc;
@@ -747,12 +747,12 @@
 <span class="lineNum">     685 </span><span class="lineNoCov">          0 : }</span>
 <a name="686"><span class="lineNum">     686 </span>            : </a>
 <span class="lineNum">     687 </span>            : /* $begin detach */
-<span class="lineNum">     688 </span><span class="lineCov">          4 : void Pthread_detach(pthread_t tid) {</span>
+<span class="lineNum">     688 </span><span class="lineCov">          3 : void Pthread_detach(pthread_t tid) {</span>
 <span class="lineNum">     689 </span>            :     int rc;
 <span class="lineNum">     690 </span>            : 
-<span class="lineNum">     691 </span><span class="lineCov">          4 :     if ((rc = pthread_detach(tid)) != 0)</span>
+<span class="lineNum">     691 </span><span class="lineCov">          3 :     if ((rc = pthread_detach(tid)) != 0)</span>
 <span class="lineNum">     692 </span><span class="lineNoCov">          0 :         posix_error(rc, &quot;Pthread_detach error&quot;);</span>
-<span class="lineNum">     693 </span><span class="lineCov">          4 : }</span>
+<span class="lineNum">     693 </span><span class="lineCov">          3 : }</span>
 <a name="694"><span class="lineNum">     694 </span>            : /* $end detach */</a>
 <span class="lineNum">     695 </span>            : 
 <span class="lineNum">     696 </span><span class="lineNoCov">          0 : void Pthread_exit(void *retval) {</span>

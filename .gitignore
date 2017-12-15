@@ -10,6 +10,13 @@ oldcode.c
 *.exe
 *.o
 *.so
+*.gcno
+*.gcov
+*.gcda
+
+# Test Data #
+#############
+
 
 # Packages #
 ############
