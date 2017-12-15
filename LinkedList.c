@@ -39,6 +39,9 @@ void FreeLinkedList(LinkedList list,
 			curr_node = curr_node->next;
 			payload_free_function(prev_node->payload);
 			free(prev_node);
+			if (curr_node)
+			  curr_node->prev = NULL;
+			list->head = curr_node;
 		}
 
 	free(list);

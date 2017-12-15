@@ -12,6 +12,13 @@
  * 
 */
 
+/* TODO:  
+ *  - fix the dangling \r\n in type in http
+ *  - add support for POST
+ *  - fix the size_t size thing for objects
+ *  - write test code to find the free bug
+ *  - change the linked list to a hash bucket chain
+ */
 #include <sys/select.h>
 #include <stdio.h>
 #include "csapp.h"
@@ -32,6 +39,7 @@
 
 /* Global static variables */
 static char *proxy_port;
+static int run = 1; 		/* while true, server keeps looping */
 
 /* Function definitions */
 static void run_proxy();
@@ -67,13 +75,18 @@ int main(int argc, char *argv[])
 
   Signal(SIGPIPE, SIG_IGN); //ignores any sigpipe errors
   
-  cache_init();
+  if (cache_init() < 0) {
+    fprintf(stderr, "out of men");
+    exit(0);
+  }
+    
   run_proxy();
   
   // should never get here, but if it does, clean stuff
   cache_free_all();
   fprintf(stderr, "server terminated\n");
-  return 0;
+   pthread_exit(0);
+   // return 0;
 }
 
 /* set up listening socket and call doit 
@@ -94,8 +107,8 @@ static void run_proxy()
   FD_ZERO(&read_set);
   FD_SET(STDIN_FILENO, &read_set);
   FD_SET(listenfd, &read_set);
-  
-  while (1) {
+
+  while (run) {
     ready_set = read_set;
     Select(listenfd+1, &ready_set, NULL, NULL, NULL);
 
@@ -120,10 +133,16 @@ static void run_proxy()
 static void *command(void *vargp)
 {
   Pthread_detach(pthread_self());
+  free(vargp);
   char buf[MAXLINE];
-  if (!Fgets(buf, MAXLINE, stdin))
+  if (!Fgets(buf, MAXLINE, stdin)) {
     return NULL;
-  print_cache(0);
+  }
+  else if (buf[0] != 'p') {
+    run = 0;
+  }    
+  else 
+    print_cache(0);
   return NULL;
 }
 
@@ -176,9 +195,9 @@ static void *process_client(void *vargp)
     return NULL;
   }
 
-  http_relay_resp_headers(connfd, &rio_dest, (int *)&size, type);
+  http_relay_resp_headers(connfd, req_d, &rio_dest, (int *)&size, type);
   if (size  && size < MAX_OBJECT_SIZE) {
-    printf("cacheable set, size is %d\n", size);
+    fprintf(stdout, "cacheable set, size is %d\n", (int)size);
     cacheable = 1;
   }
   else if (size){
@@ -197,8 +216,8 @@ static void *process_client(void *vargp)
 
   if (cacheable) {
     fprintf(stdout,
-	    "adding to cache:\nobj = %p\nlength = %u\nhost = %s\nfile = %s\ntype = %s\n",
-	    obj_buf, size, req_d->host, req_d->filename, type);
+	    "adding to cache:\nobj = %p\nlength = %d\nhost = %s\nfile = %s\ntype = %s\n",
+	    obj_buf, (int)size, req_d->host, req_d->filename, type);
     int r = add_to_cache(obj_buf, size, req_d->host, req_d->filename, type);
     if (r < 0)
       printf("error - was not cached");

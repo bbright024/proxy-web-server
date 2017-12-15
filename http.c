@@ -31,16 +31,20 @@ const char *http_read_request_line(rio_t *rio, ReqData *req_d)
   Rio_readlineb(rio, buf, MAXLINE);
   sscanf(buf,  "%s %s %s", req_d->method, req_d->url, req_d->version);
 
-  if (!req_d->method || !req_d->url || !req_d->version)
+  if (!req_d->method || !req_d->url)
     return "Cannot parse HTTP request";
 
   if (strcmp(req_d->method, "GET")) //&& strcmp(req_d->method, "POST"))
     return "Unsupported request (not GET)";// or POST)";
 
   if (strstr(req_d->url, "https://"))
+
     return "This proxy does not support HTTPS";
 
-  if (strcmp(req_d->version, "HTTP/1.1") &&
+  if (!req_d->version) {
+    strcpy(req_d->version, "HTTP/0.9");
+  }
+  else if (strcmp(req_d->version, "HTTP/1.1") &&
       strcmp(req_d->version, "HTTP/1.0"))
     return "Unsupported server protocol (not HTTP/1.1 or 1.0)";
 
@@ -97,7 +101,7 @@ const char *http_relay_resp_body(int connfd, rio_t *rio_dest, int size, void *ob
   int n;
 
   /* proxy puts the file into body while # of bytes read is nonzero */
-  while ((n = Rio_readlineb(rio_dest, p, MAXLINE))) {
+  while ((n = Rio_readnb(rio_dest, p, MAXLINE))) {
       Rio_writen(connfd, p, n);
       p += n;
   }
@@ -106,13 +110,26 @@ const char *http_relay_resp_body(int connfd, rio_t *rio_dest, int size, void *ob
 /* Read the response HTTP headers from the upstream server 
  * returns NULL on success, or error message.
  */
-const char *http_relay_resp_headers(int connfd, rio_t *rio_dest, int *size, char *type)
+const char *http_relay_resp_headers(int connfd, ReqData *req_d,
+				    rio_t *rio_dest, int *size, char *type)
 {
   char rec_buf[MAXLINE];
-  int l;
+  int stat_code, l;
   char *pp;
+  char resp_ver[MAXLINE], stat_mesg[MAXLINE];
+  
   /* pass along response line */
   Rio_readlineb(rio_dest, rec_buf, MAXLINE);
+  /* read response version to ensure compatibility */
+  sscanf(rec_buf, "%s %d %s", resp_ver, &stat_code, stat_mesg);
+  if (!strcmp(req_d->version, resp_ver))
+    fprintf(stdout, "error, ver mismatch. client=%s, host=%s\n",
+	    req_d->version, resp_ver);
+  /* if i had code to downgrade the response to fit the client, 
+  * here's where the function call would go. also to check and see
+  * if it's an upgrade or a downgrade; don't know from strcmp. although
+  * if you save the response value you could tell, but that assumes ascii.
+  */
   Rio_writen(connfd, rec_buf, strlen(rec_buf));
   //  fprintf(stdout, "%s", rec_buf);
   
@@ -151,31 +168,31 @@ const char *http_relay_resp_headers(int connfd, rio_t *rio_dest, int *size, char
 
 void http_serve(int connfd, void *obj_buf, int size, char *type)
 {
-  char ret_buf[MAXLINE];
-  sprintf(ret_buf, "HTTP/1.0 200 OK \r\n");
-  sprintf(ret_buf, "%sServer: Brian's Web Proxy\r\n", ret_buf);
-  sprintf(ret_buf, "%s%s", ret_buf, connection_close);
-  sprintf(ret_buf, "%sContent-length: %d\r\n", ret_buf, size);
-  sprintf(ret_buf, "%sContent-type: %s\r\n", ret_buf, type); 
-  Rio_writen(connfd, ret_buf, strlen(ret_buf));
-  printf("%s", ret_buf);
+  char ret_buf1[MAXLINE];
+  char ret_buf2[MAXLINE];
+  sprintf(ret_buf1, "HTTP/1.0 200 OK \r\n");
+  sprintf(ret_buf2, "%sServer: Brian's Web Proxy\r\n", ret_buf1);
+  sprintf(ret_buf1, "%s%s", ret_buf2, connection_close);
+  sprintf(ret_buf2, "%sContent-length: %d\r\n", ret_buf1, size);
+  sprintf(ret_buf1, "%sContent-type: %s\r\n", ret_buf2, type); 
+  Rio_writen(connfd, ret_buf1, strlen(ret_buf1));
+  printf("%s", ret_buf1);
   Rio_writen(connfd, obj_buf, size);
 }
 
-//void http_err(int fd, int code, char *fmt, ...)
 /* Send an HTTP error message. */
 void http_err(int fd, char *cause, char *errnum,
 		 char *shortmsg, const char *longmsg)
 {
-  char buf[MAXLINE], body[MAXBUF];
+  char buf[MAXLINE], body[MAXBUF], body2[MAXBUF];
   
   /* build the HTTP response body */
   /* heads up - assumes everything in total < MAXBUFF */
   sprintf(body, "<html><title>Proxy Error</title>");
-  sprintf(body, "%s<body bgcolor=""ffffff"">\r\n", body);
-  sprintf(body, "%s%s: %s\r\n", body, errnum, shortmsg);
-  sprintf(body, "%s<p>%s: %s\r\n", body, longmsg, cause);
-  sprintf(body, "%s<hr><em>The Bright Proxy</em>\r\n", body);
+  sprintf(body2, "%s<body bgcolor=""ffffff"">\r\n", body);
+  sprintf(body, "%s%s: %s\r\n", body2, errnum, shortmsg);
+  sprintf(body2, "%s<p>%s: %s\r\n", body, longmsg, cause);
+  sprintf(body, "%s<hr><em>The Bright Proxy</em>\r\n", body2);
 
 
   /* build & print the HTTP response headers*/
@@ -248,13 +265,18 @@ int url_parse(ReqData *req_d, char *url)
   return 0;
 }
 
-/* Manually add carriage-return-line-feed to end of a string */
+/* Manually add carriage-return-line-feed to end of a string 
+* and null out any extra stuff that was added in the overflow.
+*/
 static inline void add_crlfnull(char *buf, int max)
 {
   int l;
-  if ((l = strlen(buf)) == max) {
-    buf[l - 3] = '\r';
-    buf[l - 2] = '\n';
-    buf[l - 1] = '\0';    
+  if ((l = strlen(buf)) >= max) {
+    buf[max - 3] = '\r';
+    buf[max - 2] = '\n';
+    buf[max - 1] = '\0';
+    for (; max <= l; l--) {
+      buf[l] = '\0';
+    }
   }
 }

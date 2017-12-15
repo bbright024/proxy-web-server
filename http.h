@@ -51,7 +51,8 @@ const char *http_relay_resp_body(int connfd, rio_t *rio, int size, void *obj_buf
 /* Read the response HTTP headers from the upstream server 
  * returns NULL on success, or error message.
  */
-const char *http_relay_resp_headers(int connfd, rio_t *rio_dest, int *size, char *type);
+const char *http_relay_resp_headers(int connfd, ReqData *req_d,
+				    rio_t *rio_dest, int *size, char *type);
   
 /* Send an HTTP error message. */
 void http_err(int fd, char *cause, char *errnum, char *shortmsg, const char *longmsg);

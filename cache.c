@@ -8,7 +8,7 @@
 #define E_NO_SPACE 2
 
 /* Global shared variables */
-static LinkedList ob_list;
+LinkedList ob_list;
 static size_t cache_size;
 static sem_t cache_mutex;
 
@@ -22,7 +22,7 @@ typedef struct {
 } CacheOb;
 
 /* Internal functions */
-static void free_cache_ob(CacheOb *cp);
+void free_cache_ob(CacheOb *cp);
 static int remove_cache_lru(size_t min_size);
 
 /* initialize the cache objects - must not be called more than once.
@@ -40,7 +40,7 @@ int cache_init()
 }
 
 /* Frees all parts of a CacheOb struct */
-static void free_cache_ob(CacheOb *cp)
+void free_cache_ob(CacheOb *cp)
 {
   if (!cp)
     return;
@@ -72,7 +72,12 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
     
   //printf("\nSEARCHING:\n obj = %p \nhost = %s \nfile = %s \n", obj_buf, host, filename);  
   CacheOb *op;
-  LLIter iter = LLMakeIterator(ob_list, 0);
+  LLIter iter;
+  if ((iter = LLMakeIterator(ob_list, 0)) == NULL) {
+    fprintf(stderr, "make iter error in check_cache\n");
+    V(&cache_mutex);
+    return 0;
+  }
   /* loop through the cache until obj found or at tail */
   do {
     LLIteratorGetPayload(iter, (void **)&op);
@@ -83,7 +88,7 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
       memcpy(obj_buf, op->location, op->size);
       
       /* file was accesed, so move to front (LRU) */
-      LLIteratorMoveToHead(iter); 
+      //      LLIteratorMoveToHead(iter); 
       V(&cache_mutex);
       LLIteratorFree(iter);
       return 1;
@@ -107,14 +112,14 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
  */
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type)
 {
-  printf("trying to add to cache now\n");
+
   if (!object || !host || !filename || !size || !type)  {
     return -E_NO_SPACE;
-  }  printf("made it past check one \n");
+  }  
   if (strlen(host) > MAXLINE || strlen(filename) > MAXLINE ||
       size > MAX_OBJECT_SIZE || strlen(type) > MAXLINE)
     return -E_NO_SPACE;
-  printf("made it past checks\n");
+
   CacheOb *obp;
   obp = malloc(sizeof(CacheOb));
   memset(obp, 0, sizeof(CacheOb));
@@ -138,6 +143,8 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
     /* need to free oldest obj in list that leaves enough space*/
     if(remove_cache_lru(size) != 0) {
       /* if here, must be an error in the earlier space checks */
+      free(obp->location);
+      free(obp);
       V(&cache_mutex);
       return -E_NO_SPACE;
     }
@@ -156,18 +163,24 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
 /* Search backwards from the tail of the cache, removing the first
  * object of smaller size than the given parameter.  
  *   -reads and writes the cache, must be locked before called
- *
+ *   
  * Returns 0 if successful, negative on error. */
 static int remove_cache_lru(size_t min_size)
 {
-    LLIter iter = LLMakeIterator(ob_list, 1);
+  LLIter iter;
+  if ((iter = LLMakeIterator(ob_list, 1)) == NULL) {
+    fprintf(stderr, "make iter error: remove_cache_lru");
+    
+  }
     CacheOb *obp_r;
     while (1) {
       LLIteratorGetPayload(iter, (void **)&obp_r);
       if (min_size < obp_r->size)
 	break;
-      if(!LLIteratorPrev(iter)) /* at head of list if false */
+      if(!LLIteratorPrev(iter)){ /* at head of list if false */
+	LLIteratorFree(iter);
 	return -1;
+      }
     } 
     cache_size -= obp_r->size;
 
@@ -187,13 +200,20 @@ void print_cache(int human)
 {
   CacheOb *op;
   int n, i = 0;
+  LLIter iter;
   P(&cache_mutex);
+  if (!ob_list) {
+    printf("\nThe cache is empty.\n");
+    V(&cache_mutex);
+    return;
+  }
   n = NumElementsInLinkedList(ob_list);
-  LLIter iter = LLMakeIterator(ob_list, 0);
+
 
   
   if (n <= 0) {
     printf("\nThe cache is empty.\n");
+    V(&cache_mutex);
     return;
   }
   else if (n == 1) {
@@ -207,7 +227,14 @@ void print_cache(int human)
   }
   else
     printf("Total cache size (bytes): %zu", cache_size);
-    
+
+
+  if((iter = LLMakeIterator(ob_list, 0)) == NULL){
+    fprintf(stderr, "make iter error\n");
+    V(&cache_mutex);
+    return;
+  };
+  
   do
     {
       printf("Object %d of %d:\n", i, n);
