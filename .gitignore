@@ -1,8 +1,8 @@
 # Unique to proxy #
 ###################
 oldcode.c
-.proxy
-.noproxy
+.proxy/
+.noproxy/
 
 # Compiled source #
 ###################
