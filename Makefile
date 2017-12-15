@@ -10,7 +10,6 @@ ARFLAGS = rcs
 
 # define common dependencies
 OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
-HEADERS = #LinkedList.h http.h csapp.h cache.h
 
 all: clean proxy
 
@@ -25,10 +24,10 @@ coverage: proxy
 	lcov -c -d . -o proxyinfo.info
 	genhtml proxyinfo.info -o cov_html/
 
-proxy: $(OBJS) $(HEADERS) FORCE
+proxy: $(OBJS)
 	$(CC) $(CFLAGS) -o proxy proxy.o csapp.o cache.o http.o LinkedList.o $(LDFLAGS)
 
-%.o: %.c $(HEADERS) FORCE
+%.o: %.c 
 	$(CC) $(CFLAGS) -c $<
 
 #csapp.o: csapp.c csapp.h

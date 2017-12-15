@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-14 19:57:27</td>
+            <td class="headerValue">2017-12-14 20:01:03</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">6</td>
@@ -102,12 +102,12 @@
 <span class="lineNum">      40 </span>            : }
 <a name="41"><span class="lineNum">      41 </span>            : </a>
 <span class="lineNum">      42 </span>            : /* Frees all parts of a CacheOb struct */
-<span class="lineNum">      43 </span><span class="lineCov">         36 : void free_cache_ob(CacheOb *cp)</span>
+<span class="lineNum">      43 </span><span class="lineCov">         35 : void free_cache_ob(CacheOb *cp)</span>
 <span class="lineNum">      44 </span>            : {
-<span class="lineNum">      45 </span><span class="lineCov">         36 :   if (!cp)</span>
+<span class="lineNum">      45 </span><span class="lineCov">         35 :   if (!cp)</span>
 <span class="lineNum">      46 </span><span class="lineNoCov">          0 :     return;</span>
-<span class="lineNum">      47 </span><span class="lineCov">         36 :   free(cp-&gt;location);</span>
-<span class="lineNum">      48 </span><span class="lineCov">         36 :   free(cp);</span>
+<span class="lineNum">      47 </span><span class="lineCov">         35 :   free(cp-&gt;location);</span>
+<span class="lineNum">      48 </span><span class="lineCov">         35 :   free(cp);</span>
 <span class="lineNum">      49 </span>            : }
 <span class="lineNum">      50 </span>            : 
 <span class="lineNum">      51 </span>            : /* Frees everything in the cache. 
@@ -123,44 +123,44 @@
 <span class="lineNum">      61 </span>            :  *  - 0 if not found.
 <a name="62"><span class="lineNum">      62 </span>            :  *  - 1 if found - saves the type, object, and size as sideaffects</a>
 <span class="lineNum">      63 </span>            :  */
-<span class="lineNum">      64 </span><span class="lineCov">        176 : int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *sizep)</span>
+<span class="lineNum">      64 </span><span class="lineCov">        107 : int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *sizep)</span>
 <span class="lineNum">      65 </span>            : {
-<span class="lineNum">      66 </span><span class="lineCov">        176 :   P(&amp;cache_mutex);</span>
-<span class="lineNum">      67 </span><span class="lineCov">        177 :   int n = NumElementsInLinkedList(ob_list);</span>
-<span class="lineNum">      68 </span><span class="lineCov">        177 :   if (n &lt;= 0) {</span>
-<span class="lineNum">      69 </span><span class="lineCov">          1 :     V(&amp;cache_mutex);</span>
-<span class="lineNum">      70 </span><span class="lineCov">          1 :     return 0;</span>
+<span class="lineNum">      66 </span><span class="lineCov">        107 :   P(&amp;cache_mutex);</span>
+<span class="lineNum">      67 </span><span class="lineCov">        107 :   int n = NumElementsInLinkedList(ob_list);</span>
+<span class="lineNum">      68 </span><span class="lineCov">        107 :   if (n &lt;= 0) {</span>
+<span class="lineNum">      69 </span><span class="lineCov">         13 :     V(&amp;cache_mutex);</span>
+<span class="lineNum">      70 </span><span class="lineCov">         13 :     return 0;</span>
 <span class="lineNum">      71 </span>            :   }
 <span class="lineNum">      72 </span>            :     
 <span class="lineNum">      73 </span>            :   //printf(&quot;\nSEARCHING:\n obj = %p \nhost = %s \nfile = %s \n&quot;, obj_buf, host, filename);  
 <span class="lineNum">      74 </span>            :   CacheOb *op;
 <span class="lineNum">      75 </span>            :   LLIter iter;
-<span class="lineNum">      76 </span><span class="lineCov">        176 :   if ((iter = LLMakeIterator(ob_list, 0)) == NULL) {</span>
+<span class="lineNum">      76 </span><span class="lineCov">         94 :   if ((iter = LLMakeIterator(ob_list, 0)) == NULL) {</span>
 <span class="lineNum">      77 </span><span class="lineNoCov">          0 :     fprintf(stderr, &quot;make iter error in check_cache\n&quot;);</span>
 <span class="lineNum">      78 </span><span class="lineNoCov">          0 :     V(&amp;cache_mutex);</span>
 <span class="lineNum">      79 </span><span class="lineNoCov">          0 :     return 0;</span>
 <span class="lineNum">      80 </span>            :   }
 <span class="lineNum">      81 </span>            :   /* loop through the cache until obj found or at tail */
 <span class="lineNum">      82 </span>            :   do {
-<span class="lineNum">      83 </span><span class="lineCov">       3466 :     LLIteratorGetPayload(iter, (void **)&amp;op);</span>
-<span class="lineNum">      84 </span><span class="lineCov">       3466 :     if(!strcmp(op-&gt;filename, filename) &amp;&amp; !strcmp(op-&gt;host, host)) {</span>
+<span class="lineNum">      83 </span><span class="lineCov">       2117 :     LLIteratorGetPayload(iter, (void **)&amp;op);</span>
+<span class="lineNum">      84 </span><span class="lineCov">       2117 :     if(!strcmp(op-&gt;filename, filename) &amp;&amp; !strcmp(op-&gt;host, host)) {</span>
 <span class="lineNum">      85 </span>            :       /* copies object data from cache to specified buffers */
-<span class="lineNum">      86 </span><span class="lineCov">        127 :       strncpy(type, op-&gt;type, MAXLINE);</span>
-<span class="lineNum">      87 </span><span class="lineCov">        127 :       *sizep = op-&gt;size;</span>
-<span class="lineNum">      88 </span><span class="lineCov">        127 :       memcpy(obj_buf, op-&gt;location, op-&gt;size);</span>
+<span class="lineNum">      86 </span><span class="lineCov">         65 :       strncpy(type, op-&gt;type, MAXLINE);</span>
+<span class="lineNum">      87 </span><span class="lineCov">         65 :       *sizep = op-&gt;size;</span>
+<span class="lineNum">      88 </span><span class="lineCov">         65 :       memcpy(obj_buf, op-&gt;location, op-&gt;size);</span>
 <span class="lineNum">      89 </span>            :       
 <span class="lineNum">      90 </span>            :       /* file was accesed, so move to front (LRU) */
-<span class="lineNum">      91 </span><span class="lineCov">        127 :       LLIteratorMoveToHead(iter); </span>
-<span class="lineNum">      92 </span><span class="lineCov">        127 :       V(&amp;cache_mutex);</span>
-<span class="lineNum">      93 </span><span class="lineCov">        127 :       LLIteratorFree(iter);</span>
-<span class="lineNum">      94 </span><span class="lineCov">        127 :       return 1;</span>
+<span class="lineNum">      91 </span><span class="lineCov">         65 :       LLIteratorMoveToHead(iter); </span>
+<span class="lineNum">      92 </span><span class="lineCov">         65 :       V(&amp;cache_mutex);</span>
+<span class="lineNum">      93 </span><span class="lineCov">         65 :       LLIteratorFree(iter);</span>
+<span class="lineNum">      94 </span><span class="lineCov">         65 :       return 1;</span>
 <span class="lineNum">      95 </span>            :     }
-<span class="lineNum">      96 </span><span class="lineCov">       3339 :   }  while (LLIteratorNext(iter));</span>
+<span class="lineNum">      96 </span><span class="lineCov">       2052 :   }  while (LLIteratorNext(iter));</span>
 <span class="lineNum">      97 </span>            : 
-<span class="lineNum">      98 </span><span class="lineCov">         49 :   V(&amp;cache_mutex);</span>
-<span class="lineNum">      99 </span><span class="lineCov">         49 :   LLIteratorFree(iter);</span>
-<span class="lineNum">     100 </span><span class="lineCov">         49 :   printf(&quot;did not find the file\n&quot;);</span>
-<span class="lineNum">     101 </span><span class="lineCov">         49 :   return 0;</span>
+<span class="lineNum">      98 </span><span class="lineCov">         29 :   V(&amp;cache_mutex);</span>
+<span class="lineNum">      99 </span><span class="lineCov">         29 :   LLIteratorFree(iter);</span>
+<span class="lineNum">     100 </span><span class="lineCov">         29 :   printf(&quot;did not find the file\n&quot;);</span>
+<span class="lineNum">     101 </span><span class="lineCov">         29 :   return 0;</span>
 <span class="lineNum">     102 </span>            : }
 <span class="lineNum">     103 </span>            : 
 <span class="lineNum">     104 </span>            : /* Adds an object to the cache.
@@ -172,36 +172,36 @@
 <span class="lineNum">     110 </span>            :  *
 <a name="111"><span class="lineNum">     111 </span>            :  * Returns 0 on success, -E_NO_MEM or -E_NO_SPACE or -3 on other errors</a>
 <span class="lineNum">     112 </span>            :  */
-<span class="lineNum">     113 </span><span class="lineCov">         36 : int add_to_cache(void *object, size_t size, char *host, char *filename, char *type)</span>
+<span class="lineNum">     113 </span><span class="lineCov">         35 : int add_to_cache(void *object, size_t size, char *host, char *filename, char *type)</span>
 <span class="lineNum">     114 </span>            : {
 <span class="lineNum">     115 </span>            : 
-<span class="lineNum">     116 </span><span class="lineCov">         36 :   if (!object || !host || !filename || !size || !type)  {</span>
+<span class="lineNum">     116 </span><span class="lineCov">         35 :   if (!object || !host || !filename || !size || !type)  {</span>
 <span class="lineNum">     117 </span><span class="lineNoCov">          0 :     return -E_NO_SPACE;</span>
 <span class="lineNum">     118 </span>            :   }  
-<span class="lineNum">     119 </span><span class="lineCov">         36 :   if (strlen(host) &gt; MAXLINE || strlen(filename) &gt; MAXLINE ||</span>
-<span class="lineNum">     120 </span><span class="lineCov">         36 :       size &gt; MAX_OBJECT_SIZE || strlen(type) &gt; MAXLINE)</span>
+<span class="lineNum">     119 </span><span class="lineCov">         35 :   if (strlen(host) &gt; MAXLINE || strlen(filename) &gt; MAXLINE ||</span>
+<span class="lineNum">     120 </span><span class="lineCov">         35 :       size &gt; MAX_OBJECT_SIZE || strlen(type) &gt; MAXLINE)</span>
 <span class="lineNum">     121 </span><span class="lineNoCov">          0 :     return -E_NO_SPACE;</span>
 <span class="lineNum">     122 </span>            : 
 <span class="lineNum">     123 </span>            :   CacheOb *obp;
-<span class="lineNum">     124 </span><span class="lineCov">         36 :   obp = malloc(sizeof(CacheOb));</span>
-<span class="lineNum">     125 </span><span class="lineCov">         36 :   memset(obp, 0, sizeof(CacheOb));</span>
-<span class="lineNum">     126 </span><span class="lineCov">         36 :   if (!obp)</span>
+<span class="lineNum">     124 </span><span class="lineCov">         35 :   obp = malloc(sizeof(CacheOb));</span>
+<span class="lineNum">     125 </span><span class="lineCov">         35 :   memset(obp, 0, sizeof(CacheOb));</span>
+<span class="lineNum">     126 </span><span class="lineCov">         35 :   if (!obp)</span>
 <span class="lineNum">     127 </span><span class="lineNoCov">          0 :     return -E_NO_MEM;</span>
 <span class="lineNum">     128 </span>            :   /* allocate 'size' space for the object*/
-<span class="lineNum">     129 </span><span class="lineCov">         36 :   obp-&gt;location = malloc(size);</span>
-<span class="lineNum">     130 </span><span class="lineCov">         36 :   if (!obp-&gt;location) {</span>
+<span class="lineNum">     129 </span><span class="lineCov">         35 :   obp-&gt;location = malloc(size);</span>
+<span class="lineNum">     130 </span><span class="lineCov">         35 :   if (!obp-&gt;location) {</span>
 <span class="lineNum">     131 </span><span class="lineNoCov">          0 :     free(obp);</span>
 <span class="lineNum">     132 </span><span class="lineNoCov">          0 :     return -E_NO_MEM;</span>
 <span class="lineNum">     133 </span>            :   }
 <span class="lineNum">     134 </span>            : 
 <span class="lineNum">     135 </span>            :   /* store the metadata in the CacheOb struct */
-<span class="lineNum">     136 </span><span class="lineCov">         36 :   obp-&gt;size = size;</span>
-<span class="lineNum">     137 </span><span class="lineCov">         36 :   memcpy(obp-&gt;location, object, size);</span>
-<span class="lineNum">     138 </span><span class="lineCov">         36 :   strncpy(obp-&gt;host, host, MAXLINE);</span>
-<span class="lineNum">     139 </span><span class="lineCov">         36 :   strncpy(obp-&gt;filename, filename, MAXLINE);</span>
-<span class="lineNum">     140 </span><span class="lineCov">         36 :   strncpy(obp-&gt;type, type, MAXLINE);</span>
-<span class="lineNum">     141 </span><span class="lineCov">         36 :   P(&amp;cache_mutex);</span>
-<span class="lineNum">     142 </span><span class="lineCov">         36 :   if (cache_size + size &gt; MAX_CACHE_SIZE) {</span>
+<span class="lineNum">     136 </span><span class="lineCov">         35 :   obp-&gt;size = size;</span>
+<span class="lineNum">     137 </span><span class="lineCov">         35 :   memcpy(obp-&gt;location, object, size);</span>
+<span class="lineNum">     138 </span><span class="lineCov">         35 :   strncpy(obp-&gt;host, host, MAXLINE);</span>
+<span class="lineNum">     139 </span><span class="lineCov">         35 :   strncpy(obp-&gt;filename, filename, MAXLINE);</span>
+<span class="lineNum">     140 </span><span class="lineCov">         35 :   strncpy(obp-&gt;type, type, MAXLINE);</span>
+<span class="lineNum">     141 </span><span class="lineCov">         35 :   P(&amp;cache_mutex);</span>
+<span class="lineNum">     142 </span><span class="lineCov">         35 :   if (cache_size + size &gt; MAX_CACHE_SIZE) {</span>
 <span class="lineNum">     143 </span>            :     /* need to free oldest obj in list that leaves enough space*/
 <span class="lineNum">     144 </span><span class="lineNoCov">          0 :     if(remove_cache_lru(size) != 0) {</span>
 <span class="lineNum">     145 </span>            :       /* if here, must be an error in the earlier space checks */
@@ -212,14 +212,14 @@
 <span class="lineNum">     150 </span>            :     }
 <span class="lineNum">     151 </span>            :   }
 <span class="lineNum">     152 </span>            : 
-<span class="lineNum">     153 </span><span class="lineCov">         36 :   PushLinkedList(ob_list, obp);</span>
-<span class="lineNum">     154 </span><span class="lineCov">         36 :   cache_size += size;</span>
+<span class="lineNum">     153 </span><span class="lineCov">         35 :   PushLinkedList(ob_list, obp);</span>
+<span class="lineNum">     154 </span><span class="lineCov">         35 :   cache_size += size;</span>
 <span class="lineNum">     155 </span>            : 
 <span class="lineNum">     156 </span>            :   /* unlock access here */
-<span class="lineNum">     157 </span><span class="lineCov">         36 :   V(&amp;cache_mutex);</span>
-<span class="lineNum">     158 </span><span class="lineCov">         36 :   printf(&quot;successfully added to cache\n&quot;);</span>
+<span class="lineNum">     157 </span><span class="lineCov">         35 :   V(&amp;cache_mutex);</span>
+<span class="lineNum">     158 </span><span class="lineCov">         35 :   printf(&quot;successfully added to cache\n&quot;);</span>
 <span class="lineNum">     159 </span>            : 
-<span class="lineNum">     160 </span><span class="lineCov">         36 :   return 0;</span>
+<span class="lineNum">     160 </span><span class="lineCov">         35 :   return 0;</span>
 <span class="lineNum">     161 </span>            : }
 <span class="lineNum">     162 </span>            : 
 <span class="lineNum">     163 </span>            : /* Search backwards from the tail of the cache, removing the first
@@ -299,17 +299,17 @@
 <span class="lineNum">     237 </span>            :   
 <span class="lineNum">     238 </span>            :   do
 <span class="lineNum">     239 </span>            :     {
-<span class="lineNum">     240 </span><span class="lineCov">         36 :       printf(&quot;Object %d of %d:\n&quot;, i, n);</span>
-<span class="lineNum">     241 </span><span class="lineCov">         36 :       LLIteratorGetPayload(iter, (void **)&amp;op);</span>
+<span class="lineNum">     240 </span><span class="lineCov">         35 :       printf(&quot;Object %d of %d:\n&quot;, i, n);</span>
+<span class="lineNum">     241 </span><span class="lineCov">         35 :       LLIteratorGetPayload(iter, (void **)&amp;op);</span>
 <span class="lineNum">     242 </span>            : 
-<span class="lineNum">     243 </span><span class="lineCov">         36 :       printf(&quot;Host: %s\nFile: %s\nType: %s\n&quot;, op-&gt;host, op-&gt;filename, op-&gt;type);</span>
-<span class="lineNum">     244 </span><span class="lineCov">         36 :       if (human) {</span>
+<span class="lineNum">     243 </span><span class="lineCov">         35 :       printf(&quot;Host: %s\nFile: %s\nType: %s\n&quot;, op-&gt;host, op-&gt;filename, op-&gt;type);</span>
+<span class="lineNum">     244 </span><span class="lineCov">         35 :       if (human) {</span>
 <span class="lineNum">     245 </span><span class="lineNoCov">          0 :         printf(&quot;Size (in kilobytes): %zu\n&quot;, op-&gt;size &gt;&gt; 10);</span>
 <span class="lineNum">     246 </span>            :       }
 <span class="lineNum">     247 </span>            :       else
-<span class="lineNum">     248 </span><span class="lineCov">         36 :         printf(&quot;Size (in bytes): %zu\n&quot;, op-&gt;size);</span>
-<span class="lineNum">     249 </span><span class="lineCov">         36 :       i++;</span>
-<span class="lineNum">     250 </span><span class="lineCov">         36 :     } while (LLIteratorNext(iter));</span>
+<span class="lineNum">     248 </span><span class="lineCov">         35 :         printf(&quot;Size (in bytes): %zu\n&quot;, op-&gt;size);</span>
+<span class="lineNum">     249 </span><span class="lineCov">         35 :       i++;</span>
+<span class="lineNum">     250 </span><span class="lineCov">         35 :     } while (LLIteratorNext(iter));</span>
 <span class="lineNum">     251 </span>            :   
 <span class="lineNum">     252 </span><span class="lineCov">          1 :   V(&amp;cache_mutex);</span>
 <span class="lineNum">     253 </span>            :   /* always free AFTER releasing lock; reduces time lock spent 
