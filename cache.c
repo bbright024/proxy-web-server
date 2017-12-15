@@ -88,7 +88,7 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
       memcpy(obj_buf, op->location, op->size);
       
       /* file was accesed, so move to front (LRU) */
-      //      LLIteratorMoveToHead(iter); 
+      LLIteratorMoveToHead(iter); 
       V(&cache_mutex);
       LLIteratorFree(iter);
       return 1;

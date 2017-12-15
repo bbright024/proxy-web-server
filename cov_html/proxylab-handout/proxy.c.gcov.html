@@ -31,18 +31,18 @@
             <td class="headerValue">proxyinfo.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">31</td>
-            <td class="headerCovTableEntry">118</td>
-            <td class="headerCovTableEntryLo">26.3 %</td>
+            <td class="headerCovTableEntry">89</td>
+            <td class="headerCovTableEntry">119</td>
+            <td class="headerCovTableEntryLo">74.8 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-14 18:42:04</td>
+            <td class="headerValue">2017-12-14 19:25:39</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">3</td>
             <td class="headerCovTableEntry">7</td>
-            <td class="headerCovTableEntryLo">42.9 %</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -170,175 +170,176 @@
 <span class="lineNum">     108 </span><span class="lineCov">          1 :   FD_SET(STDIN_FILENO, &amp;read_set);</span>
 <span class="lineNum">     109 </span><span class="lineCov">          1 :   FD_SET(listenfd, &amp;read_set);</span>
 <span class="lineNum">     110 </span>            : 
-<span class="lineNum">     111 </span><span class="lineCov">          5 :   while (run) {</span>
-<span class="lineNum">     112 </span><span class="lineCov">          3 :     ready_set = read_set;</span>
-<span class="lineNum">     113 </span><span class="lineCov">          3 :     Select(listenfd+1, &amp;ready_set, NULL, NULL, NULL);</span>
-<span class="lineNum">     114 </span>            : 
-<span class="lineNum">     115 </span>            :     /* lets server respond to keyboard input, as well as client requests. */
-<span class="lineNum">     116 </span>            :     /* there is, however, a race to stdout if stdout is not changed. */
-<span class="lineNum">     117 </span><span class="lineCov">          3 :     if (FD_ISSET(STDIN_FILENO, &amp;ready_set)){</span>
-<span class="lineNum">     118 </span><span class="lineCov">          3 :       Pthread_create(&amp;tid, NULL, command, NULL);</span>
-<span class="lineNum">     119 </span>            :     }
-<span class="lineNum">     120 </span><span class="lineCov">          3 :     if (FD_ISSET(listenfd, &amp;ready_set)){</span>
-<span class="lineNum">     121 </span><span class="lineNoCov">          0 :       clientlen = sizeof(struct sockaddr_storage);</span>
-<span class="lineNum">     122 </span>            :       //blocks in Accept until a connection request succeeds
-<span class="lineNum">     123 </span><span class="lineNoCov">          0 :       connfdp = Malloc(sizeof(int));</span>
-<span class="lineNum">     124 </span><span class="lineNoCov">          0 :       *connfdp = Accept(listenfd, (SA *)&amp;clientaddr, &amp;clientlen);</span>
-<span class="lineNum">     125 </span><span class="lineNoCov">          0 :       Getnameinfo((SA *) &amp;clientaddr, clientlen, client_hostname, MAXLINE,</span>
-<span class="lineNum">     126 </span>            :                   client_port, MAXLINE, 0);
-<span class="lineNum">     127 </span><span class="lineNoCov">          0 :       printf(&quot;Connected to (%s, %s)\n&quot;, client_hostname, client_port);</span>
-<span class="lineNum">     128 </span><span class="lineNoCov">          0 :       Pthread_create(&amp;tid, NULL, process_client, connfdp);</span>
-<span class="lineNum">     129 </span>            :     }
-<span class="lineNum">     130 </span>            :   }
-<a name="131"><span class="lineNum">     131 </span><span class="lineCov">          1 : }</span></a>
-<span class="lineNum">     132 </span>            : 
-<span class="lineNum">     133 </span><span class="lineCov">          3 : static void *command(void *vargp)</span>
-<span class="lineNum">     134 </span>            : {
-<span class="lineNum">     135 </span><span class="lineCov">          3 :   Pthread_detach(pthread_self());</span>
-<span class="lineNum">     136 </span><span class="lineCov">          3 :   free(vargp);</span>
-<span class="lineNum">     137 </span>            :   char buf[MAXLINE];
-<span class="lineNum">     138 </span><span class="lineCov">          3 :   if (!Fgets(buf, MAXLINE, stdin)) {</span>
-<span class="lineNum">     139 </span><span class="lineNoCov">          0 :     return NULL;</span>
-<span class="lineNum">     140 </span>            :   }
-<span class="lineNum">     141 </span><span class="lineCov">          3 :   else if (buf[0] != 'p') {</span>
-<span class="lineNum">     142 </span><span class="lineCov">          3 :     run = 0;</span>
-<span class="lineNum">     143 </span>            :   }    
-<span class="lineNum">     144 </span>            :   else 
-<span class="lineNum">     145 </span><span class="lineNoCov">          0 :     print_cache(0);</span>
-<span class="lineNum">     146 </span><span class="lineCov">          3 :   return NULL;</span>
-<span class="lineNum">     147 </span>            : }
-<span class="lineNum">     148 </span>            : 
-<span class="lineNum">     149 </span>            : /*  Main thread for a client request.
-<a name="150"><span class="lineNum">     150 </span>            :  *  process the client's request - forward to the destination if not cached</a>
-<span class="lineNum">     151 </span>            :  */
-<span class="lineNum">     152 </span><span class="lineNoCov">          0 : static void *process_client(void *vargp)</span>
-<span class="lineNum">     153 </span>            : {
-<span class="lineNum">     154 </span>            :   /* thread initialization */
-<span class="lineNum">     155 </span><span class="lineNoCov">          0 :   int connfd = *((int *)vargp);</span>
-<span class="lineNum">     156 </span><span class="lineNoCov">          0 :   Pthread_detach(pthread_self());</span>
-<span class="lineNum">     157 </span><span class="lineNoCov">          0 :   free(vargp);</span>
-<span class="lineNum">     158 </span>            : 
-<span class="lineNum">     159 </span>            :   /* allocate space for the metadata and the object itself.  */
-<span class="lineNum">     160 </span>            :   /* obj space is allocated here because faster &amp; more secure to grab obj
-<span class="lineNum">     161 </span>            :    * immediately in cache search if found, and quits immediately if no mem. */
-<span class="lineNum">     162 </span>            :   ReqData *req_d;
-<span class="lineNum">     163 </span>            :   void *obj_buf;                
-<span class="lineNum">     164 </span><span class="lineNoCov">          0 :   if ((client_init(connfd, &amp;req_d, &amp;obj_buf)) &lt; 0)</span>
-<span class="lineNum">     165 </span><span class="lineNoCov">          0 :     return NULL;</span>
-<span class="lineNum">     166 </span>            : 
-<span class="lineNum">     167 </span>            :   /* variables for caching/retrieving objects */
-<span class="lineNum">     168 </span>            :   char type[MAXLINE];
-<span class="lineNum">     169 </span><span class="lineNoCov">          0 :   size_t size = 0;</span>
-<span class="lineNum">     170 </span><span class="lineNoCov">          0 :   int cacheable = 0;</span>
-<span class="lineNum">     171 </span>            :   rio_t rio_origin;     
-<span class="lineNum">     172 </span>            :   const char *errmsg;
-<span class="lineNum">     173 </span><span class="lineNoCov">          0 :   Rio_readinitb(&amp;rio_origin, connfd);</span>
-<span class="lineNum">     174 </span>            : 
-<span class="lineNum">     175 </span><span class="lineNoCov">          0 :   if ((errmsg = http_read_request_line(&amp;rio_origin, req_d))){</span>
-<span class="lineNum">     176 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;invalid request&quot;, &quot;403&quot;, &quot;Forbidden&quot;, errmsg);</span>
-<span class="lineNum">     177 </span><span class="lineNoCov">          0 :     thread_uninit(obj_buf, connfd, req_d);</span>
-<span class="lineNum">     178 </span><span class="lineNoCov">          0 :     return NULL;</span>
-<span class="lineNum">     179 </span>            :   }
-<span class="lineNum">     180 </span>            :   
-<span class="lineNum">     181 </span>            :   /* TODO: change flow here based on req_d-&gt;method &amp; version
-<span class="lineNum">     182 </span>            :    *  i.e. a POST request cannot be cached   //  read_requesthdrs(&amp;rio_origin);   */
-<span class="lineNum">     183 </span>            :   
-<span class="lineNum">     184 </span>            :   /* check cache for host/filename, get type/size if there  */
-<span class="lineNum">     185 </span><span class="lineNoCov">          0 :   if ((check_cache(req_d-&gt;host, req_d-&gt;filename, obj_buf, type, &amp;size))) {</span>
-<span class="lineNum">     186 </span><span class="lineNoCov">          0 :     http_serve(connfd, obj_buf, (int)size, type);</span>
-<span class="lineNum">     187 </span><span class="lineNoCov">          0 :     thread_uninit(obj_buf, connfd, req_d);</span>
-<span class="lineNum">     188 </span><span class="lineNoCov">          0 :     return NULL;</span>
-<span class="lineNum">     189 </span>            :   }
-<span class="lineNum">     190 </span>            :   /* not in cache; open a connection to the next hop server */
-<span class="lineNum">     191 </span>            :   int destfd;
-<span class="lineNum">     192 </span>            :   rio_t rio_dest;
-<span class="lineNum">     193 </span><span class="lineNoCov">          0 :   if ((destfd = open_next_hop(connfd, req_d, &amp;rio_dest)) &lt; 0) {</span>
-<span class="lineNum">     194 </span><span class="lineNoCov">          0 :     thread_uninit(obj_buf, connfd, req_d);</span>
-<span class="lineNum">     195 </span><span class="lineNoCov">          0 :     return NULL;</span>
-<span class="lineNum">     196 </span>            :   }
-<span class="lineNum">     197 </span>            : 
-<span class="lineNum">     198 </span><span class="lineNoCov">          0 :   http_relay_resp_headers(connfd, req_d, &amp;rio_dest, (int *)&amp;size, type);</span>
-<span class="lineNum">     199 </span><span class="lineNoCov">          0 :   if (size  &amp;&amp; size &lt; MAX_OBJECT_SIZE) {</span>
-<span class="lineNum">     200 </span><span class="lineNoCov">          0 :     fprintf(stdout, &quot;cacheable set, size is %d\n&quot;, (int)size);</span>
-<span class="lineNum">     201 </span><span class="lineNoCov">          0 :     cacheable = 1;</span>
-<span class="lineNum">     202 </span>            :   }
-<span class="lineNum">     203 </span><span class="lineNoCov">          0 :   else if (size){</span>
-<span class="lineNum">     204 </span>            :     /* make sure obj buff will be able to hold the object, even if not cacheable*/
-<span class="lineNum">     205 </span><span class="lineNoCov">          0 :     free(obj_buf);</span>
-<span class="lineNum">     206 </span><span class="lineNoCov">          0 :     if ((obj_buf = malloc(size)) == NULL) {</span>
-<span class="lineNum">     207 </span><span class="lineNoCov">          0 :       http_err(connfd, &quot;memory&quot;, &quot;500&quot;, &quot;Proxy internal error&quot;, &quot;proxy is out of memory&quot;);</span>
-<span class="lineNum">     208 </span><span class="lineNoCov">          0 :       free(req_d);</span>
-<span class="lineNum">     209 </span><span class="lineNoCov">          0 :       close(connfd);</span>
-<span class="lineNum">     210 </span><span class="lineNoCov">          0 :       close(destfd);</span>
-<span class="lineNum">     211 </span><span class="lineNoCov">          0 :       return NULL;</span>
-<span class="lineNum">     212 </span>            :     }
-<span class="lineNum">     213 </span>            :   }
-<span class="lineNum">     214 </span>            :   
-<span class="lineNum">     215 </span><span class="lineNoCov">          0 :   http_relay_resp_body(connfd, &amp;rio_dest, size, obj_buf);</span>
-<span class="lineNum">     216 </span>            : 
-<span class="lineNum">     217 </span><span class="lineNoCov">          0 :   if (cacheable) {</span>
-<span class="lineNum">     218 </span><span class="lineNoCov">          0 :     fprintf(stdout,</span>
-<span class="lineNum">     219 </span>            :             &quot;adding to cache:\nobj = %p\nlength = %d\nhost = %s\nfile = %s\ntype = %s\n&quot;,
-<span class="lineNum">     220 </span><span class="lineNoCov">          0 :             obj_buf, (int)size, req_d-&gt;host, req_d-&gt;filename, type);</span>
-<span class="lineNum">     221 </span><span class="lineNoCov">          0 :     int r = add_to_cache(obj_buf, size, req_d-&gt;host, req_d-&gt;filename, type);</span>
-<span class="lineNum">     222 </span><span class="lineNoCov">          0 :     if (r &lt; 0)</span>
-<span class="lineNum">     223 </span><span class="lineNoCov">          0 :       printf(&quot;error - was not cached&quot;);</span>
-<span class="lineNum">     224 </span>            :   }
-<span class="lineNum">     225 </span><span class="lineNoCov">          0 :   close(destfd);</span>
-<span class="lineNum">     226 </span><span class="lineNoCov">          0 :   close(connfd);</span>
-<span class="lineNum">     227 </span><span class="lineNoCov">          0 :   free(req_d);</span>
-<span class="lineNum">     228 </span><span class="lineNoCov">          0 :   free(obj_buf);</span>
-<span class="lineNum">     229 </span><span class="lineNoCov">          0 :   return NULL;</span>
-<span class="lineNum">     230 </span>            : }
-<span class="lineNum">     231 </span>            : 
-<span class="lineNum">     232 </span>            : /* Opens a connection to the requested server to grab the object.
-<a name="233"><span class="lineNum">     233 </span>            :  * Called if object is not present in the cache. Save obj if small enough.</a>
-<span class="lineNum">     234 </span>            :  */
-<span class="lineNum">     235 </span><span class="lineNoCov">          0 : static int open_next_hop(int connfd, ReqData *req_d, rio_t *rio)</span>
-<span class="lineNum">     236 </span>            : {
-<span class="lineNum">     237 </span>            :   const char *errmsg;
-<span class="lineNum">     238 </span>            :   int destfd;
-<span class="lineNum">     239 </span><span class="lineNoCov">          0 :   if ((destfd = open_clientfd(req_d-&gt;host, req_d-&gt;dest_port)) &lt; 0) {</span>
-<span class="lineNum">     240 </span><span class="lineNoCov">          0 :     http_err(connfd, req_d-&gt;host, &quot;500&quot;, &quot;Upstream error&quot;, &quot;Proxy couldn't connect to host&quot;);</span>
-<span class="lineNum">     241 </span><span class="lineNoCov">          0 :     return -1;</span>
-<span class="lineNum">     242 </span>            :   }
-<span class="lineNum">     243 </span><span class="lineNoCov">          0 :   if ((errmsg = http_write_request(destfd, req_d))) {</span>
-<span class="lineNum">     244 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;bad request&quot;, &quot;400&quot;, &quot;Bad request&quot;, errmsg);</span>
-<span class="lineNum">     245 </span><span class="lineNoCov">          0 :     return -1;</span>
-<span class="lineNum">     246 </span>            :   }
-<span class="lineNum">     247 </span>            : 
-<span class="lineNum">     248 </span><span class="lineNoCov">          0 :   Rio_readinitb(rio, destfd);</span>
-<span class="lineNum">     249 </span>            :   
-<span class="lineNum">     250 </span><span class="lineNoCov">          0 :   return destfd;</span>
-<a name="251"><span class="lineNum">     251 </span>            : }</a>
-<span class="lineNum">     252 </span>            : 
-<span class="lineNum">     253 </span><span class="lineNoCov">          0 : static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d)</span>
-<span class="lineNum">     254 </span>            : {
-<span class="lineNum">     255 </span><span class="lineNoCov">          0 :   Close(connfd);</span>
-<span class="lineNum">     256 </span><span class="lineNoCov">          0 :   free(obj_buf);</span>
-<span class="lineNum">     257 </span><span class="lineNoCov">          0 :   free(req_d);</span>
-<span class="lineNum">     258 </span><span class="lineNoCov">          0 : }</span>
-<a name="259"><span class="lineNum">     259 </span>            : </a>
-<span class="lineNum">     260 </span>            : /* allocate objects used by proxy threads */
-<span class="lineNum">     261 </span><span class="lineNoCov">          0 : static inline int client_init(int connfd, ReqData **req_d, void **obj_buf)</span>
-<span class="lineNum">     262 </span>            : {
-<span class="lineNum">     263 </span>            :   
-<span class="lineNum">     264 </span><span class="lineNoCov">          0 :   if ((*obj_buf = malloc(MAX_OBJECT_SIZE)) == NULL) {</span>
-<span class="lineNum">     265 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;memory&quot;, &quot;500&quot;, &quot;Proxy internal error&quot;, &quot;proxy is out of memory&quot;);</span>
-<span class="lineNum">     266 </span><span class="lineNoCov">          0 :     close(connfd);</span>
-<span class="lineNum">     267 </span><span class="lineNoCov">          0 :     return -1;</span>
-<span class="lineNum">     268 </span>            :   }
-<span class="lineNum">     269 </span>            : 
-<span class="lineNum">     270 </span><span class="lineNoCov">          0 :   if ((*req_d = malloc(sizeof(ReqData))) == NULL){</span>
-<span class="lineNum">     271 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;memory&quot;, &quot;500&quot;, &quot;Proxy internal error&quot;, &quot;proxy is out of memory&quot;);</span>
-<span class="lineNum">     272 </span><span class="lineNoCov">          0 :     close(connfd);</span>
-<span class="lineNum">     273 </span><span class="lineNoCov">          0 :     free(*obj_buf);</span>
-<span class="lineNum">     274 </span><span class="lineNoCov">          0 :     return -1;</span>
-<span class="lineNum">     275 </span>            :   }
-<span class="lineNum">     276 </span><span class="lineNoCov">          0 :   memset(*obj_buf, 0, MAX_OBJECT_SIZE);</span>
-<span class="lineNum">     277 </span><span class="lineNoCov">          0 :   memset(*req_d, 0, sizeof(ReqData));</span>
-<span class="lineNum">     278 </span><span class="lineNoCov">          0 :   return 0;</span>
-<span class="lineNum">     279 </span>            : }
+<span class="lineNum">     111 </span><span class="lineCov">        297 :   while (run) {</span>
+<span class="lineNum">     112 </span><span class="lineCov">        295 :     ready_set = read_set;</span>
+<span class="lineNum">     113 </span><span class="lineCov">        295 :     if(Select(listenfd+1, &amp;ready_set, NULL, NULL, NULL) &lt; 0)</span>
+<span class="lineNum">     114 </span><span class="lineCov">          1 :       continue;</span>
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            :     /* lets server respond to keyboard input, as well as client requests. */
+<span class="lineNum">     117 </span>            :     /* there is, however, a race to stdout if stdout is not changed. */
+<span class="lineNum">     118 </span><span class="lineCov">        294 :     if (FD_ISSET(STDIN_FILENO, &amp;ready_set)){</span>
+<span class="lineNum">     119 </span><span class="lineCov">          3 :       Pthread_create(&amp;tid, NULL, command, NULL);</span>
+<span class="lineNum">     120 </span>            :     }
+<span class="lineNum">     121 </span><span class="lineCov">        294 :     if (FD_ISSET(listenfd, &amp;ready_set)){</span>
+<span class="lineNum">     122 </span><span class="lineCov">        291 :       clientlen = sizeof(struct sockaddr_storage);</span>
+<span class="lineNum">     123 </span>            :       //blocks in Accept until a connection request succeeds
+<span class="lineNum">     124 </span><span class="lineCov">        291 :       connfdp = Malloc(sizeof(int));</span>
+<span class="lineNum">     125 </span><span class="lineCov">        291 :       *connfdp = Accept(listenfd, (SA *)&amp;clientaddr, &amp;clientlen);</span>
+<span class="lineNum">     126 </span><span class="lineCov">        291 :       Getnameinfo((SA *) &amp;clientaddr, clientlen, client_hostname, MAXLINE,</span>
+<span class="lineNum">     127 </span>            :                   client_port, MAXLINE, 0);
+<span class="lineNum">     128 </span><span class="lineCov">        291 :       printf(&quot;Connected to (%s, %s)\n&quot;, client_hostname, client_port);</span>
+<span class="lineNum">     129 </span><span class="lineCov">        291 :       Pthread_create(&amp;tid, NULL, process_client, connfdp);</span>
+<span class="lineNum">     130 </span>            :     }
+<span class="lineNum">     131 </span>            :   }
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">     133 </span>            : 
+<span class="lineNum">     134 </span><span class="lineCov">          3 : static void *command(void *vargp)</span>
+<span class="lineNum">     135 </span>            : {
+<span class="lineNum">     136 </span><span class="lineCov">          3 :   Pthread_detach(pthread_self());</span>
+<span class="lineNum">     137 </span><span class="lineCov">          3 :   free(vargp);</span>
+<span class="lineNum">     138 </span>            :   char buf[MAXLINE];
+<span class="lineNum">     139 </span><span class="lineCov">          3 :   if (!Fgets(buf, MAXLINE, stdin)) {</span>
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :     return NULL;</span>
+<span class="lineNum">     141 </span>            :   }
+<span class="lineNum">     142 </span><span class="lineCov">          3 :   else if (buf[0] != 'p') {</span>
+<span class="lineNum">     143 </span><span class="lineCov">          3 :     run = 0;</span>
+<span class="lineNum">     144 </span>            :   }    
+<span class="lineNum">     145 </span>            :   else 
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :     print_cache(0);</span>
+<span class="lineNum">     147 </span><span class="lineCov">          3 :   return NULL;</span>
+<span class="lineNum">     148 </span>            : }
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            : /*  Main thread for a client request.
+<a name="151"><span class="lineNum">     151 </span>            :  *  process the client's request - forward to the destination if not cached</a>
+<span class="lineNum">     152 </span>            :  */
+<span class="lineNum">     153 </span><span class="lineCov">        291 : static void *process_client(void *vargp)</span>
+<span class="lineNum">     154 </span>            : {
+<span class="lineNum">     155 </span>            :   /* thread initialization */
+<span class="lineNum">     156 </span><span class="lineCov">        291 :   int connfd = *((int *)vargp);</span>
+<span class="lineNum">     157 </span><span class="lineCov">        291 :   Pthread_detach(pthread_self());</span>
+<span class="lineNum">     158 </span><span class="lineCov">        291 :   free(vargp);</span>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            :   /* allocate space for the metadata and the object itself.  */
+<span class="lineNum">     161 </span>            :   /* obj space is allocated here because faster &amp; more secure to grab obj
+<span class="lineNum">     162 </span>            :    * immediately in cache search if found, and quits immediately if no mem. */
+<span class="lineNum">     163 </span>            :   ReqData *req_d;
+<span class="lineNum">     164 </span>            :   void *obj_buf;                
+<span class="lineNum">     165 </span><span class="lineCov">        291 :   if ((client_init(connfd, &amp;req_d, &amp;obj_buf)) &lt; 0)</span>
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :     return NULL;</span>
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span>            :   /* variables for caching/retrieving objects */
+<span class="lineNum">     169 </span>            :   char type[MAXLINE];
+<span class="lineNum">     170 </span><span class="lineCov">        291 :   size_t size = 0;</span>
+<span class="lineNum">     171 </span><span class="lineCov">        291 :   int cacheable = 0;</span>
+<span class="lineNum">     172 </span>            :   rio_t rio_origin;     
+<span class="lineNum">     173 </span>            :   const char *errmsg;
+<span class="lineNum">     174 </span><span class="lineCov">        291 :   Rio_readinitb(&amp;rio_origin, connfd);</span>
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineCov">        291 :   if ((errmsg = http_read_request_line(&amp;rio_origin, req_d))){</span>
+<span class="lineNum">     177 </span><span class="lineCov">         12 :     http_err(connfd, &quot;invalid request&quot;, &quot;403&quot;, &quot;Forbidden&quot;, errmsg);</span>
+<span class="lineNum">     178 </span><span class="lineCov">         12 :     thread_uninit(obj_buf, connfd, req_d);</span>
+<span class="lineNum">     179 </span><span class="lineCov">         12 :     return NULL;</span>
+<span class="lineNum">     180 </span>            :   }
+<span class="lineNum">     181 </span>            :   
+<span class="lineNum">     182 </span>            :   /* TODO: change flow here based on req_d-&gt;method &amp; version
+<span class="lineNum">     183 </span>            :    *  i.e. a POST request cannot be cached   //  read_requesthdrs(&amp;rio_origin);   */
+<span class="lineNum">     184 </span>            :   
+<span class="lineNum">     185 </span>            :   /* check cache for host/filename, get type/size if there  */
+<span class="lineNum">     186 </span><span class="lineCov">        278 :   if ((check_cache(req_d-&gt;host, req_d-&gt;filename, obj_buf, type, &amp;size))) {</span>
+<span class="lineNum">     187 </span><span class="lineCov">        216 :     http_serve(connfd, obj_buf, (int)size, type);</span>
+<span class="lineNum">     188 </span><span class="lineCov">        216 :     thread_uninit(obj_buf, connfd, req_d);</span>
+<span class="lineNum">     189 </span><span class="lineCov">        216 :     return NULL;</span>
+<span class="lineNum">     190 </span>            :   }
+<span class="lineNum">     191 </span>            :   /* not in cache; open a connection to the next hop server */
+<span class="lineNum">     192 </span>            :   int destfd;
+<span class="lineNum">     193 </span>            :   rio_t rio_dest;
+<span class="lineNum">     194 </span><span class="lineCov">         63 :   if ((destfd = open_next_hop(connfd, req_d, &amp;rio_dest)) &lt; 0) {</span>
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :     thread_uninit(obj_buf, connfd, req_d);</span>
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :     return NULL;</span>
+<span class="lineNum">     197 </span>            :   }
+<span class="lineNum">     198 </span>            : 
+<span class="lineNum">     199 </span><span class="lineCov">         63 :   http_relay_resp_headers(connfd, req_d, &amp;rio_dest, (int *)&amp;size, type);</span>
+<span class="lineNum">     200 </span><span class="lineCov">         63 :   if (size  &amp;&amp; size &lt; MAX_OBJECT_SIZE) {</span>
+<span class="lineNum">     201 </span><span class="lineCov">         35 :     fprintf(stdout, &quot;cacheable set, size is %d\n&quot;, (int)size);</span>
+<span class="lineNum">     202 </span><span class="lineCov">         35 :     cacheable = 1;</span>
+<span class="lineNum">     203 </span>            :   }
+<span class="lineNum">     204 </span><span class="lineCov">         28 :   else if (size){</span>
+<span class="lineNum">     205 </span>            :     /* make sure obj buff will be able to hold the object, even if not cacheable*/
+<span class="lineNum">     206 </span><span class="lineCov">          5 :     free(obj_buf);</span>
+<span class="lineNum">     207 </span><span class="lineCov">          5 :     if ((obj_buf = malloc(size)) == NULL) {</span>
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :       http_err(connfd, &quot;memory&quot;, &quot;500&quot;, &quot;Proxy internal error&quot;, &quot;proxy is out of memory&quot;);</span>
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :       free(req_d);</span>
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :       close(connfd);</span>
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 :       close(destfd);</span>
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :       return NULL;</span>
+<span class="lineNum">     213 </span>            :     }
+<span class="lineNum">     214 </span>            :   }
+<span class="lineNum">     215 </span>            :   
+<span class="lineNum">     216 </span><span class="lineCov">         63 :   http_relay_resp_body(connfd, &amp;rio_dest, size, obj_buf);</span>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineCov">         62 :   if (cacheable) {</span>
+<span class="lineNum">     219 </span><span class="lineCov">         34 :     fprintf(stdout,</span>
+<span class="lineNum">     220 </span>            :             &quot;adding to cache:\nobj = %p\nlength = %d\nhost = %s\nfile = %s\ntype = %s\n&quot;,
+<span class="lineNum">     221 </span><span class="lineCov">         34 :             obj_buf, (int)size, req_d-&gt;host, req_d-&gt;filename, type);</span>
+<span class="lineNum">     222 </span><span class="lineCov">         35 :     int r = add_to_cache(obj_buf, size, req_d-&gt;host, req_d-&gt;filename, type);</span>
+<span class="lineNum">     223 </span><span class="lineCov">         35 :     if (r &lt; 0)</span>
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :       printf(&quot;error - was not cached&quot;);</span>
+<span class="lineNum">     225 </span>            :   }
+<span class="lineNum">     226 </span><span class="lineCov">         63 :   close(destfd);</span>
+<span class="lineNum">     227 </span><span class="lineCov">         63 :   close(connfd);</span>
+<span class="lineNum">     228 </span><span class="lineCov">         63 :   free(req_d);</span>
+<span class="lineNum">     229 </span><span class="lineCov">         63 :   free(obj_buf);</span>
+<span class="lineNum">     230 </span><span class="lineCov">         63 :   return NULL;</span>
+<span class="lineNum">     231 </span>            : }
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            : /* Opens a connection to the requested server to grab the object.
+<a name="234"><span class="lineNum">     234 </span>            :  * Called if object is not present in the cache. Save obj if small enough.</a>
+<span class="lineNum">     235 </span>            :  */
+<span class="lineNum">     236 </span><span class="lineCov">         63 : static int open_next_hop(int connfd, ReqData *req_d, rio_t *rio)</span>
+<span class="lineNum">     237 </span>            : {
+<span class="lineNum">     238 </span>            :   const char *errmsg;
+<span class="lineNum">     239 </span>            :   int destfd;
+<span class="lineNum">     240 </span><span class="lineCov">         63 :   if ((destfd = open_clientfd(req_d-&gt;host, req_d-&gt;dest_port)) &lt; 0) {</span>
+<span class="lineNum">     241 </span><span class="lineNoCov">          0 :     http_err(connfd, req_d-&gt;host, &quot;500&quot;, &quot;Upstream error&quot;, &quot;Proxy couldn't connect to host&quot;);</span>
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :     return -1;</span>
+<span class="lineNum">     243 </span>            :   }
+<span class="lineNum">     244 </span><span class="lineCov">         63 :   if ((errmsg = http_write_request(destfd, req_d))) {</span>
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;bad request&quot;, &quot;400&quot;, &quot;Bad request&quot;, errmsg);</span>
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :     return -1;</span>
+<span class="lineNum">     247 </span>            :   }
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineCov">         63 :   Rio_readinitb(rio, destfd);</span>
+<span class="lineNum">     250 </span>            :   
+<span class="lineNum">     251 </span><span class="lineCov">         63 :   return destfd;</span>
+<a name="252"><span class="lineNum">     252 </span>            : }</a>
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span><span class="lineCov">        228 : static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d)</span>
+<span class="lineNum">     255 </span>            : {
+<span class="lineNum">     256 </span><span class="lineCov">        228 :   Close(connfd);</span>
+<span class="lineNum">     257 </span><span class="lineCov">        228 :   free(obj_buf);</span>
+<span class="lineNum">     258 </span><span class="lineCov">        228 :   free(req_d);</span>
+<span class="lineNum">     259 </span><span class="lineCov">        228 : }</span>
+<a name="260"><span class="lineNum">     260 </span>            : </a>
+<span class="lineNum">     261 </span>            : /* allocate objects used by proxy threads */
+<span class="lineNum">     262 </span><span class="lineCov">        291 : static inline int client_init(int connfd, ReqData **req_d, void **obj_buf)</span>
+<span class="lineNum">     263 </span>            : {
+<span class="lineNum">     264 </span>            :   
+<span class="lineNum">     265 </span><span class="lineCov">        291 :   if ((*obj_buf = malloc(MAX_OBJECT_SIZE)) == NULL) {</span>
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;memory&quot;, &quot;500&quot;, &quot;Proxy internal error&quot;, &quot;proxy is out of memory&quot;);</span>
+<span class="lineNum">     267 </span><span class="lineNoCov">          0 :     close(connfd);</span>
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :     return -1;</span>
+<span class="lineNum">     269 </span>            :   }
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span><span class="lineCov">        291 :   if ((*req_d = malloc(sizeof(ReqData))) == NULL){</span>
+<span class="lineNum">     272 </span><span class="lineNoCov">          0 :     http_err(connfd, &quot;memory&quot;, &quot;500&quot;, &quot;Proxy internal error&quot;, &quot;proxy is out of memory&quot;);</span>
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :     close(connfd);</span>
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :     free(*obj_buf);</span>
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :     return -1;</span>
+<span class="lineNum">     276 </span>            :   }
+<span class="lineNum">     277 </span><span class="lineCov">        291 :   memset(*obj_buf, 0, MAX_OBJECT_SIZE);</span>
+<span class="lineNum">     278 </span><span class="lineCov">        291 :   memset(*req_d, 0, sizeof(ReqData));</span>
+<span class="lineNum">     279 </span><span class="lineCov">        291 :   return 0;</span>
+<span class="lineNum">     280 </span>            : }
 </pre>
       </td>
     </tr>

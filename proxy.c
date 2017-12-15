@@ -110,7 +110,8 @@ static void run_proxy()
 
   while (run) {
     ready_set = read_set;
-    Select(listenfd+1, &ready_set, NULL, NULL, NULL);
+    if(Select(listenfd+1, &ready_set, NULL, NULL, NULL) < 0)
+      continue;
 
     /* lets server respond to keyboard input, as well as client requests. */
     /* there is, however, a race to stdout if stdout is not changed. */

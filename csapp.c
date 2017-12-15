@@ -356,8 +356,8 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
 {
     int rc;
 
-    if ((rc = select(n, readfds, writefds, exceptfds, timeout)) < 0)
-	unix_error("Select error");
+    if ((rc = select(n, readfds, writefds, exceptfds, timeout)) < 0);
+      //	unix_error("Select error");
     return rc;
 }
 

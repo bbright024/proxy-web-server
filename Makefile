@@ -39,7 +39,7 @@ proxy: $(OBJS) $(HEADERS) FORCE
 #	$(CC) $(CFLAGS) test_proxy.o csapp.o -o test_proxy $(LDFLAGS)
 
 clean:
-	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz *.gcda *.gcno *.info
+	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
 	rm -Rf ./cov_html
 
 FORCE:
