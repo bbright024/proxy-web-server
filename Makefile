@@ -37,9 +37,19 @@ proxy: $(OBJS)
 #test_proxy: test_proxy.o csapp.o
 #	$(CC) $(CFLAGS) test_proxy.o csapp.o -o test_proxy $(LDFLAGS)
 
+#the Checker
+check:
+	@echo Files with potentially dangerous functions.
+	@egrep '[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)' 		*.* || true
+
 clean:
 	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
 	rm -Rf ./cov_html
 
 FORCE:
+
+
+
+
+
 
