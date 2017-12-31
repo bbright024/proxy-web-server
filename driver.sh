@@ -176,7 +176,7 @@ do
 done
 
 # Make sure we have an existing executable proxy
-if [ ! -x ./proxy ]
+if [ ! -x ./bin/proxy ]
 then 
     echo "Error: ./proxy not found or not an executable file. Please rebuild your proxy and try again."
     exit
@@ -222,7 +222,7 @@ wait_for_port_use "${tiny_port}"
 # Run the proxy
 proxy_port=$(free_port)
 echo "Starting proxy on ${proxy_port}"
-./proxy ${proxy_port}  &> /dev/null &
+./bin/proxy ${proxy_port}  &> /dev/null &
 proxy_pid=$!
 
 # Wait for the proxy to start in earnest
@@ -290,7 +290,7 @@ wait_for_port_use "${tiny_port}"
 # Run the proxy
 proxy_port=$(free_port)
 echo "Starting proxy on port ${proxy_port}"
-./proxy ${proxy_port} &> /dev/null &
+./bin/proxy ${proxy_port} &> /dev/null &
 proxy_pid=$!
 
 # Wait for the proxy to start in earnest
@@ -360,7 +360,7 @@ wait_for_port_use "${tiny_port}"
 # Run the proxy
 proxy_port=$(free_port)
 echo "Starting proxy on port ${proxy_port}"
-./proxy ${proxy_port} &> /dev/null &
+./bin/proxy ${proxy_port} &> /dev/null &
 proxy_pid=$!
 
 # Wait for the proxy to start in earnest

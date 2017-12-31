@@ -4,31 +4,46 @@ AR = ar
 CC = gcc
 
 # flags for cc/ld/etc.
-CFLAGS += -g -Wall -I. -I./includes/ -O0 -fprofile-arcs -ftest-coverage -pg
+CFLAGS += -g -Wall  -I. -I./src/ -O0  -fprofile-arcs -ftest-coverage -pg
 LDFLAGS += -lpthread -L. 
 ARFLAGS = rcs
 
 # define common dependencies
-OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
+C_SOURCES=$(wildcard src/**/*.c src/*.c)
+OBJS=$(patsubst %.c,%.o,$(C_SOURCES))
+#problem with including all header files is it grabs private ones too
+#leads to make expecting a .o file for the priv headers 
+H_SOURCES=$(wildcard src/includes/*.h)
+AUX=$(patsubst %.h,%,$(H_SOURCES))
 
-all: clean proxy
 
-coverage: proxy
-	./proxy 8000
-	gprof proxy > proxyoutput.stats
-	gcov LinkedList.c
-	gcov proxy.c
-	gcov cache.c
-	gcov http.c
+TARGET=./bin/proxy
+# old
+#OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
+
+all: $(TARGET)
+
+coverage: #CFLAGS += -fprofile-arcs -ftest-coverage -pg
+coverage: all
+	./bin/proxy 8000
+	gprof ./bin/proxy > ./build/proxyoutput.stats
+	gcov ./src/LinkedList.c
+	gcov ./src/proxy.c
+	gcov ./src/cache.c
+	gcov ./src/http.c
 	@echo "Look at .gcov files for coverage data"
-	lcov -c -d . -o proxyinfo.info
-	genhtml proxyinfo.info -o cov_html/
+	lcov -c -d ./src/ -o ./build/proxyinfo.info
+	genhtml ./build/proxyinfo.info -o cov_html/
 
-proxy: $(OBJS)
-	$(CC) $(CFLAGS) -o proxy proxy.o csapp.o cache.o http.o LinkedList.o $(LDFLAGS)
+$(TARGET): build $(OBJS) 
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
-%.o: %.c 
+%.o: %.c $(AUX)
 	$(CC) $(CFLAGS) -c $<
+
+build:
+	@mkdir -p build
+	@mkdir -p bin
 
 #csapp.o: csapp.c csapp.h
 #	$(CC) -g -Wall -O0 -c csapp.c 
@@ -43,7 +58,10 @@ check:
 	@egrep '[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)' 		*.* || true
 
 clean:
+	rm -f ./bin/*
+	rm -f src/*.o src/*.gcda src/*.gcno
 	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
+	rm -f ./*.stats
 	rm -Rf ./cov_html
 
 FORCE:
