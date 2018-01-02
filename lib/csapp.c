@@ -16,7 +16,7 @@
  * 
  * Updated 4/2013 droh: 
  *   - rio_readlineb: fixed edge case bug
- *   - rio_readnb: removed redundant EINTR check
+ *   - rio_readnb: removed redundant EINTR checkasdf
  */
 /* $begin csapp.c */
 #include <includes/csapp.h>

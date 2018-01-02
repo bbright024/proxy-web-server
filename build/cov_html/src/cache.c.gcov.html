@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-31 12:08:05</td>
+            <td class="headerValue">2017-12-31 14:10:02</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">3</td>
@@ -258,25 +258,25 @@
 <span class="lineNum">     196 </span>            : 
 <a name="197"><span class="lineNum">     197 </span>            : /* prints out detailed info on the current cache state.</a>
 <span class="lineNum">     198 </span>            :  * passing in HUMAN_READABLE translates bytes to kilobytes  */
-<span class="lineNum">     199 </span><span class="lineCov">          2 : void print_cache(int human)</span>
+<span class="lineNum">     199 </span><span class="lineCov">          1 : void print_cache(int human)</span>
 <span class="lineNum">     200 </span>            : {
 <span class="lineNum">     201 </span>            :   CacheOb *op;
-<span class="lineNum">     202 </span><span class="lineCov">          2 :   int n, i = 0;</span>
+<span class="lineNum">     202 </span><span class="lineCov">          1 :   int n, i = 0;</span>
 <span class="lineNum">     203 </span>            :   LLIter iter;
-<span class="lineNum">     204 </span><span class="lineCov">          2 :   P(&amp;cache_mutex);</span>
-<span class="lineNum">     205 </span><span class="lineCov">          2 :   if (!ob_list) {</span>
+<span class="lineNum">     204 </span><span class="lineCov">          1 :   P(&amp;cache_mutex);</span>
+<span class="lineNum">     205 </span><span class="lineCov">          1 :   if (!ob_list) {</span>
 <span class="lineNum">     206 </span><span class="lineNoCov">          0 :     printf(&quot;\nThe cache is empty.\n&quot;);</span>
 <span class="lineNum">     207 </span><span class="lineNoCov">          0 :     V(&amp;cache_mutex);</span>
 <span class="lineNum">     208 </span><span class="lineNoCov">          0 :     return;</span>
 <span class="lineNum">     209 </span>            :   }
-<span class="lineNum">     210 </span><span class="lineCov">          2 :   n = NumElementsInLinkedList(ob_list);</span>
+<span class="lineNum">     210 </span><span class="lineCov">          1 :   n = NumElementsInLinkedList(ob_list);</span>
 <span class="lineNum">     211 </span>            : 
 <span class="lineNum">     212 </span>            : 
 <span class="lineNum">     213 </span>            :   
-<span class="lineNum">     214 </span><span class="lineCov">          2 :   if (n &lt;= 0) {</span>
-<span class="lineNum">     215 </span><span class="lineCov">          2 :     printf(&quot;\nThe cache is empty.\n&quot;);</span>
-<span class="lineNum">     216 </span><span class="lineCov">          2 :     V(&amp;cache_mutex);</span>
-<span class="lineNum">     217 </span><span class="lineCov">          2 :     return;</span>
+<span class="lineNum">     214 </span><span class="lineCov">          1 :   if (n &lt;= 0) {</span>
+<span class="lineNum">     215 </span><span class="lineCov">          1 :     printf(&quot;\nThe cache is empty.\n&quot;);</span>
+<span class="lineNum">     216 </span><span class="lineCov">          1 :     V(&amp;cache_mutex);</span>
+<span class="lineNum">     217 </span><span class="lineCov">          1 :     return;</span>
 <span class="lineNum">     218 </span>            :   }
 <span class="lineNum">     219 </span><span class="lineNoCov">          0 :   else if (n == 1) {</span>
 <span class="lineNum">     220 </span><span class="lineNoCov">          0 :       printf(&quot;\nThere is 1 object in the cache.\n&quot;);</span>

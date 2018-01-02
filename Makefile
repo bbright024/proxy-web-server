@@ -4,39 +4,53 @@ AR = ar
 CC = gcc
 
 # flags for cc/ld/etc.
-CFLAGS += -g -Wall  -I. -I./src/ -O0  -fprofile-arcs -ftest-coverage -pg
-LDFLAGS += -lpthread -L. 
+CFLAGS += -g -Wall -I./src/ -O2  
+LDFLAGS += -lpthread -L./build/
 ARFLAGS = rcs
 
 # define common dependencies
 C_SOURCES=$(wildcard src/**/*.c src/*.c)
 OBJS=$(patsubst %.c,%.o,$(C_SOURCES))
-#problem with including all header files is it grabs private ones too
-#leads to make expecting a .o file for the priv headers 
 H_SOURCES=$(wildcard src/includes/*.h)
 AUX=$(patsubst %.h,%,$(H_SOURCES))
 
 
 TARGET=./bin/proxy
+
+LIBTARGET=./build/libcsapp.a
+LIBSRC = ./lib/csapp.c
+LIBOBJS = ./lib/csapp.o
+SO_TARGET=$(patsubst %a,%.so,$(LIBTARGET))
+
 # old
 #OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
 
-all: $(TARGET)
+all: $(LIBTARGET) $(TARGET) $(SO_TARGET)
 
-coverage: #CFLAGS += -fprofile-arcs -ftest-coverage -pg
-coverage: all
+#either do gcov or lcov, not both - some weird bugs.
+coverage: CFLAGS= -g -Wall -I./src/ -O0 -fprofile-arcs -ftest-coverage -pg
+coverage: clean all
 	./bin/proxy 8000
-	gprof ./bin/proxy > ./build/proxyoutput.stats
-	gcov ./src/LinkedList.c
-	gcov ./src/proxy.c
-	gcov ./src/cache.c
-	gcov ./src/http.c
+	gprof -b ./bin/proxy ./gmon.out > ./build/proxyoutput.stats
+#	gcov ./src/LinkedList.c
+#	gcov ./src/proxy.c
+#	gcov ./src/cache.c
+#	gcov ./src/http.c
 	@echo "Look at .gcov files for coverage data"
-	lcov -c -d ./src/ -o ./build/proxyinfo.info
-	genhtml ./build/proxyinfo.info -o cov_html/
+	lcov -b /home/tychocel/proxy  -c -d ./src/ -o ./build/proxyinfo.info
+	genhtml ./build/proxyinfo.info -o ./build/cov_html/
+	mv ./gmon.out ./build/
 
-$(TARGET): build $(OBJS) 
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
+$(TARGET): build $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBTARGET)
+
+$(LIBTARGET): CFLAGS += -fPIC
+$(LIBTARGET): build $(LIBOBJS)
+	$(AR) $(ARFLAGS) $@ $(LIBOBJS)
+	ranlib $@
+
+$(SO_TARGET): $(LIBTARGET) $(LIBOJBS)
+	$(CC) -shared -o $@ $(LIBOBJS)
 
 %.o: %.c $(AUX)
 	$(CC) $(CFLAGS) -c $<
@@ -53,16 +67,19 @@ build:
 #	$(CC) $(CFLAGS) test_proxy.o csapp.o -o test_proxy $(LDFLAGS)
 
 #the Checker
+#the || true sets make to not exit if results are found
 check:
 	@echo Files with potentially dangerous functions.
-	@egrep '[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)' 		*.* || true
+	@egrep '[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)' $(C_SOURCES) || true
 
 clean:
-	rm -f ./bin/*
+	rm -f $(TARGET)
 	rm -f src/*.o src/*.gcda src/*.gcno
-	rm -f *~ *.o proxy core *.tar *.zip *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
+	rm -f *~ *.o proxy core *.tar *.zip
+	rm -f *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
 	rm -f ./*.stats
-	rm -Rf ./cov_html
+	rm -Rf ./build
+	rm -f ./build/*.a
 
 FORCE:
 

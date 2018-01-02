@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-12-31 12:08:05</td>
+            <td class="headerValue">2017-12-31 14:10:02</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">3</td>
@@ -174,17 +174,17 @@
 <span class="lineNum">     112 </span><span class="lineCov">          1 :   FD_SET(STDIN_FILENO, &amp;read_set);</span>
 <span class="lineNum">     113 </span><span class="lineCov">          1 :   FD_SET(listenfd, &amp;read_set);</span>
 <span class="lineNum">     114 </span>            : 
-<span class="lineNum">     115 </span><span class="lineCov">          6 :   while (run) {</span>
-<span class="lineNum">     116 </span><span class="lineCov">          4 :     ready_set = read_set;</span>
-<span class="lineNum">     117 </span><span class="lineCov">          4 :     if(Select(listenfd+1, &amp;ready_set, NULL, NULL, NULL) &lt; 0)</span>
+<span class="lineNum">     115 </span><span class="lineCov">          5 :   while (run) {</span>
+<span class="lineNum">     116 </span><span class="lineCov">          3 :     ready_set = read_set;</span>
+<span class="lineNum">     117 </span><span class="lineCov">          3 :     if(Select(listenfd+1, &amp;ready_set, NULL, NULL, NULL) &lt; 0)</span>
 <span class="lineNum">     118 </span><span class="lineNoCov">          0 :       continue;</span>
 <span class="lineNum">     119 </span>            : 
 <span class="lineNum">     120 </span>            :     /* lets server respond to keyboard input, as well as client requests. */
 <span class="lineNum">     121 </span>            :     /* there is, however, a race to stdout if stdout is not changed. */
-<span class="lineNum">     122 </span><span class="lineCov">          4 :     if (FD_ISSET(STDIN_FILENO, &amp;ready_set)){</span>
-<span class="lineNum">     123 </span><span class="lineCov">          4 :       Pthread_create(&amp;tid, NULL, command, NULL);</span>
+<span class="lineNum">     122 </span><span class="lineCov">          3 :     if (FD_ISSET(STDIN_FILENO, &amp;ready_set)){</span>
+<span class="lineNum">     123 </span><span class="lineCov">          3 :       Pthread_create(&amp;tid, NULL, command, NULL);</span>
 <span class="lineNum">     124 </span>            :     }
-<span class="lineNum">     125 </span><span class="lineCov">          4 :     if (FD_ISSET(listenfd, &amp;ready_set)){</span>
+<span class="lineNum">     125 </span><span class="lineCov">          3 :     if (FD_ISSET(listenfd, &amp;ready_set)){</span>
 <span class="lineNum">     126 </span><span class="lineNoCov">          0 :       clientlen = sizeof(struct sockaddr_storage);</span>
 <span class="lineNum">     127 </span>            :       //blocks in Accept until a connection request succeeds
 <span class="lineNum">     128 </span><span class="lineNoCov">          0 :       connfdp = Malloc(sizeof(int));</span>
@@ -197,20 +197,20 @@
 <span class="lineNum">     135 </span>            :   }
 <a name="136"><span class="lineNum">     136 </span><span class="lineCov">          1 : }</span></a>
 <span class="lineNum">     137 </span>            : 
-<span class="lineNum">     138 </span><span class="lineCov">          4 : static void *command(void *vargp)</span>
+<span class="lineNum">     138 </span><span class="lineCov">          3 : static void *command(void *vargp)</span>
 <span class="lineNum">     139 </span>            : {
-<span class="lineNum">     140 </span><span class="lineCov">          4 :   Pthread_detach(pthread_self());</span>
-<span class="lineNum">     141 </span><span class="lineCov">          4 :   free(vargp);</span>
+<span class="lineNum">     140 </span><span class="lineCov">          3 :   Pthread_detach(pthread_self());</span>
+<span class="lineNum">     141 </span><span class="lineCov">          3 :   free(vargp);</span>
 <span class="lineNum">     142 </span>            :   char buf[MAXLINE];
-<span class="lineNum">     143 </span><span class="lineCov">          4 :   if (!Fgets(buf, MAXLINE, stdin)) {</span>
+<span class="lineNum">     143 </span><span class="lineCov">          3 :   if (!Fgets(buf, MAXLINE, stdin)) {</span>
 <span class="lineNum">     144 </span><span class="lineNoCov">          0 :     return NULL;</span>
 <span class="lineNum">     145 </span>            :   }
-<span class="lineNum">     146 </span><span class="lineCov">          4 :   else if (buf[0] != 'p') {</span>
+<span class="lineNum">     146 </span><span class="lineCov">          3 :   else if (buf[0] != 'p') {</span>
 <span class="lineNum">     147 </span><span class="lineCov">          2 :     run = 0;</span>
 <span class="lineNum">     148 </span>            :   }    
 <span class="lineNum">     149 </span>            :   else 
-<span class="lineNum">     150 </span><span class="lineCov">          2 :     print_cache(0);</span>
-<span class="lineNum">     151 </span><span class="lineCov">          4 :   return NULL;</span>
+<span class="lineNum">     150 </span><span class="lineCov">          1 :     print_cache(0);</span>
+<span class="lineNum">     151 </span><span class="lineCov">          3 :   return NULL;</span>
 <span class="lineNum">     152 </span>            : }
 <span class="lineNum">     153 </span>            : 
 <span class="lineNum">     154 </span>            : /*  Main thread for a client request.

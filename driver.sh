@@ -17,8 +17,8 @@ MAX_CACHE=15
 
 # Various constants
 HOME_DIR=`pwd`
-PROXY_DIR="./.proxy"
-NOPROXY_DIR="./.noproxy"
+PROXY_DIR="./build/.proxy"
+NOPROXY_DIR="./build/.noproxy"
 TIMEOUT=5
 MAX_RAND=63000
 PORT_START=1024
@@ -183,9 +183,9 @@ then
 fi
 
 # Make sure we have an existing executable nop-server.py file
-if [ ! -x ./nop-server.py ]
+if [ ! -x ./bin/nop-server.py ]
 then 
-    echo "Error: ./nop-server.py not found or not an executable file."
+    echo "Error: ./bin/nop-server.py not found or not an executable file."
     exit
 fi
 
@@ -299,7 +299,7 @@ wait_for_port_use "${proxy_port}"
 # Run a special blocking nop-server that never responds to requests
 nop_port=$(free_port)
 echo "Starting the blocking NOP server on port ${nop_port}"
-./nop-server.py ${nop_port} &> /dev/null &
+./bin/nop-server.py ${nop_port} &> /dev/null &
 nop_pid=$!
 
 # Wait for the nop server to start in earnest
