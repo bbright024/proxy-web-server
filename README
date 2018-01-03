@@ -1,17 +1,47 @@
 ####################################################################
 Brian's Proxy Web Server
 
-Everything passes the autograder 100%, so I started adding other features.
-
+This project contains a caching, posix-multithreaded HTTP 1.0 proxy web server.
 The server uses IO multiplexing to respond to keyboard input with info on
-the cache.
+the cache.  Currently, the cache is implemented with a simple doubly-linked list.
 
-The cache uses the LinkedList API I coded for UW's CSE 333, with some
-additional code I put in to implement a least-recently-used (LRU) 
-algorithm in the linked list - LLIteratorMoveToHead moves the current
-node pointed to by the iterator to the head of the list.
+To try it out, use 'make' and './bin/proxy 8080' and change settings in Mozilla
+Firefox to use a manual proxy on port 8080.
 
+Current limitations:
+	-no HTTPS
+	-no PUT or HEAD, only GET
 
+Current command line commands (for while the proxy is running in the foreground): 
+	p - print out metadata of current objects in cache
+
+	<all other chars> - tells proxy to exit gracefully
+
+The cache uses a LinkedList API that I coded, which has a
+least-recently-used (LRU) algorithm for organizing the list.
+LLIteratorMoveToHead moves the current node pointed to by
+the iterator to the head of the list.
+
+###########
+Other Files
+###########
+
+./tiny
+    Tiny Web server from the CS:APP text - used by the driver grader
+    
+./tests/free-port.sh
+    Handy script that identifies an unused TCP port that you can use
+    for your proxy or tiny. 
+    usage: ./free-port.sh
+
+./driver.sh
+    The autograder for Basic, Concurrency, and Cache.
+    usage: ./driver.sh
+
+./tests/nop-server.py
+     helper for the autograder.         
+
+############
 The Makefile
 ############
 
@@ -27,21 +57,5 @@ make tests    - runs tests automatically
 make clean    - deletes compilied libraries/binaries and coverage info.
 
 
-Other Files
-###########
 
-./tests/free-port.sh
-    Handy script that identifies an unused TCP port that you can use
-    for your proxy or tiny. 
-    usage: ./free-port.sh
-
-./driver.sh
-    The autograder for Basic, Concurrency, and Cache.
-    usage: ./driver.sh
-
-./tests/nop-server.py
-     helper for the autograder.         
-
-./tiny
-    Tiny Web server from the CS:APP text - used by the driver 
 
