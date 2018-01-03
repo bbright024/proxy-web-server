@@ -5,7 +5,7 @@ oldcode.c
 .noproxy/
 ./build/*
 ./bin
-./old
+./old/
 
 # Compiled source #
 ###################
