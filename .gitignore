@@ -3,6 +3,8 @@
 oldcode.c
 .proxy/
 .noproxy/
+./build/*
+./bin/*
 
 # Compiled source #
 ###################
@@ -12,6 +14,7 @@ oldcode.c
 *.exe
 *.o
 *.so
+*.a
 
 # Test Data #
 #############

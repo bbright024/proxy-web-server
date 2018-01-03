@@ -26,6 +26,12 @@
 v **************************/
 /* $begin errorfuns */
 /* $begin unixerror */
+
+int testtest(const char *msg)
+{
+  printf("your message is %s\n", msg);
+  return 0;
+}
 void unix_error(char *msg) /* Unix-style error */
 {
     fprintf(stderr, "%s: %s\n", msg, strerror(errno));

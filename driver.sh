@@ -183,9 +183,9 @@ then
 fi
 
 # Make sure we have an existing executable nop-server.py file
-if [ ! -x ./bin/nop-server.py ]
+if [ ! -x ./tests/nop-server.py ]
 then 
-    echo "Error: ./bin/nop-server.py not found or not an executable file."
+    echo "Error: ./tests/nop-server.py not found or not an executable file."
     exit
 fi
 
@@ -299,7 +299,7 @@ wait_for_port_use "${proxy_port}"
 # Run a special blocking nop-server that never responds to requests
 nop_port=$(free_port)
 echo "Starting the blocking NOP server on port ${nop_port}"
-./bin/nop-server.py ${nop_port} &> /dev/null &
+./tests/nop-server.py ${nop_port} &> /dev/null &
 nop_pid=$!
 
 # Wait for the nop server to start in earnest

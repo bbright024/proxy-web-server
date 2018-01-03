@@ -4,6 +4,7 @@ echo "Running unit tests:"
 
 for i in tests/*_tests
 do
+    echo "Running test $i"
     if test -f $i
     then
 	if $VALGRIND ./$i 2>> tests/tests.log
@@ -13,7 +14,7 @@ do
 	    echo "ERROR in test $i: here's tests/tests.log"
 	    echo "------"
 	    tail tests/tests.log
-	    exit 1
+#	    exit 1
 	fi
     fi
 done

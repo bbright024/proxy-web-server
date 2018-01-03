@@ -5,7 +5,7 @@ CC = gcc
 
 # flags for cc/ld/etc.
 CFLAGS += -g -Wall -I./src/ -O2  
-LDFLAGS += -lpthread -L./build/
+LDFLAGS += -ldl -lpthread -L./build/
 ARFLAGS = rcs
 
 # define common dependencies
@@ -14,13 +14,15 @@ OBJS=$(patsubst %.c,%.o,$(C_SOURCES))
 H_SOURCES=$(wildcard src/includes/*.h)
 AUX=$(patsubst %.h,%,$(H_SOURCES))
 
+TEST_SRC=$(wildcard tests/*_tests.c)
+TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
 TARGET=./bin/proxy
 
 LIBTARGET=./build/libcsapp.a
 LIBSRC = ./lib/csapp.c
 LIBOBJS = ./lib/csapp.o
-SO_TARGET=$(patsubst %a,%.so,$(LIBTARGET))
+SO_TARGET=$(patsubst %.a,%.so,$(LIBTARGET))
 
 # old
 #OBJS = proxy.o cache.o http.o LinkedList.o csapp.o
@@ -29,19 +31,19 @@ all: $(LIBTARGET) $(TARGET) $(SO_TARGET)
 
 #either do gcov or lcov, not both - some weird bugs.
 coverage: CFLAGS= -g -Wall -I./src/ -O0 -fprofile-arcs -ftest-coverage -pg
-coverage: clean all
+coverage:  all
 	./bin/proxy 8000
-	gprof -b ./bin/proxy ./gmon.out > ./build/proxyoutput.stats
+	gprof -b ./bin/proxy ./gmon.out > ./build/proxyoput.stats
 #	gcov ./src/LinkedList.c
 #	gcov ./src/proxy.c
 #	gcov ./src/cache.c
 #	gcov ./src/http.c
 	@echo "Look at .gcov files for coverage data"
-	lcov -b /home/tychocel/proxy  -c -d ./src/ -o ./build/proxyinfo.info
+	lcov -b /home/tychocel/proxy  -c -d ./src/  -o ./build/proxyinfo.info
 	genhtml ./build/proxyinfo.info -o ./build/cov_html/
 	mv ./gmon.out ./build/
 
-$(TARGET): build $(OBJS)
+$(TARGET): build $(OBJS) 
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBTARGET)
 
 $(LIBTARGET): CFLAGS += -fPIC
@@ -59,6 +61,19 @@ build:
 	@mkdir -p build
 	@mkdir -p bin
 
+$(TESTS):
+	$(CC) $(CFLAGS) $@.c $(LDFLAGS) -o $@
+
+.PHONY: tests
+tests: CFLAGS = -g -Wall -DNDEBUG -I./src/ -O0 # -fprofile-arcs -ftest-coverage -pg
+tests: all $(TESTS)
+	bash ./tests/runtests.sh || true
+#	mv *.gcda ./tests/
+#	lcov -b /home/tychocel/proxy  -c -d ./tests/ -o ./build/testsinfo.info
+#	genhtml ./build/proxyinfo.info -o ./build/tests_cov__html/
+#	mv ./gmon.out ./build/
+#	$(CC) $(CFLAGS) $(TEST_SRC) $(LDFLAGS) -o ./tests/debug_tests 
+#	./tests/debug_tests ../README
 #csapp.o: csapp.c csapp.h
 #	$(CC) -g -Wall -O0 -c csapp.c 
 
