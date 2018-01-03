@@ -93,7 +93,7 @@ clean:
 	rm -f *~ *.o proxy core *.tar *.zip
 	rm -f *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
 	rm -f ./*.stats
-	rm -Rf ./build
+	rm -Rf ./build/
 	rm -f ./build/*.a
 
 FORCE:
