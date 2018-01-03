@@ -88,13 +88,12 @@ check:
 	@egrep '[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)' $(C_SOURCES) || true
 
 clean:
-	rm -f $(TARGET)
-	rm -f src/*.o src/*.gcda src/*.gcno
+	rm -Rf ./bin/
+	rm -Rf ./build/
+	rm -f ./*/*.o ./*/*.gcda ./*/*.gcno
 	rm -f *~ *.o proxy core *.tar *.zip
 	rm -f *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
 	rm -f ./*.stats
-	rm -Rf ./build/
-	rm -f ./build/*.a
 
 FORCE:
 
