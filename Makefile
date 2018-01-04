@@ -20,7 +20,7 @@ TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
 TARGET=./bin/proxy
 
-LIBTARGET=./build/libcsapp.a
+LIBTARGET=./build/libproxy.a
 LIBSRC=$(wildcard lib/*.c)
 LIBOBJS=$(patsubst %.c, %.o, $(LIBSRC))
 #LIBSRC = ./lib/csapp.c
