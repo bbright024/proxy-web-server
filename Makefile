@@ -21,8 +21,10 @@ TESTS=$(patsubst %.c,%,$(TEST_SRC))
 TARGET=./bin/proxy
 
 LIBTARGET=./build/libcsapp.a
-LIBSRC = ./lib/csapp.c
-LIBOBJS = ./lib/csapp.o
+LIBSRC=$(wildcard lib/*.c)
+LIBOBJS=$(patsubst %.c, %.o, $(LIBSRC))
+#LIBSRC = ./lib/csapp.c
+#LIBOBJS = ./lib/csapp.o
 
 # turn on for dynamic linking
 #SO_TARGET=$(patsubst %.a,%.so,$(LIBTARGET))

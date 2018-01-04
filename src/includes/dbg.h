@@ -36,3 +36,4 @@
 
 #define check_debug(A, M, ...) if(!(A)) { debug(M, ##__VA_ARGS__);	\
     errno=0; goto error;}
+
