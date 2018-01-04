@@ -30,3 +30,11 @@ DEBUG tests/csapp_tests.c:61:
 ----- test_failures
 DEBUG tests/csapp_tests.c:62: 
 ----- test_dlclose
+DEBUG tests/csapp_tests.c:67: ----- RUNNING: ./tests/csapp_tests  argc=1
+DEBUG tests/csapp_tests.c:59: 
+----- test_dlopen
+[ERROR] (tests/csapp_tests.c:26: errno: None) Failed to open library to test
+DEBUG tests/csapp_tests.c:67: ----- RUNNING: ./tests/csapp_tests  argc=1
+DEBUG tests/csapp_tests.c:59: 
+----- test_dlopen
+[ERROR] (tests/csapp_tests.c:26: errno: None) Failed to open library to test

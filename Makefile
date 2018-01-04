@@ -18,9 +18,6 @@ AUX=$(patsubst %.h,%,$(H_SOURCES))
 TEST_SRC=$(wildcard tests/*_tests.c)
 TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
-T_AUX_SRC=$(wildcard tests/*.h)
-T_AUX=$(patsubst %.h,%,$(T_AUX_SRC))
-
 TARGET=./bin/proxy
 
 LIBTARGET=./build/libcsapp.a
@@ -39,7 +36,7 @@ coverage: CFLAGS = -g -Wall -I./src/ -O0 -fprofile-arcs -ftest-coverage -pg
 coverage:  all
 	./bin/proxy 8000
 	lcov -b /home/tychocel/proxy  -c -d ./src/  -o ./build/proxyinfo.info
-	genhtml ./build/proxyinfo.info -o ./build/cov_html/
+	genhtml ./build/proxyinfo.info -o ./build/proxy_cov_html/
 	@echo "Open ./build/cov_html files in a browser for coverage data"
 
 $(TARGET): build $(OBJS) 
@@ -50,10 +47,6 @@ $(LIBTARGET): build $(LIBOBJS)
 	$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 	ranlib $@
 
-# turn on for dynamic linking 
-#$(SO_TARGET): $(LIBTARGET) $(LIBOJBS)
-#	$(CC) -shared -o $@ $(LIBOBJS)
-
 %.o: %.c $(AUX)
 	$(CC) $(CFLAGS) -c $<
 
@@ -62,12 +55,19 @@ build:
 	@mkdir -p bin
 
 $(TESTS): 
-	$(CC) $(CFLAGS) $@.c $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage -pg $@.c -o $@ src/LinkedList.o
+	bash $@
+	lcov -b /home/tychocel/proxy -c -d ./tests/ -o ./build/LL.info
+	genhtml ./build/LL.info -o ./build/LL_cov_html/
 
-.PHONY: tests
-tests: CFLAGS = -g -Wall -DNDEBUG -I./src/ -O0 
-tests: all $(TESTS) $(T_AUX)
-	bash ./tests/runtests.sh || true
+# i'll work on tests another time, got a lot done today but the wildcard stuff used by zed is
+# making everything buggy af.  gonna stop using wildcards for the tests that were created
+# for being executed somewhat manually.
+
+#.PHONY: tests
+#tests: CFLAGS = -g -Wall -DNDEBUG -I./src/ -O0 
+#tests: all $(TESTS) 
+#	bash ./tests/runtests.sh || true
 
 #the Checker
 #the || true sets make to not exit if results are found
@@ -82,7 +82,7 @@ clean:
 	rm -f *~ *.o proxy core *.tar *.zip
 	rm -f *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
 	rm -f ./*.stats
-
+	rm -f ./tests/*_tests
 FORCE:
 
 #old code - for having coverage data in the tests. doesn't work when
@@ -104,3 +104,7 @@ FORCE:
 # program doesn't do enough work for gprof to be useful.
 #	gprof -b ./bin/proxy ./gmon.out > ./build/proxyoput.stats
 #	mv ./gmon.out ./build/
+
+# turn on for dynamic linking 
+#$(SO_TARGET): $(LIBTARGET) $(LIBOJBS)
+#	$(CC) -shared -o $@ $(LIBOBJS)
