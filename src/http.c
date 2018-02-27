@@ -82,6 +82,7 @@ const char *http_write_request(int destfd, ReqData *req_d)
 /* Read all HTTP request headers.
  *  - return Error message, or NULL if succeed.
  */
+/* currently unused
 const char *http_read_request_headers(rio_t *rp, ReqData *req_d)
 {
   char buf[MAXLINE];
@@ -93,7 +94,7 @@ const char *http_read_request_headers(rio_t *rp, ReqData *req_d)
   }
   return NULL;
 }
-
+ */
 /* read the body of the response into the obj_buf */
 const char *http_relay_resp_body(int connfd, rio_t *rio_dest, int size, void *obj_buf)
 {

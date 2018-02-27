@@ -37,7 +37,7 @@ all: $(LIBTARGET) $(TARGET)
 coverage: CFLAGS = -g -Wall -I./src/ -O0 -fprofile-arcs -ftest-coverage -pg
 coverage:  all
 	./bin/proxy 8000
-	lcov -b /home/tychocel/proxy  -c -d ./src/  -o ./build/proxyinfo.info
+	lcov -b /home/bbright/proxy  -c -d ./src/  -o ./build/proxyinfo.info
 	genhtml ./build/proxyinfo.info -o ./build/proxy_cov_html/
 	@echo "Open ./build/cov_html files in a browser for coverage data"
 
@@ -59,7 +59,7 @@ build:
 $(TESTS): 
 	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage -pg $@.c -o $@ src/LinkedList.o
 	bash $@
-	lcov -b /home/tychocel/proxy -c -d ./tests/ -o ./build/LL.info
+	lcov -b /home/bbright/proxy -c -d ./tests/ -o ./build/LL.info
 	genhtml ./build/LL.info -o ./build/LL_cov_html/
 
 # i'll work on tests another time, got a lot done today but the wildcard stuff used by zed is

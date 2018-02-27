@@ -3,7 +3,11 @@ Brian's Proxy Web Server
 
 This project contains a caching, posix-multithreaded HTTP 1.0 proxy web server.
 The server uses IO multiplexing to respond to keyboard input with info on
-the cache.  Currently, the cache is implemented with a simple doubly-linked list.
+the cache.
+
+The cache uses a doubly linked list for LRU replacement when it fills up,
+and uses a chaining hash table in which the keys are a hash of the host/filename,
+and the values are pointers to a struct containing metadata about the file.
 
 To try it out, use 'make' and './bin/proxy 8080' and change settings in Mozilla
 Firefox to use a manual proxy on port 8080.
@@ -17,10 +21,9 @@ Current command line commands (for while the proxy is running in the foreground)
 
 	<all other chars> - tells proxy to exit gracefully
 
-The cache uses a LinkedList API that I coded, which has a
-least-recently-used (LRU) algorithm for organizing the list.
-LLIteratorMoveToHead moves the current node pointed to by
-the iterator to the head of the list.
+The cache uses a LinkedList and HashTable API that I coded from an assignment
+in UW's CSE 333.
+
 
 ###########
 Other Files
