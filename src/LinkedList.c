@@ -55,24 +55,20 @@ LinkedList AllocateLinkedList(void)
 void FreeLinkedList(LinkedList list,
                     LLPayloadFreeFnPtr payload_free_function)
 {
-	assert(list);
-	assert(payload_free_function);
-	
-	LinkedListNodePtr curr_node = list->head;
-	LinkedListNodePtr prev_node;
-
-	while(curr_node)
-		{
-			prev_node = curr_node;
-			curr_node = curr_node->next;
-			payload_free_function(prev_node->payload);
-			free(prev_node);
-			if (curr_node)
-			  curr_node->prev = NULL;
-			list->head = curr_node;
-		}
-
-	free(list);
+  assert(list);
+  assert(payload_free_function);
+  
+  LinkedListNodePtr curr_node = list->head;
+  LinkedListNodePtr temp;
+  
+  uint64_t i;
+  for (i = 0; i < list->num_elements; i++) {
+    temp = curr_node->next;
+    payload_free_function(curr_node->payload);
+    free(curr_node);
+    curr_node = temp;
+  }
+  free(list);
 }
 
 uint64_t NumElementsInLinkedList(LinkedList list)

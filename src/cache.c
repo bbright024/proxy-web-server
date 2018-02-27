@@ -61,12 +61,13 @@ static void NullFree(void *freeme) { }
  */
 
 void cache_free_all() {
+
   P(&cache_mutex);
   P(&cache_table_mutex);
 
   FreeHashTable(h_table, (LLPayloadFreeFnPtr)NullFree); //the linked list will free everything
   FreeLinkedList(ob_list, (LLPayloadFreeFnPtr)free_cache_ob);
-  
+
   V(&cache_table_mutex);
   V(&cache_mutex);
   
@@ -161,7 +162,7 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
   V(&cache_table_mutex);
   V(&cache_mutex);
   //  LLIteratorFree(iter);
-  printf("did not find the file\n");
+  //  printf("did not find the file\n");
   return 0;
 }
 
@@ -261,7 +262,7 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
 
   /* unlock access here */
   V(&cache_mutex);
-  printf("successfully added to cache\n");
+  //  printf("successfully added to cache\n");
 
   return 0;
 }
@@ -276,6 +277,7 @@ static int remove_cache_lru(size_t min_size)
   LLIter iter;
   if ((iter = LLMakeIterator(ob_list, 1)) == NULL) {
     fprintf(stderr, "make iter error: remove_cache_lru");
+    return -1;
   }
   CacheOb *obp_r;
   while (1) {
@@ -307,32 +309,19 @@ void print_cache(int human)
   int n, i = 0;
   LLIter iter;
   P(&cache_mutex);
-  if (!ob_list) {
+  if (!ob_list|| (n = NumElementsInLinkedList(ob_list)) <= 0) {
     printf("\nThe cache is empty.\n");
     V(&cache_mutex);
     return;
   }
-  n = NumElementsInLinkedList(ob_list);
 
-
-  
-  if (n <= 0) {
-    printf("\nThe cache is empty.\n");
-    V(&cache_mutex);
-    return;
-  }
-  else if (n == 1) {
-      printf("\nThere is 1 object in the cache.\n");
-  }
-  else 
-    printf("\nThere are %d objects in the cache.\n", n);
+  printf("\nThere is/are %d object(s) in the cache.\n", n);
 
   if(human) {
     printf("Total cache size (kilobytes): %zu", cache_size >> 10);
   }
   else
     printf("Total cache size (bytes): %zu", cache_size);
-
 
   if((iter = LLMakeIterator(ob_list, 0)) == NULL){
     fprintf(stderr, "make iter error\n");
@@ -354,7 +343,9 @@ void print_cache(int human)
       i++;
     } while (LLIteratorNext(iter));
 
+  P(&cache_table_mutex);
   PrintHashTable(h_table);
+  V(&cache_table_mutex);
   V(&cache_mutex);
   /* always free AFTER releasing lock; reduces time lock spent 
    * in this thread. */

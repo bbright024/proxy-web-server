@@ -33,53 +33,50 @@ static void ResizeHashTable(HashTable ht);
 static void NullFree(void *freeme) { }
 
 
-HashTable AllocateHashTable(uint32_t num_buckets) {
-	HashTable ht;
-	uint32_t i;
+HashTable AllocateHashTable(uint32_t num_buckets)
+{
+  HashTable ht;
+  uint32_t i;
+  
+  if (num_buckets == 0) {
+    return NULL;
+  }
+  
+  if ((ht = malloc(sizeof(HashTableRecord))) == NULL)
+    return NULL;
+  
+  ht->num_buckets = num_buckets;
+  ht->num_elements = 0;
 
-	if (num_buckets == 0) {
-			return NULL;
-	}
+  ht->buckets = (LinkedList *)malloc(num_buckets * sizeof(LinkedList));
+  if(ht->buckets == NULL) {
+    free(ht);
+    return NULL;
+  }
+  
+  for (i = 0; i < num_buckets; i++) {
+    if ((ht->buckets[i] = AllocateLinkedList()) == NULL){
+      uint32_t j;
+      for (j = 0; j < i; j++)
+	FreeLinkedList(ht->buckets[j], NullFree); /* cool trick, nothing in buckets yet*/
+      free(ht);
+      return NULL;
+    }
+    
+  }
 
-	if ((ht = malloc(sizeof(HashTableRecord))) == NULL)
-		return NULL;
-
-	ht->num_buckets = num_buckets;
-	ht->num_elements = 0;
-	ht->buckets = (LinkedList *)malloc(num_buckets * sizeof(LinkedList));
-
-	if(ht->buckets == NULL) {
-		free(ht);
-		return NULL;
-	}
-
-	for (i = 0; i < num_buckets; i++) {
-		if ((ht->buckets[i] = AllocateLinkedList()) == NULL)
-			{
-				uint32_t j;
-				for (j = 0; j < i; j++)
-					FreeLinkedList(ht->buckets[j], NullFree); /* cool hack, wow */
-				free(ht);
-				return NULL;
-			}
-
-	}
-
-	return ht;
+  return ht;
 }
 
 void FreeHashTable(HashTable table, ValueFreeFnPtr value_free_function)
 {
-	assert(table != NULL);
-	uint32_t i, n;
-	//	LinkedList curr_list;
-	n = table->num_buckets;
-	for (i = 0; i < n; i++)
-		{
-			//			curr_list = ht->buckets[i];
-			FreeLinkedList(table->buckets[i], value_free_function);
-		}
-	free(table);
+  assert(table != NULL);
+  uint64_t i, n;
+  n = table->num_buckets;
+  for (i = 0; i < n; i++) {
+    FreeLinkedList(table->buckets[i], value_free_function);
+  }
+  free(table);
 }
 
 uint64_t NumElementsInHashTable(HashTable table)
@@ -88,6 +85,8 @@ uint64_t NumElementsInHashTable(HashTable table)
 	return table->num_elements;
 }
 /* 
+for reference!
+
 typedef struct {
   uint64_t   key;    // the key in the key/value pair
   void      *value;  // the value in the key/value pair
@@ -169,9 +168,8 @@ static int find_key(LinkedList list, uint64_t key,
   return 0;
 }
 
-int InsertHashTable(HashTable table,
-                    HTKeyValue newkeyvalue,
-                    HTKeyValue *oldkeyvalue)
+int InsertHashTable(HashTable table, HTKeyValue newkeyvalue,
+		    HTKeyValue *oldkeyvalue)
 {
   assert(table);
   /* check if need to resize the table to make sure we get the right bucket */
@@ -217,8 +215,7 @@ int InsertHashTable(HashTable table,
   return 1;
 }
 
-int LookupHashTable(HashTable table,
-                    uint64_t key,
+int LookupHashTable(HashTable table, uint64_t key,
                     HTKeyValue *keyvalue)
 {
 	assert(table);
@@ -227,8 +224,7 @@ int LookupHashTable(HashTable table,
 	return find_key(home_list, key, keyvalue, 0);
 }
 
-int RemoveFromHashTable(HashTable table,
-                        uint64_t key,
+int RemoveFromHashTable(HashTable table, uint64_t key,
                         HTKeyValue *keyvalue)
 {
 	assert(table);
