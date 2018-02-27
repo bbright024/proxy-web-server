@@ -112,7 +112,7 @@ static void run_proxy()
   FD_SET(STDIN_FILENO, &read_set);
   FD_SET(listenfd, &read_set);
 
-  while (run) {
+  while (1) {
     ready_set = read_set;
     if(Select(listenfd+1, &ready_set, NULL, NULL, NULL) < 0)
       continue;

@@ -4,7 +4,7 @@ AR = ar
 CC = gcc
 
 # flags for cc/ld/etc.
-CFLAGS += -g -Wall -I./src/ -O2  
+CFLAGS += -g -Wall -I./src/ -O2 
 LDFLAGS += -lpthread #-L./build/ -ldl 
 ARFLAGS = rcs
 

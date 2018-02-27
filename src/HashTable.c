@@ -32,6 +32,7 @@ static void ResizeHashTable(HashTable ht);
 /* free function that does nothing */
 static void NullFree(void *freeme) { }
 
+
 HashTable AllocateHashTable(uint32_t num_buckets) {
 	HashTable ht;
 	uint32_t i;
@@ -130,100 +131,90 @@ uint64_t HashKeyToBucketNum(HashTable ht, uint64_t key)
 }
 
 
-static int find_key(LinkedList list,
-					uint64_t key,
-					HTKeyValue *oldkeyvalue,
-					int remove)
+static int find_key(LinkedList list, uint64_t key,
+		    HTKeyValue *oldkeyvalue, int remove)
 {
-	LLIter iter;
-	HTKeyValue *storage;
-	uint64_t elements_in_bucket = NumElementsInLinkedList(list);
-	if(elements_in_bucket == 0)
-		{
-			return 0;
-		}
+  LLIter iter;
+  HTKeyValue *storage;
+  uint64_t elements_in_bucket = NumElementsInLinkedList(list);
 
-	if ((iter = LLMakeIterator(list, 0)) == NULL)
-		return -1;
-	
-	//while (LLIteratorHasNext(iter))
-	do
-		{
-			
-			LLIteratorGetPayload(iter, (void **) &storage);
-			if (storage->key == key)
-				{
-					/* key was found */
-					oldkeyvalue->key = key;
-					oldkeyvalue->value = storage->value;
-					if (remove)
-						{
-							LLIteratorDelete(iter, &NullFree);
-							//free(storage);
-						}
-					LLIteratorFree(iter);
-					return 1;
-				}
-			if(!LLIteratorHasNext(iter))
-				break;
-			
-			LLIteratorNext(iter);
-		} while(1);
-	
-	LLIteratorFree(iter);
+  if (elements_in_bucket == 0){
+    return 0;
+  }
+  
+  if ((iter = LLMakeIterator(list, 0)) == NULL) {
+    return -1;
+  }
 
-	/* key not in given list */
-	return 0;
+  do {
+    LLIteratorGetPayload(iter, (void **) &storage);
+    if (storage->key == key) {
+      /* key was found */
+      oldkeyvalue->key = key;
+      oldkeyvalue->value = storage->value;
+      
+      if (remove) {
+	LLIteratorDelete(iter, &NullFree);
+	//free(storage);
+      }
+      LLIteratorFree(iter);
+      return 1;
+    }
+    
+  } while(LLIteratorNext(iter));
+  
+  LLIteratorFree(iter);
+  
+  /* key not in given list */
+  return 0;
 }
 
 int InsertHashTable(HashTable table,
                     HTKeyValue newkeyvalue,
                     HTKeyValue *oldkeyvalue)
 {
-	assert(table);
-	/* check if need to resize the table to make sure we get the right bucket */
-	ResizeHashTable(table);
-	uint64_t the_key = newkeyvalue.key;
-	
-	/* the bucket that will be home for the pair */
-	uint64_t home_bucket;
-	home_bucket = HashKeyToBucketNum(table, the_key);
-
-	/* the list where the pair will be stored */
-	LinkedList home_list;
-	home_list = table->buckets[home_bucket];
-
-	HTKeyValue *new_payload = malloc(sizeof(HTKeyValue));
-	if(new_payload == NULL)
-		return 0;
-	new_payload->key = the_key;
-	new_payload->value = newkeyvalue.value;
-	
-	if(NumElementsInLinkedList(home_list) == 0)
-		{
-			/* empty list, no need to search */
-			PushLinkedList(home_list, new_payload);
-			table->num_elements += 1;
-			return 1;
-		}
-	
-	/* need to check list for key */
-	int found = find_key(home_list, the_key, oldkeyvalue, 1);
-	if(found == -1) 			/* the out of memory code */
-		{
-			table->num_elements -=1;
-			return 0;		
-		}
-	PushLinkedList(home_list, new_payload);
-
-	if (found == 1)
-		{
-			
-			printf("%lu   %lu    found a copy \n", the_key, oldkeyvalue->key);
-			return 2;
-		}
-	table->num_elements += 1;
-	return 1;
+  assert(table);
+  /* check if need to resize the table to make sure we get the right bucket */
+  ResizeHashTable(table);
+  uint64_t the_key = newkeyvalue.key;
+  
+  /* the bucket that will be home for the pair */
+  uint64_t home_bucket;
+  home_bucket = HashKeyToBucketNum(table, the_key);
+  
+  /* the list where the pair will be stored */
+  LinkedList home_list;
+  home_list = table->buckets[home_bucket];
+  
+  HTKeyValue *new_payload = malloc(sizeof(HTKeyValue));
+  if(new_payload == NULL)
+    return 0;
+  new_payload->key = the_key;
+  new_payload->value = newkeyvalue.value;
+  
+  if(NumElementsInLinkedList(home_list) == 0)
+    {
+      /* empty list, no need to search */
+      PushLinkedList(home_list, new_payload);
+      table->num_elements += 1;
+      return 1;
+    }
+  
+  /* need to check list for key */
+  int found = find_key(home_list, the_key, oldkeyvalue, 1);
+  if(found == -1) 			/* the out of memory code */
+    {
+      table->num_elements -=1;
+      return 0;		
+    }
+  PushLinkedList(home_list, new_payload);
+  
+  if (found == 1){
+    //     printf("%lu   %lu    found a copy \n", the_key, oldkeyvalue->key);
+      return 2;
+    }
+  table->num_elements += 1;
+  return 1;
 }
 
 int LookupHashTable(HashTable table,
@@ -345,45 +336,45 @@ void HTIteratorFree(HTIter iter)
 
 int HTIteratorNext(HTIter iter)
 {
-	assert(iter);
-	
-	if (HTIteratorPastEnd(iter))
-		return 0;
-
-	//	uint64_t i, num_buckets;
-
-	//	num_buckets = iter->ht->num_buckets;
-	//	int found;
-
-	/* case 1: still an element in current bucket */
-	if (LLIteratorHasNext(iter->bucket_it))
-		{
-			LLIteratorNext(iter->bucket_it);
-			//		found = 1;
-
-			return 1;
-		}
-	/* case 2: iter is at the end of a list but not past the full table  */
-	iter->bucket_num++;
-	while(!HTIteratorPastEnd(iter))
-		{
-
-			if (NumElementsInLinkedList(iter->ht->buckets[iter->bucket_num]) > 0)
-				{
-					LLIteratorFree(iter->bucket_it);
-					iter->bucket_it = LLMakeIterator(iter->ht->buckets[iter->bucket_num], 0);
-					if (iter->bucket_it == NULL)
-						{
-							iter->is_valid = false;
-							return 0;
-						}
-					return 1;
-				}
-									
-			iter->bucket_num++;
-		}
-		
-	return 0;
+  assert(iter);
+  
+  if (HTIteratorPastEnd(iter))
+    return 0;
+  
+  //	uint64_t i, num_buckets;
+  
+  //	num_buckets = iter->ht->num_buckets;
+  //	int found;
+  
+  /* case 1: still an element in current bucket */
+  if (LLIteratorHasNext(iter->bucket_it))
+    {
+      LLIteratorNext(iter->bucket_it);
+      //		found = 1;
+      
+      return 1;
+    }
+  /* case 2: iter is at the end of a list but not past the full table  */
+  iter->bucket_num++;
+  while(!HTIteratorPastEnd(iter))
+    {
+      
+      if (NumElementsInLinkedList(iter->ht->buckets[iter->bucket_num]) > 0)
+	{
+	  LLIteratorFree(iter->bucket_it);
+	  iter->bucket_it = LLMakeIterator(iter->ht->buckets[iter->bucket_num], 0);
+	  if (iter->bucket_it == NULL)
+	    {
+	      iter->is_valid = false;
+	      return 0;
+	    }
+	  return 1;
+	}
+      
+      iter->bucket_num++;
+    }
+  
+  return 0;
 }
 
 /* 
@@ -420,6 +411,7 @@ int HTIteratorPastEnd(HTIter iter)
 int HTIteratorGet(HTIter iter, HTKeyValue *keyvalue)
 {
 	assert(iter);
+	
 	if (HTIteratorPastEnd(iter))
 		return 0;
 	HTKeyValue *payload = malloc(sizeof(HTKeyValue));
@@ -433,25 +425,50 @@ int HTIteratorGet(HTIter iter, HTKeyValue *keyvalue)
 	return 1;
 }
 
+void PrintHashTable(HashTable table)
+{
+  HTIter iter = HashTableMakeIterator(table);
+  printf("This hash table has %lu entries in %lu bucks:\n",
+	 table->num_elements, table->num_buckets);
+
+  HTKeyValue copy;
+  int cur_buck = iter->bucket_num;
+  printf("[B=%d]-->", cur_buck);
+  if (!HTIteratorPastEnd(iter)) {
+    do
+      {
+	if (cur_buck != iter->bucket_num) {
+	  cur_buck = iter->bucket_num;
+	  printf("\n[B=%d]-->", cur_buck);
+	}
+	HTIteratorGet(iter, &copy);
+	printf("[%lu,%p]", copy.key, copy.value);
+	
+      } while (HTIteratorNext(iter));
+    
+  }
+  HTIteratorFree(iter);
+}
+
 int HTIteratorDelete(HTIter iter, HTKeyValue *keyvalue)
 {
 	assert(iter);
 
 	HTKeyValue kv;
-	int res, retval;
+	int r, retval;
 
-	res = HTIteratorGet(iter, &kv);
-	if (res == 0)
+	r = HTIteratorGet(iter, &kv);
+	if (r == 0)
 		return 0;
 
-	res = HTIteratorNext(iter);
-	if (res == 0)
+	r = HTIteratorNext(iter);
+	if (r == 0)
 		retval = 2;
 	else
 		retval = 1;
 
-	res = RemoveFromHashTable(iter->ht, kv.key, keyvalue);
-	assert(res == 1);
+	r = RemoveFromHashTable(iter->ht, kv.key, keyvalue);
+	assert(r == 1);
 	assert(kv.key == keyvalue->key);
 	assert(kv.value == keyvalue->value);
 

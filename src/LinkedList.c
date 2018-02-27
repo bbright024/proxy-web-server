@@ -14,9 +14,35 @@
 //#include "includes/LinkedList.h"
 //#include "includes/LinkedList_priv.h"
 
+/* 
+void PrintLinkedList(LinkedList list)
+{
+  assert(list);
+  LLIter iter = LLMakeIterator(list, 0);
+  int *payload;
+
+  printf("[");
+  
+  if (iter->node) {
+
+    LLIteratorGetPayload(iter, (void *)&payload);
+    printf("p: %d]-->[", *(int *)payload);
+    
+    while (LLIteratorHasNext(iter)) {
+      LLIteratorNext(iter);
+      LLIteratorGetPayload(iter, (void *)&payload);
+      printf("p: %d]-->[", *(int *)payload);
+    } 
+  }
+
+  printf("NULL]\n");
+  LLIteratorFree(iter);
+}
+*/
+
 LinkedList AllocateLinkedList(void)
 {
-	LinkedList the_list = malloc(sizeof(LinkedListHead));
+  LinkedList the_list = malloc(sizeof(LinkedListHead));
 
 	if(the_list == 0)
 		return NULL;

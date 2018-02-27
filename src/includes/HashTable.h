@@ -18,6 +18,9 @@
  *  along with 333proj.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* ok so this is brian bright, i modified some of this for my proxy server,
+ * don't wanna get in trouble so leaving that stuff up top.
+ */
 #ifndef _HW1_HASHTABLE_H_
 #define _HW1_HASHTABLE_H_
 
@@ -39,6 +42,9 @@ typedef struct htrec *HashTable;
 // that frees the payload.  The pointed-to function is invoked once for each
 // value in the HashTable.
 typedef void(*ValueFreeFnPtr)(void *value);
+
+/* prints on stdout a visual representation of the buckets and their k,v pairs */
+void PrintHashTable(HashTable table);
 
 // Allocate and return a new HashTable.
 //

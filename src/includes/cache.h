@@ -6,6 +6,8 @@
 #define MAX_CACHE_SIZE 1049000
 #define MAX_OBJECT_SIZE 102400
 
+
+uint64_t file_and_host_hash(char *filename, char *host);
 int cache_init();
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type);
 int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *size_buf);
