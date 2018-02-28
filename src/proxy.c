@@ -120,13 +120,13 @@ static void run_proxy()
 
     /* lets server respond to keyboard input, as well as client requests. */
     /* there is, however, a race to stdout if stdout is not changed. */
-    //    if (FD_ISSET(STDIN_FILENO, &ready_set)){
-    //      Pthread_create(&tid, NULL, command, NULL);
+    if (FD_ISSET(STDIN_FILENO, &ready_set)){
+      Pthread_create(&tid, NULL, command, NULL);
       //currently prints stuff once and exits.  needed a quick way to
       //exit the server after printing stuff to test mem leaks.
       //currently it causes issues for the driver testing script tho
     //      break;
-    //    }
+    }
     if (FD_ISSET(listenfd, &ready_set)){
       clientlen = sizeof(struct sockaddr_storage);
       //blocks in Accept until a connection request succeeds
@@ -148,12 +148,12 @@ static void *command(void *vargp)
   if (!Fgets(buf, MAXLINE, stdin)) {
     return NULL;
   }
-    print_cache(0);
-  //  else if (buf[0] != 'p') {
+  else if (buf[0] != 'p') {
       run = 0;
-      //  }    
-      //  else 
-
+      return NULL;
+  }
+  
+  print_cache(0);
   return NULL;
 }
 
