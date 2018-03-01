@@ -28,6 +28,8 @@ static inline void add_crlfnull(char *buf, int l);
  */
 const char *http_read_request_line(rio_t *rio, ReqData *req_d)
 {
+  if (!rio || !req_d)
+    return -1;
   char buf[MAXLINE];
   Rio_readlineb(rio, buf, MAXLINE);
   sscanf(buf,  "%s %s %s", req_d->method, req_d->url, req_d->version);

@@ -6,6 +6,7 @@ oldcode.c
 build/
 bin/
 old/
+*_html/
 
 # Compiled source #
 ###################
