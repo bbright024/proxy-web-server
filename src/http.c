@@ -29,7 +29,7 @@ static inline void add_crlfnull(char *buf, int l);
 const char *http_read_request_line(rio_t *rio, ReqData *req_d)
 {
   if (!rio || !req_d)
-    return -1;
+    return "Invalid data";
   char buf[MAXLINE];
   Rio_readlineb(rio, buf, MAXLINE);
   sscanf(buf,  "%s %s %s", req_d->method, req_d->url, req_d->version);
@@ -64,12 +64,12 @@ const char *http_read_request_line(rio_t *rio, ReqData *req_d)
 const char *http_write_request(int destfd, ReqData *req_d)
 {
   /* rare corner - if snprintf reaches MAXBUF the final \r\n wont be added */
-  char dest_buf[MAXBUF];
+  char dest_buf[MAXBUF * 10];
   /* Gotta do a rio_write after each user-provided string, protect from overflow. */
-  snprintf(dest_buf, MAXBUF, "%s %s HTTP/1.0\r\n", req_d->method, req_d->filename);
+  snprintf(dest_buf, MAXBUF * 4, "%s %s HTTP/1.0\r\n", req_d->method, req_d->filename);
   add_crlfnull(dest_buf, MAXBUF);
   Rio_writen(destfd, dest_buf, strlen(dest_buf));
-  snprintf(dest_buf, MAXBUF, "Host: %s\r\n", req_d->host);
+  snprintf(dest_buf, MAXBUF * 4, "Host: %s\r\n", req_d->host);
   add_crlfnull(dest_buf, MAXBUF);
   Rio_writen(destfd, dest_buf, strlen(dest_buf));
   /* TODO: add in all other user-provided request headers here */

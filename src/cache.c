@@ -361,5 +361,5 @@ uint64_t file_and_host_hash(char *filename, char *host)
   strncpy(buf, filename, MAXLINE);
   strncpy(buf + strlen(buf), host, MAXLINE);
 
-  return FNVHash64(buf, strlen(buf));
+  return FNVHash64((unsigned char *)buf, strlen(buf));
 }
