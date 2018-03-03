@@ -4,10 +4,14 @@
 #include <includes/cache.h>
 #include <includes/LinkedList.h>
 #include <includes/HashTable.h>
-#define E_NO_MEM 1
-#define E_NO_SPACE 2
+#include <includes/defs.h>
+#include <includes/params.h>
 
-#define NBUCKETS 128
+
+
+
+
+
 /* Global shared variables */
 HashTable h_table;
 LinkedList ob_list;
