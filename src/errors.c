@@ -4,10 +4,11 @@
 void unix_error(char *msg) /* Unix-style error */
 {
   log_err("error %s", msg );
-  
+  goto error;
  error:
+  fprintf(stderr, "%s: %s\n", msg, strerror(errno));
   return;
-  //    fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+  //    
     //    exit(0);
 }
 
