@@ -15,6 +15,9 @@
 /* Global shared variables */
 HashTable h_table;
 LinkedList ob_list;
+
+
+
 static size_t cache_size;
 static sem_t cache_mutex;
 static sem_t cache_table_mutex;
@@ -37,6 +40,12 @@ static int remove_cache_lru(size_t min_size);
  */
 int cache_init()
 {
+  static int c_init;
+  if (c_init)
+    return -E_NO_MEM;
+  else
+    c_init++;
+    
   cache_size = 0;
   h_table = AllocateHashTable(NBUCKETS);
   ob_list = AllocateLinkedList();

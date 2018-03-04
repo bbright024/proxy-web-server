@@ -2,10 +2,10 @@
  * 12/7/2017
  *
  * A Multithreaded, I/O multiplexing, caching web server
- *  -currently conforms to HTTP/1.0 
+ *  -currently conforms to HTTP/1.0 but...
  *  -only implements GET
- *  -caches objects smaller than 102400 bytes
- *  -uses LRU algorithm to replace objects
+ *  -caches objects smaller than 102400 bytes in a hash table
+ *  
  *
  * All rights to CSAPP and the folks at CMU for giving the framework,
  * tiny web server, testing code, and instructions to help me out with this.
@@ -13,14 +13,17 @@
 */
 
 /* TODO:  
+ *  - split main() into a seperate .c file from proxy, so that tests can check proxy.c code
+ *      without the compiler complaining about multiple main() methods.
+ *  - fix the LRU algo to work with the hash table
  *  - fix the dangling \r\n in type in http
  *  - add support for POST and HEAD
  *  - fix the size_t size thing for objects
- *  - write test code to find the free bug
- *  - change the linked list to a hash bucket chain
  *  - modify code a bit to be able to run AFL 
- *  - add a log, this stuff is getting messy
+ *  - add a log file
  *  - have master dispatcher fork log & proxy & kb input
+ *  - add in fine-grain locking: aka per-bucket locks, and change locking model to read-writer
+ *           - note- has to be done in the hash table library
  */
 
 #include <sys/select.h>
