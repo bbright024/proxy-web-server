@@ -17,7 +17,7 @@ HashTable h_table;
 LinkedList ob_list;
 
 
-
+static int c_init;
 static size_t cache_size;
 static sem_t cache_mutex;
 static sem_t cache_table_mutex;
@@ -36,11 +36,10 @@ static int remove_cache_lru(size_t min_size);
 
 /* initialize the cache objects - must not be called more than once.
  * 
- * Returns 0 on success, -E_NO_MEM on failure
+ * Returns 0 on success, -E_NO_MEM on failure, -E_
  */
 int cache_init()
 {
-  static int c_init;
   if (c_init)
     return -E_NO_MEM;
   else
@@ -83,7 +82,8 @@ void cache_free_all() {
 
   V(&cache_table_mutex);
   V(&cache_mutex);
-  
+
+  /* done to keep valgrind happy */
   sem_destroy(&cache_table_mutex);
   sem_destroy(&cache_mutex);
 

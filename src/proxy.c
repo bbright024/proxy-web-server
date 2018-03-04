@@ -13,6 +13,8 @@
 */
 
 /* TODO:  
+ *  - on make clean - remove TEST html coverage files as well as regular use coverage
+ *  - make it so errors dont close program - have them close thread if in thread and print to log
  *  - split main() into a seperate .c file from proxy, so that tests can check proxy.c code
  *      without the compiler complaining about multiple main() methods.
  *  - fix the LRU algo to work with the hash table
