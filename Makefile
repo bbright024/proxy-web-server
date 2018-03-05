@@ -64,7 +64,7 @@ test_coverage: CFLAGS = -Wall -I./src/ -O0 $(COVFLAGS)
 test_coverage: $(OBJS) $(TESTS)
 
 $(TESTS):
-	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o $(LDFLAGS) $(LIBTARGET)
+	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o  $(LDFLAGS) $(LIBTARGET)
 	./bin/$@
 	mv *.gcda ./tests/
 	mv gmon.out ./tests/
@@ -101,6 +101,9 @@ tests: CFLAGS += $(TARGET)
 tests: $(TESTS) 
 	bash ./tests/runtests.sh || true
 
+TAGS:
+	find ./src/ -type f -name "*.[ch]" | xargs etags -
+
 #the Checker
 #the || true sets make to not exit if results are found
 .PHONY: check
@@ -110,14 +113,11 @@ check:
 
 .PHONY: clean
 clean:
-	rm -f tests/tests.log
-	find . -name "*.gc*" -exec rm {} \;
-	rm -rf 'find . -name "*.dSYM" -print'
 	rm -Rf ./bin/*
 	rm -Rf ./build/*
-	rm -f ./*/*.o ./*/*.gcda ./*/*.gcno
-	rm -f *~ *.o proxy core *.tar *.zip
-	rm -f *.gzip *.bzip *.gz *.gcda *.gcno *.info gmon.out
-	rm -f ./*.stats
-	rm -f ./tests/*_tests
+	rm -rf ./*/*_html/
+	rm -rf 'find . -name "*.dSYM" -print'
+	find . -type f \( -name "TAGS" -o -name "*.o" -o -name "*.gc*" -o -name ".stats" \
+-o -name "*.log" -o -name "*.info" -o -name "gmon.out" -o -name "*_tests" \) -exec rm {} \;
+
 FORCE:

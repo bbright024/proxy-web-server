@@ -86,7 +86,7 @@ void cache_free_all() {
   /* done to keep valgrind happy */
   sem_destroy(&cache_table_mutex);
   sem_destroy(&cache_mutex);
-
+  c_init = 0;
 }
 
 /* 
