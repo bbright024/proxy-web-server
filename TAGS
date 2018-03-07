@@ -1,0 +1,281 @@
+
+src/syscall_wraps.c,1182
+pid_t Fork(7,171
+void Execve(16,281
+pid_t Wait(22,432
+pid_t Waitpid(31,556
+void Kill(40,734
+void Pause(48,851
+unsigned int Sleep(54,901
+unsigned int Alarm(63,1042
+void Setpgid(67,1116
+pid_t Getpgrp(75,1251
+handler_t *Signal(Signal84,1415
+void Sigprocmask(97,1809
+void Sigemptyset(104,1968
+void Sigfillset(111,2081
+void Sigaddset(118,2192
+void Sigdelset(125,2319
+int Sigismember(132,2446
+int Sigsuspend(140,2606
+int Open(152,2884
+ssize_t Read(161,3049
+ssize_t Write(170,3202
+off_t Lseek(179,3363
+void Close(188,3527
+int Select(196,3623
+int Dup2(206,3866
+void Stat(215,3989
+void Fstat(221,4105
+DIR *Opendir(Opendir231,4311
+struct dirent *Readdir(Readdir240,4450
+int Closedir(251,4650
+void *Mmap(Mmap263,4905
+void Munmap(272,5124
+void *Malloc(Malloc282,5395
+void *Realloc(Realloc291,5521
+void *Calloc(Calloc300,5666
+void Free(309,5812
+void Fclose(317,5987
+FILE *Fdopen(Fdopen323,6069
+char *Fgets(Fgets333,6215
+FILE *Fopen(Fopen343,6395
+void Fputs(353,6558
+size_t Fread(359,6669
+void Fwrite(368,6873
+int Socket(379,7122
+void Setsockopt(388,7283
+void Bind(396,7480
+void Listen(404,7638
+int Accept(412,7758
+void Connect(421,7927
+
+src/cache.c,723
+HashTable h_table 12,257
+LinkedList ob_list 13,283
+static size_t cache_size;15,311
+static sem_t cache_mutex;16,337
+static sem_t cache_table_mutex;17,363
+typedef struct cache_object{cache_object19,396
+  char *location;location20,425
+  size_t size;21,443
+  char type[type22,458
+  char host[host23,480
+  char filename[filename24,502
+} CacheOb;25,528
+static void NullFree(32,713
+int cache_init(36,902
+static void free_cache_ob(61,1410
+void cache_free_all(72,1659
+int check_cache(109,2566
+static CacheOb *new_cache_obj(new_cache_obj184,4351
+int add_to_cache_table(215,5120
+int add_to_cache(251,5987
+static int remove_cache_lru(289,7005
+void print_cache(320,7828
+uint64_t file_and_host_hash(371,9007
+
+src/pthread_wraps.c,274
+void Pthread_create(7,209
+void Pthread_cancel(16,440
+void Pthread_join(23,576
+void Pthread_detach(31,763
+void Pthread_exit(39,917
+pthread_t Pthread_self(43,980
+void Pthread_once(47,1042
+void Sem_init(55,1268
+void Sem_destroy(61,1414
+void P(67,1522
+void V(73,1605
+
+src/includes/proxy.h,55
+#define INVALID_URL 4,32
+#define E_NEXTHOP_CONN 5,54
+
+src/includes/LinkedList.h,262
+#define _LINKEDLIST_H_2,23
+typedef struct ll_head *LinkedList;LinkedList12,452
+typedef void(*LLPayloadFreeFnPtr)LLPayloadFreeFnPtr18,741
+typedef int(*LLPayloadComparatorFnPtr)LLPayloadComparatorFnPtr27,1115
+typedef struct ll_iter *LLIter;LLIter132,4453
+
+src/includes/params.h,23
+#define NBUCKETS 3,14
+
+src/includes/dbg.h,225
+#define debug(10,121
+#define clean_errno(14,240
+#define log_err(16,303
+#define log_warn(21,445
+#define log_info(25,586
+#define check(29,731
+#define sentinel(32,825
+#define check_mem(35,908
+#define check_debug(37,959
+
+src/includes/cache.h,105
+#define MAX_CACHE_SIZE 8,140
+#define MAX_OBJECT_SIZE 9,171
+typedef struct cache_object CacheOb;13,297
+
+src/includes/http.h,252
+#define INVALID_URL 9,123
+  char method[method13,229
+  char url[url14,285
+  char version[version15,339
+  char host[host16,391
+  char filename[filename17,443
+  char dest_port[dest_port18,501
+  char headers[headers19,572
+} ReqData;20,631
+
+src/includes/csapp.h,388
+#define __CSAPP_H__6,110
+#define DEF_MODE 36,695
+#define DEF_UMASK 37,762
+typedef struct sockaddr SA;42,904
+#define RIO_BUFSIZE 47,1031
+    int rio_fd;49,1073
+    int rio_cnt;50,1143
+    char *rio_bufptr;rio_bufptr51,1209
+    char rio_buf[rio_buf52,1279
+} rio_t;53,1332
+#define	MAXLINE	62,1513
+#define MAXBUF 63,1563
+#define LISTENQ 64,1612
+typedef void handler_t(93,2419
+
+src/includes/HashTable_priv.h,395
+#define _HW1_HASHTABLE_PRIV_H_22,798
+typedef struct htrec 33,1157
+  uint64_t        num_buckets;34,1180
+  uint64_t        num_elements;35,1241
+  LinkedList     *buckets;buckets36,1313
+} HashTableRecord;37,1370
+typedef struct ht_itrec 40,1445
+  bool       is_valid;41,1471
+  HashTable  ht;42,1524
+  uint64_t   bucket_num;43,1580
+  LLIter     bucket_it;44,1633
+} HTIterRecord;45,1695
+
+src/includes/errors.h,25
+#define E_NO_SPACE 3,14
+
+src/includes/HashTable.h,265
+typedef struct htrec *HashTable;HashTable39,1522
+typedef void(*ValueFreeFnPtr)ValueFreeFnPtr44,1736
+  uint64_t   key;94,3543
+  void      *value;value95,3597
+} HTKeyValue, *HTKeyValuePtr;HTKeyValuePtr96,3653
+typedef struct ht_itrec *HTIter;HTIter225,7886
+
+src/includes/LinkedList_priv.h,529
+#define _LINKEDLIST_PRIV_H_2,28
+typedef struct ll_node 17,716
+  void           *payload;payload18,741
+  struct ll_node *next;next19,806
+  struct ll_node *prev;prev20,864
+} LinkedListNode, *LinkedListNodePtr;LinkedListNodePtr21,922
+typedef struct ll_head 26,1178
+  uint64_t          num_elements;27,1203
+  LinkedListNodePtr head;28,1265
+  LinkedListNodePtr tail;29,1333
+} LinkedListHead;30,1401
+typedef struct ll_iter 35,1610
+  LinkedList        list;36,1635
+  LinkedListNodePtr node;37,1684
+} LLIterSt;38,1752
+
+src/network_wraps.c,338
+void Getaddrinfo(7,130
+void Getnameinfo(17,381
+void Freeaddrinfo(27,698
+void Inet_ntop(32,766
+void Inet_pton(38,917
+struct hostent *Gethostbyname(Gethostbyname57,1382
+struct hostent *Gethostbyaddr(Gethostbyaddr67,1553
+int open_clientfd(89,2168
+int open_listenfd(136,3845
+int Open_clientfd(188,5718
+int Open_listenfd(197,5885
+
+src/proxy.c,255
+static int run 21,518
+void run_proxy(34,948
+static void *command(command82,2535
+static void *process_client(process_client102,2922
+static int open_next_hop(185,5573
+static inline void thread_uninit(203,6052
+static inline int client_init(211,6227
+
+src/errors.c,191
+void Usage(4,83
+void init_error(10,196
+void thread_unix_error(16,264
+void unix_error(22,350
+void posix_error(34,566
+void gai_error(41,732
+void app_error(48,902
+void dns_error(56,1029
+
+src/main.c,73
+#define PORT_ETH_MAX 7,133
+#define PORT_ETH_MIN 8,160
+int main(11,265
+
+src/http.c,552
+static const char *user_agent_hdr user_agent_hdr20,365
+static const char *connection_close connection_close21,492
+static const char *proxy_con_close proxy_con_close22,555
+const char *http_read_request_line(http_read_request_line29,780
+const char *http_write_request(http_write_request64,1798
+const char *http_relay_resp_body(http_relay_resp_body101,3058
+const char *http_relay_resp_headers(http_relay_resp_headers117,3497
+void http_serve(173,5354
+void http_err(188,5920
+int url_parse(218,6964
+static inline void add_crlfnull(275,8232
+
+src/LinkedList.c,590
+LinkedList AllocateLinkedList(43,792
+void FreeLinkedList(55,1019
+uint64_t NumElementsInLinkedList(74,1443
+bool PushLinkedList(80,1549
+bool PopLinkedList(105,2018
+bool AppendLinkedList(130,2527
+bool SliceLinkedList(162,3196
+void SortLinkedList(192,3878
+LLIter LLMakeIterator(227,4650
+void LLIteratorFree(242,4954
+bool LLIteratorHasNext(248,5028
+bool LLIteratorNext(260,5213
+bool LLIteratorHasPrev(275,5437
+bool LLIteratorPrev(288,5622
+void LLIteratorGetPayload(302,5845
+bool LLIteratorDelete(311,6020
+bool LLIteratorMoveToHead(363,7330
+bool LLIteratorInsertBefore(391,7968
+
+src/HashTable.c,613
+static void NullFree(33,839
+HashTable AllocateHashTable(36,880
+void FreeHashTable(71,1579
+uint64_t NumElementsInHashTable(82,1831
+uint64_t FNVHash64(95,2110
+uint64_t FNVHashInt64(115,2646
+uint64_t HashKeyToBucketNum(127,2861
+static int find_key(133,2954
+int InsertHashTable(171,3716
+int LookupHashTable(218,5000
+int RemoveFromHashTable(227,5270
+HTIter HashTableMakeIterator(239,5608
+static void ResizeHashTable(276,6289
+void HTIteratorFree(323,7184
+int HTIteratorNext(333,7318
+int HTIteratorPastEnd(394,8816
+int HTIteratorGet(407,9033
+void PrintHashTable(424,9374
+int HTIteratorDelete(449,9956
+
+src/includes/defs.h,0

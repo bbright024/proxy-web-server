@@ -80,7 +80,8 @@ void cache_free_all() {
   V(&cache_table_mutex);
   V(&cache_mutex);
 
-  /* done to keep valgrind happy */
+  // done to keep valgrind happy
+  // when thread exits, semaphores get cleaned by kernel automatically
   Sem_destroy(&cache_table_mutex);
   Sem_destroy(&cache_mutex);
 }
@@ -101,11 +102,15 @@ int check_cache_table(uint64_t key)
  * Checks the cache for the host/filename combo.
  * Returns:
  *  - 0 if not found.
- *  - 1 if found - saves the type, object, and size as sideaffects
+ *  - 1 if found - saves the type, object, and size as side-effects
+ *  - -EINVAL if args are invalid
  */
 
 int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *sizep)
 {
+  if (!host || !filename || !obj_buf || !sizep || !type)
+    return -EINVAL;
+  
   P(&cache_mutex);
   int n = NumElementsInLinkedList(ob_list);
   if (n <= 0) {
