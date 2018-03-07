@@ -1,20 +1,14 @@
 /* Brian's Proxy Web Server
- * 12/7/2017
+ * 2017 - 2018
  *
  * A Multithreaded, I/O multiplexing, caching web server
- *  -currently conforms to HTTP/1.0 but...
- *  -only implements GET
- *  -caches objects smaller than 102400 bytes in a hash table
- *  
  *
  * All rights to CSAPP and the folks at CMU for giving the framework,
  * tiny web server, testing code, and instructions to help me out with this.
  * 
 */
 
-
-
-#include <sys/select.h>
+//#include <sys/select.h>
 #include <stdio.h>
 #include <includes/csapp.h>
 #include <includes/cache.h>
@@ -23,8 +17,8 @@
 
 
 /* Global static variables */
-
-static int run = 1; 		/* while true, server keeps looping */
+/* run: while true, server keeps looping. changed via user input. */
+static int run = 1; 		
 
 /* static function definitions */
 
@@ -34,24 +28,12 @@ static int open_next_hop(int connfd, ReqData *req_d, rio_t *rio);
 static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d);
 static inline int client_init(int connfd, ReqData **req_d, void **obj_buf);
 
-static void proxy_init()
-{
-  Signal(SIGPIPE, SIG_IGN); //ignores any sigpipe errors
-  
-  if (cache_init() < 0) {
-    fprintf(stderr, "out of men");
-    exit(0);
-  }
-}
-
 /* set up listening socket and call doit 
  * to service any requests.
  */
 void run_proxy(char *proxy_port)
 {
-  proxy_init();
 
-  
   int listenfd, *connfdp;
   socklen_t clientlen;
   struct sockaddr_storage clientaddr;

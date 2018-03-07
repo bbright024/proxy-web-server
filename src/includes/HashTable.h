@@ -21,8 +21,8 @@
 /* ok so this is brian bright, i modified some of this for my proxy server,
  * don't wanna get in trouble so leaving that stuff up top.
  */
-#ifndef _HW1_HASHTABLE_H_
-#define _HW1_HASHTABLE_H_
+
+#pragma once
 
 #include <stdbool.h>    // for bool, true, false
 #include <stdint.h>     // so we can use uint64_t, etc.
@@ -316,5 +316,3 @@ int HTIteratorGet(HTIter iter, HTKeyValue *keyvalue);
 // - +2 on success, but the iterator is now invalid because
 //   it has advanced past the end of the hash table.
 int HTIteratorDelete(HTIter iter, HTKeyValue *keyvalue);
-
-#endif  // _HW1_HASHTABLE_H_

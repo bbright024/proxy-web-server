@@ -6,7 +6,7 @@
 #include <includes/HashTable.h>
 #include <includes/defs.h>
 #include <includes/params.h>
-
+#include <includes/errors.h>
 
 
 
@@ -16,8 +16,6 @@
 HashTable h_table;
 LinkedList ob_list;
 
-
-static int c_init;
 static size_t cache_size;
 static sem_t cache_mutex;
 static sem_t cache_table_mutex;
@@ -36,23 +34,22 @@ static int remove_cache_lru(size_t min_size);
 
 /* initialize the cache objects - must not be called more than once.
  * 
- * Returns 0 on success, -E_NO_MEM on failure, -E_
+ * exits on failure through errors.c
  */
-int cache_init()
+void cache_init()
 {
+  static int c_init;
   if (c_init)
-    return -E_NO_MEM;
-  else
-    c_init++;
+    return;
+
+  c_init++;
     
   cache_size = 0;
   h_table = AllocateHashTable(NBUCKETS);
   ob_list = AllocateLinkedList();
   sem_init(&cache_mutex, 0, 1);
   sem_init(&cache_table_mutex, 0, 1);
-  if (!ob_list)
-    return -E_NO_MEM;
-  return 0;
+  
 }
 
 /* Frees all parts of a CacheOb struct */
@@ -86,7 +83,6 @@ void cache_free_all() {
   /* done to keep valgrind happy */
   sem_destroy(&cache_table_mutex);
   sem_destroy(&cache_mutex);
-  c_init = 0;
 }
 
 /* 
@@ -225,7 +221,7 @@ int add_to_cache_table(CacheOb *obp)
   int r = InsertHashTable(h_table, new_kv, &old_kv);
   if (r == 0){
   
-    return -E_NO_MEM;
+    return -ENOMEM;
   }
   else if (r == 2) {
     fprintf(stderr, "error - key collision - shouldn't happen!\n");
@@ -244,14 +240,14 @@ int add_to_cache_table(CacheOb *obp)
  * - fails if size is above MAX_OBJECT_SIZE, or if any parameters are invalid.
  * - uses LLIterator to delete from end of list if needed (SliceLinked needs payloadptr)
  *
- * Returns 0 on success, -E_NO_MEM or -E_NO_SPACE or -3 on other errors
+ * Returns 0 on success, -ENOMEM or -E_NO_SPACE or -3 on other errors
  */
 
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type)
 {
   CacheOb *obp = new_cache_obj(object, size, host, filename, type);
   if (!obp) {
-    return -E_NO_MEM;
+    return -ENOMEM;
   }
   
   P(&cache_mutex);

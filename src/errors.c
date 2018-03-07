@@ -1,6 +1,11 @@
 #include <includes/csapp.h>
 #include <includes/dbg.h>
-
+#include <includes/errors.h>
+void Usage(char *prog)
+{
+  fprintf(stderr, "format: %s <port num: 1024 - 65535> \n ", prog);
+  exit(0);
+}
 void unix_error(char *msg) /* Unix-style error */
 {
   log_err("error %s", msg );
