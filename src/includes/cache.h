@@ -13,12 +13,13 @@ struct cache_object;
 typedef struct cache_object CacheOb;
 
 uint64_t file_and_host_hash(char *filename, char *host);
-void cache_init();
+int cache_init();
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type);
 int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *size_buf);
 void cache_free_all();
 void print_cache(int human);
 int add_to_cache_table(CacheOb *obp);
+
 
 /* zero out the least recently used object in the cache 
  * and place it in free list */

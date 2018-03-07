@@ -8,13 +8,9 @@
 #include <includes/params.h>
 #include <includes/errors.h>
 
-
-
-
-
 /* Global shared variables */
-HashTable h_table;
-LinkedList ob_list;
+HashTable h_table = NULL;
+LinkedList ob_list = NULL;
 
 static size_t cache_size;
 static sem_t cache_mutex;
@@ -32,27 +28,36 @@ typedef struct cache_object{
 static void free_cache_ob(CacheOb *cp);
 static int remove_cache_lru(size_t min_size);
 
-/* initialize the cache objects - must not be called more than once.
- * 
- * exits on failure through errors.c
- */
-void cache_init()
+/* free function that does nothing - for HashTable library*/
+static void NullFree(void *freeme) { }
+
+/* initialize the cache objects - must not be called more than once.  */
+/* TODO: add a way to restart the cache by moving c_init to a global var */
+int cache_init()
 {
   static int c_init;
   if (c_init)
-    return;
+    return 0;
 
   c_init++;
     
   cache_size = 0;
   h_table = AllocateHashTable(NBUCKETS);
+  if (!h_table)
+    return -ENOMEM;
   ob_list = AllocateLinkedList();
-  sem_init(&cache_mutex, 0, 1);
-  sem_init(&cache_table_mutex, 0, 1);
-  
+  if (!ob_list) {
+    FreeHashTable(h_table, (LLPayloadFreeFnPtr)NullFree); 
+    return -ENOMEM;
+  }
+  if ((sem_init(&cache_mutex, 0, 1)) < 0 ||
+      (sem_init(&cache_table_mutex, 0, 1)) < 0)
+    return -ENOMEM;
+
+  return 0;
 }
 
-/* Frees all parts of a CacheOb struct */
+/* Frees all dynamically allocated parts of a CacheOb struct */
 static void free_cache_ob(CacheOb *obp)
 {
   if (!obp)
@@ -61,14 +66,9 @@ static void free_cache_ob(CacheOb *obp)
   free(obp);
 }
 
-
-/* free function that does nothing */
-static void NullFree(void *freeme) { }
-
-/* Frees everything in the cache. 
+/* Frees everything dynamically allocated by the cache and cache_init 
  * cache_init must be called after this in order to use cache again.
  */
-
 void cache_free_all() {
 
   P(&cache_mutex);
@@ -81,8 +81,8 @@ void cache_free_all() {
   V(&cache_mutex);
 
   /* done to keep valgrind happy */
-  sem_destroy(&cache_table_mutex);
-  sem_destroy(&cache_mutex);
+  Sem_destroy(&cache_table_mutex);
+  Sem_destroy(&cache_mutex);
 }
 
 /* 

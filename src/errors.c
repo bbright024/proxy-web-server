@@ -1,16 +1,29 @@
 #include <includes/csapp.h>
 #include <includes/dbg.h>
 #include <includes/errors.h>
-void Usage(char *prog)
+void Usage(const char *prog)
 {
   fprintf(stderr, "format: %s <port num: 1024 - 65535> \n ", prog);
   exit(0);
 }
-void unix_error(char *msg) /* Unix-style error */
+
+void init_error(const char *msg)
 {
-  log_err("error %s", msg );
-  goto error;
- error:
+  unix_error(msg);
+  exit(0);
+}
+
+void thread_unix_error(const char *msg)
+{
+  unix_error(msg);
+  pthread_exit(NULL);
+}
+
+void unix_error(const char *msg) /* Unix-style error */
+{
+  //  log_err("error %s", msg );
+  //  goto error;
+  // error:
   fprintf(stderr, "%s: %s\n", msg, strerror(errno));
   return;
   //    

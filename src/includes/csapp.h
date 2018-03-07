@@ -58,16 +58,24 @@ extern int h_errno;    /* Defined by BIND for DNS errors */
 extern char **environ; /* Defined by libc */
 
 /* Misc constants */
+
 #define	MAXLINE	 8192  /* Max text line length */
 #define MAXBUF   8192  /* Max I/O buffer size */
 #define LISTENQ  1024  /* Second argument to listen() */
 
 /* Our own error-handling functions */
-void unix_error(char *msg);
+/* 
+void unix_error(const char *msg);
 void posix_error(int code, char *msg);
 void dns_error(char *msg);
 void gai_error(int code, char *msg);
-void app_error(char *msg);
+void app_error(char *msg); 
+*/
+extern void unix_error();
+extern void posix_error();
+extern void dns_error();
+extern void gai_error();
+extern void app_error();
 
 /* Process control wrappers */
 pid_t Fork(void);
@@ -171,6 +179,8 @@ void Pthread_once(pthread_once_t *once_control, void (*init_function)());
 
 /* POSIX semaphore wrappers */
 void Sem_init(sem_t *sem, int pshared, unsigned int value);
+void Sem_destroy(sem_t *sem);
+
 void P(sem_t *sem);
 void V(sem_t *sem);
 
