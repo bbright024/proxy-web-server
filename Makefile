@@ -28,6 +28,7 @@ AUX=$(patsubst %.h,%,$(H_SOURCES))
 TEST_SRC=$(wildcard tests/*_test.c)
 TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
+TESTABLE_OBJS = ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o ./src/proxy.o
 TARGET=./bin/proxy
 
 
@@ -64,7 +65,7 @@ test_coverage: CFLAGS = -Wall -I./src/ -O0 $(COVFLAGS)
 test_coverage: $(OBJS) $(TESTS)
 
 $(TESTS):
-	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o $(LDFLAGS) $(LIBTARGET)
+	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ $(TESTABLE_OBJS) $(LDFLAGS) $(LIBTARGET)
 	./bin/$@
 	mv *.gcda ./tests/
 	mv gmon.out ./tests/
