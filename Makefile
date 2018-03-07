@@ -104,6 +104,10 @@ tests: $(TESTS)
 TAGS tags:
 	find ./src/ -type f -name "*.[ch]" | xargs etags -
 
+# for a list of file dependencies
+.PHONY: dep depend
+dep depend:
+	$(CC) $(CFLAGS) -MM ./src/*.c 
 #the Checker
 #the || true sets make to not exit if results are found
 .PHONY: check
