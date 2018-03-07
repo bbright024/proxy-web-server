@@ -64,7 +64,7 @@ test_coverage: CFLAGS = -Wall -I./src/ -O0 $(COVFLAGS)
 test_coverage: $(OBJS) $(TESTS)
 
 $(TESTS):
-	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o  $(LDFLAGS) $(LIBTARGET)
+	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o $(LDFLAGS) $(LIBTARGET)
 	./bin/$@
 	mv *.gcda ./tests/
 	mv gmon.out ./tests/

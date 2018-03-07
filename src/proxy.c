@@ -19,77 +19,39 @@
 #include <includes/csapp.h>
 #include <includes/cache.h>
 #include <includes/http.h>
+#include <includes/proxy.h>
 
-/* Recommended max cache and object sizes */
-#define MAX_CACHE_SIZE 1049000
-#define MAX_OBJECT_SIZE 102400
-
-/* User-defined port range */
-#define PORT_ETH_MAX 65535
-#define PORT_ETH_MIN 1025
-
-/* Error codes */
-#define INVALID_URL 1
-#define E_NEXTHOP_CONN 3
 
 /* Global static variables */
-static char *proxy_port;
+
 static int run = 1; 		/* while true, server keeps looping */
 
-/* Function definitions */
-static void run_proxy();
+/* static function definitions */
+
 static void *command(void *vargp);
 static void *process_client(void *vargp);
 static int open_next_hop(int connfd, ReqData *req_d, rio_t *rio);
 static inline void thread_uninit(void *obj_buf, int connfd, ReqData *req_d);
 static inline int client_init(int connfd, ReqData **req_d, void **obj_buf);
 
-/* Check args, set up signal handlers, init the cache, and start the proxy */
-int main(int argc, char *argv[])
+static void proxy_init()
 {
-  if (argc != 2) {
-    fprintf(stderr, "format: %s <port num>\n", argv[0]);
-    exit(0);
-  }
-
-  /* check if given port value in ephemeral range
-   * if the strlen is > 5, obvious out of range & could be malicious
-   */
-  if (strlen(argv[1]) > 5) {
-    fprintf(stderr, "port must be in the unpriv range!\n");
-    exit(0);
-  }
-  int port;
-  port = atoi(argv[1]);
-  if (port < PORT_ETH_MIN || port > PORT_ETH_MAX) {
-    fprintf(stderr, "port must be in the unpriv range!\n");
-    exit(0);
-  }
-
-  proxy_port = argv[1];
-
   Signal(SIGPIPE, SIG_IGN); //ignores any sigpipe errors
   
   if (cache_init() < 0) {
     fprintf(stderr, "out of men");
     exit(0);
   }
-    
-  run_proxy();
-  
-  // should never get here, but if it does, clean stuff
-  cache_free_all();
-  fprintf(stderr, "server terminated\n");
-  //  pthread_exit(0);
-   // return 0;
-  exit(0);
 }
 
 /* set up listening socket and call doit 
  * to service any requests.
  */
-static void run_proxy()
+void run_proxy(char *proxy_port)
 {
+  proxy_init();
+
+  
   int listenfd, *connfdp;
   socklen_t clientlen;
   struct sockaddr_storage clientaddr;
@@ -129,6 +91,10 @@ static void run_proxy()
       Pthread_create(&tid, NULL, process_client, connfdp);
     }
   }
+  
+  // should never get here, but if it does, clean stuff
+  cache_free_all();
+
 }
 
 static void *command(void *vargp)
