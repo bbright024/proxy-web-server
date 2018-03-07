@@ -90,18 +90,18 @@ $(LIBTARGET): build $(LIBOBJS)
 	$(CC) $(CFLAGS) -c $< 
 
 .PHONY: build
-build:
+build:  
 	@mkdir -p ./build
-	@mkdir -p ./bin
 	@mkdir -p ./bin/tests
-
+	$(MAKE) TAGS
 
 .PHONY: tests
 tests: CFLAGS += $(TARGET)
 tests: $(TESTS) 
 	bash ./tests/runtests.sh || true
 
-TAGS:
+.PHONY: TAGS tags
+TAGS tags:
 	find ./src/ -type f -name "*.[ch]" | xargs etags -
 
 #the Checker
@@ -111,6 +111,7 @@ check:
 	@echo Files with potentially dangerous functions.
 	@egrep '[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)' $(C_SOURCES) || true
 
+# manually remove TAGS if you really need to
 .PHONY: clean
 clean:
 	rm -Rf ./bin/*
@@ -119,5 +120,7 @@ clean:
 	rm -rf 'find . -name "*.dSYM" -print'
 	find . -type f \( -name "TAGS" -o -name "*.o" -o -name "*.gc*" -o -name ".stats" \
 -o -name "*.log" -o -name "*.info" -o -name "gmon.out" -o -name "*_tests" \) -exec rm {} \;
+	$(MAKE) TAGS
+
 
 FORCE:

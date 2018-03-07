@@ -1,3 +1,28 @@
+####################
+TODO:
+###################
+
+Short term:
+
+in order:
+      - fix error handling
+      - split main to another file
+      - write unit testing
+
+random fixes:
+       - have LRU algo work with hash table
+       - fix dangling \r\n when saving 'type' in http
+       - finish making fully HTTP 1.0 compliant
+       - check signed/unsigned conversion, especially overflows
+       - add fine grain locking - per bucket locks, also implement reader writer lock paradigm in hash table lib  
+ *  - modify code a bit to be able to run AFL 
+
+Long term:
+     - add zlog logging library
+     - add bstring library
+     - add com_err error handling library
+     - split the process up, use RPC to communicate (like OK web server)
+     
 ####################################################################
 Brian's Proxy Web Server
 

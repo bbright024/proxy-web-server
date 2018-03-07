@@ -12,21 +12,7 @@
  * 
 */
 
-/* TODO:  
- *  - on make clean - remove TEST html coverage files as well as regular use coverage
- *  - make it so errors dont close program - have them close thread if in thread and print to log
- *  - split main() into a seperate .c file from proxy, so that tests can check proxy.c code
- *      without the compiler complaining about multiple main() methods.
- *  - fix the LRU algo to work with the hash table
- *  - fix the dangling \r\n in type in http
- *  - add support for POST and HEAD
- *  - fix the size_t size thing for objects
- *  - modify code a bit to be able to run AFL 
- *  - add a log file
- *  - have master dispatcher fork log & proxy & kb input
- *  - add in fine-grain locking: aka per-bucket locks, and change locking model to read-writer
- *           - note- has to be done in the hash table library
- */
+
 
 #include <sys/select.h>
 #include <stdio.h>
