@@ -2,20 +2,15 @@
 TODO:
 ###################
 
-Short term:
-
-in order:
-      - fix error handling
-      - split main to another file
-      - write unit testing
-
 random fixes:
-       - have LRU algo work with hash table
+       - have better lock cleanup after syscall errors if you dont want to close entire server if one thread bugs
        - fix dangling \r\n when saving 'type' in http
        - finish making fully HTTP 1.0 compliant
        - check signed/unsigned conversion, especially overflows
-       - add fine grain locking - per bucket locks, also implement reader writer lock paradigm in hash table lib  
- *  - modify code a bit to be able to run AFL 
+       - add fine grain locking - per bucket locks, also implement reader writer lock paradigm in hash table lib
+       - fix char * that should be const char *
+ *  - modify code a bit to be able to run AFL
+   
 
 Long term:
      - add zlog logging library

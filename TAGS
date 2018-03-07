@@ -50,30 +50,34 @@ void Listen(404,7638
 int Accept(412,7758
 void Connect(421,7927
 
-src/cache.c,723
+src/cache.c,889
 HashTable h_table 12,257
 LinkedList ob_list 13,283
 static size_t cache_size;15,311
-static sem_t cache_mutex;16,337
-static sem_t cache_table_mutex;17,363
-typedef struct cache_object{cache_object19,396
-  char *location;location20,425
-  size_t size;21,443
-  char type[type22,458
-  char host[host23,480
-  char filename[filename24,502
-} CacheOb;25,528
-static void NullFree(32,713
-int cache_init(36,902
-static void free_cache_ob(61,1410
-void cache_free_all(72,1659
-int check_cache(109,2566
-static CacheOb *new_cache_obj(new_cache_obj184,4351
-int add_to_cache_table(215,5120
-int add_to_cache(251,5987
-static int remove_cache_lru(289,7005
-void print_cache(320,7828
-uint64_t file_and_host_hash(371,9007
+static sem_t cache_size_mutex;17,338
+static sem_t cache_mutex;18,369
+static sem_t cache_table_mutex;19,395
+typedef struct cache_object{cache_object21,428
+  char *location;location22,457
+  size_t size;23,475
+  char type[type24,490
+  char host[host25,512
+  char filename[filename26,534
+} CacheOb;27,560
+static void NullFree(34,745
+int cache_init(38,934
+static void free_cache_ob(64,1491
+static void __cache_destroy(73,1688
+void cache_free_all(91,2272
+int check_cache(121,2830
+static CacheOb *new_cache_obj(new_cache_obj196,4674
+int add_to_cache_table(227,5443
+static inline void lock_all_cache(253,6072
+static inline void unlock_all_cache(260,6181
+int add_to_cache(276,6711
+static int remove_cache_lru(313,7789
+void print_cache(344,8692
+uint64_t file_and_host_hash(399,10003
 
 src/pthread_wraps.c,274
 void Pthread_create(7,209
@@ -257,7 +261,7 @@ bool LLIteratorDelete(311,6020
 bool LLIteratorMoveToHead(363,7330
 bool LLIteratorInsertBefore(391,7968
 
-src/HashTable.c,613
+src/HashTable.c,614
 static void NullFree(33,839
 HashTable AllocateHashTable(36,880
 void FreeHashTable(71,1579
@@ -266,16 +270,16 @@ uint64_t FNVHash64(95,2110
 uint64_t FNVHashInt64(115,2646
 uint64_t HashKeyToBucketNum(127,2861
 static int find_key(133,2954
-int InsertHashTable(171,3716
-int LookupHashTable(218,5000
-int RemoveFromHashTable(227,5270
-HTIter HashTableMakeIterator(239,5608
-static void ResizeHashTable(276,6289
-void HTIteratorFree(323,7184
-int HTIteratorNext(333,7318
-int HTIteratorPastEnd(394,8816
-int HTIteratorGet(407,9033
-void PrintHashTable(424,9374
-int HTIteratorDelete(449,9956
+int InsertHashTable(172,3815
+int LookupHashTable(219,5099
+int RemoveFromHashTable(228,5369
+HTIter HashTableMakeIterator(240,5707
+static void ResizeHashTable(277,6388
+void HTIteratorFree(324,7283
+int HTIteratorNext(334,7417
+int HTIteratorPastEnd(395,8915
+int HTIteratorGet(408,9132
+void PrintHashTable(425,9473
+int HTIteratorDelete(450,10055
 
 src/includes/defs.h,0

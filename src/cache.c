@@ -13,6 +13,8 @@ HashTable h_table = NULL;
 LinkedList ob_list = NULL;
 
 static size_t cache_size;
+
+static sem_t cache_size_mutex;
 static sem_t cache_mutex;
 static sem_t cache_table_mutex;
 
@@ -51,7 +53,8 @@ int cache_init()
     return -ENOMEM;
   }
   if ((sem_init(&cache_mutex, 0, 1)) < 0 ||
-      (sem_init(&cache_table_mutex, 0, 1)) < 0)
+      (sem_init(&cache_table_mutex, 0, 1)) < 0 ||
+      (sem_init(&cache_size_mutex, 0, 1)) < 0)
     return -ENOMEM;
 
   return 0;
@@ -66,14 +69,9 @@ static void free_cache_ob(CacheOb *obp)
   free(obp);
 }
 
-/* Frees everything dynamically allocated by the cache and cache_init 
- * cache_init must be called after this in order to use cache again.
- */
-void cache_free_all() {
-
-  P(&cache_mutex);
-  P(&cache_table_mutex);
-
+/* Internal function in case P and V need to be stay locked while the cache is destroyed */
+static void __cache_destroy()
+{
   FreeHashTable(h_table, (LLPayloadFreeFnPtr)NullFree); //the linked list will free everything
   FreeLinkedList(ob_list, (LLPayloadFreeFnPtr)free_cache_ob);
 
@@ -84,6 +82,20 @@ void cache_free_all() {
   // when thread exits, semaphores get cleaned by kernel automatically
   Sem_destroy(&cache_table_mutex);
   Sem_destroy(&cache_mutex);
+  Sem_destroy(&cache_size_mutex);
+}
+
+/* Frees everything dynamically allocated by the cache and cache_init 
+ * cache_init must be called after this in order to use cache again.
+ */
+void cache_free_all()
+{
+
+  P(&cache_mutex);
+  P(&cache_table_mutex);
+
+  __cache_destroy();
+
 }
 
 /* 
@@ -139,7 +151,7 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
   V(&cache_mutex);
 
   return 1;
-
+  /* below is the old code for just LinkedList searching */
   //printf("\nSEARCHING:\n obj = %p \nhost = %s \nfile = %s \n", obj_buf, host, filename);
   /* 
   CacheOb *op;
@@ -217,7 +229,8 @@ int add_to_cache_table(CacheOb *obp)
   
   if (!obp)
     return -E_NO_SPACE;
-  
+
+  /* TODO: fix how HTKeyValue has to be passed by value to insert hash table */
   HTKeyValue new_kv, old_kv;
 
   new_kv.key = file_and_host_hash(obp->filename, obp->host);
@@ -225,10 +238,9 @@ int add_to_cache_table(CacheOb *obp)
   
   int r = InsertHashTable(h_table, new_kv, &old_kv);
   if (r == 0){
-  
     return -ENOMEM;
   }
-  else if (r == 2) {
+  else if (r == 2) { // a key collision shouldn't affect the overall program at all since the old one gets replaced
     fprintf(stderr, "error - key collision - shouldn't happen!\n");
     free(old_kv.value);
   }
@@ -238,6 +250,19 @@ int add_to_cache_table(CacheOb *obp)
   return r;
 }
 
+static inline void lock_all_cache()
+{
+  P(&cache_mutex);
+  P(&cache_table_mutex);
+  P(&cache_size_mutex);
+}
+
+static inline void unlock_all_cache()
+{
+      V(&cache_size_mutex);
+      V(&cache_table_mutex);
+      V(&cache_mutex);
+}
 /* Adds an object to the cache.
  * - removes the last obj on linked list if cache is full
  * - pushes new obj to front
@@ -255,36 +280,35 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
     return -ENOMEM;
   }
   
-  P(&cache_mutex);
+  lock_all_cache();
+  
   if (cache_size + size > MAX_CACHE_SIZE) {
     /* need to free oldest obj in list that leaves enough space*/
+    /* TODO: remove from cache_table as well */
     if(remove_cache_lru(size) != 0) {
       /* if here, must be an error in the earlier space checks */
       free(obp->location);
       free(obp);
-      V(&cache_mutex);
+      unlock_all_cache();
       return -E_NO_SPACE;
     }
   }
   
-  P(&cache_table_mutex);
-  add_to_cache_table(obp);
-  V(&cache_table_mutex);
-  
-  PushLinkedList(ob_list, obp);
+  if (add_to_cache_table(obp) < 0 ||
+      !PushLinkedList(ob_list, obp)) {
+    unlock_all_cache();
+    thread_unix_error("couldn't add to cache");
+  }
+    
   cache_size += size;
-
-  /* unlock access here */
-  V(&cache_mutex);
-  //  printf("successfully added to cache\n");
-
+  unlock_all_cache();
   return 0;
 }
 
 /* Search backwards from the tail of the cache, removing the first
  * object of smaller size than the given parameter.  
  *   -reads and writes the cache, must be locked before called
- *   
+ *   -ALL LOCKS SHOULD BE HELD ALREADY
  * Returns 0 if successful, negative on error. */
 static int remove_cache_lru(size_t min_size)
 {
@@ -298,19 +322,19 @@ static int remove_cache_lru(size_t min_size)
     LLIteratorGetPayload(iter, (void **)&obp_r);
     if (min_size < obp_r->size)
       break;
-    if(!LLIteratorPrev(iter)){ /* at head of list if false */
+    if(!LLIteratorPrev(iter)){
+      // logically, this should never happen because it can only happen if the size of the obj was
+      // too big to ever be cached.  
       LLIteratorFree(iter);
       return -1;
     }
-  } 
-  cache_size -= obp_r->size;
-  
-  if(!LLIteratorDelete(iter, (LLPayloadFreeFnPtr)free_cache_ob)) {
-    /* if here, the cache is now empty */
-    LLIteratorFree(iter);
-    fprintf(stderr, "cache is empty\n");
-      return -3;
   }
+  cache_size -= obp_r->size;
+
+  HTKeyValue old_kv;
+  RemoveFromHashTable(h_table, file_and_host_hash(obp_r->filename, obp_r->host), &old_kv);
+  LLIteratorDelete(iter, (LLPayloadFreeFnPtr)free_cache_ob);
+
   LLIteratorFree(iter);
   return 0;
 }
@@ -331,12 +355,14 @@ void print_cache(int human)
 
   printf("\nThere is/are %d object(s) in the cache.\n", n);
 
+  P(&cache_size_mutex);
   if(human) {
     printf("Total cache size (kilobytes): %zu", cache_size >> 10);
   }
   else
     printf("Total cache size (bytes): %zu", cache_size);
 
+  V(&cache_size_mutex);
   if((iter = LLMakeIterator(ob_list, 0)) == NULL){
     fprintf(stderr, "make iter error\n");
     V(&cache_mutex);
@@ -361,19 +387,21 @@ void print_cache(int human)
   PrintHashTable(h_table);
   V(&cache_table_mutex);
   V(&cache_mutex);
-  /* always free AFTER releasing lock; reduces time lock spent 
-   * in this thread. */
+  // always free AFTER releasing lock; reduces time in lock 
   LLIteratorFree(iter); 	
   return;
 }
 
 
+/* helper function that concatenates the filename and hostname
+ * for FNVHash, returns the hash itself.  
+  */
 uint64_t file_and_host_hash(char *filename, char *host)
 {
   unsigned int combo = MAXLINE * 2;
   char buf[combo];
   strncpy(buf, filename, MAXLINE);
-  strncpy(buf + strlen(buf), host, MAXLINE);
+  strncat(buf, host, MAXLINE);
 
   return FNVHash64((unsigned char *)buf, strlen(buf));
 }

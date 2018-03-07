@@ -168,6 +168,7 @@ static int find_key(LinkedList list, uint64_t key,
   return 0;
 }
 
+/* TODO:  fix the HTKeyValue struct that is passed by value; I dislike how the UW guys did this.*/
 int InsertHashTable(HashTable table, HTKeyValue newkeyvalue,
 		    HTKeyValue *oldkeyvalue)
 {
