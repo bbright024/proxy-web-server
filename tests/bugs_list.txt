@@ -1,0 +1,9 @@
+##################
+LIST OF BUGS FOUND
+##################
+
+Small tests:
+
+
+Large tests:
+      - weird stuff when terminating and request still open, like leaving off \r\n in request line
