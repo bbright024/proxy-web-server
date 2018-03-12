@@ -1,4 +1,4 @@
-######################################
+#FOR#####################################
 # Makefile for Brian's Proxy 2018
 ######################################
 
@@ -47,7 +47,7 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 # the build rules
 ##################
 
-all: clean build $(LIBTARGET) $(TARGET)
+all: build $(LIBTARGET) $(TARGET)
 # turn on for dynamic linking
 #all:  $(SO_TARGET)
 

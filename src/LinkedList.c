@@ -42,14 +42,20 @@ void PrintLinkedList(LinkedList list)
 
 LinkedList AllocateLinkedList(void)
 {
-  LinkedList the_list = malloc(sizeof(LinkedListHead));
+  LinkedList li = malloc(sizeof(LinkedListHead));
+  
+  if(li == 0)
+    return NULL;
 
-	if(the_list == 0)
-		return NULL;
-	the_list->num_elements = 0;
-	the_list->head = NULL;
-	the_list->tail = NULL;
-	return the_list;
+  int rc;
+  if ((rc =  pthread_mutex_init(&li->llock, NULL)) != 0){
+    return NULL;
+  }
+  li->num_elements = 0;
+  
+  li->head = NULL;
+  li->tail = NULL;
+  return li;
 }
 
 void FreeLinkedList(LinkedList list,
@@ -68,6 +74,11 @@ void FreeLinkedList(LinkedList list,
     free(curr_node);
     curr_node = temp;
   }
+  if ((pthread_mutex_destroy(&list->llock)) != 0) {
+    fprintf(stderr, "error freeing linked list lock\n");
+    exit(-1);
+  }
+    
   free(list);
 }
 

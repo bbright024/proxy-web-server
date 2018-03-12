@@ -1,3 +1,12 @@
+####
+Log:
+####
+
+Mon Mar 12
+  - gonna work on fine grain locking and reader/writer locks for cache
+  - at the same time, get rid of passing structs by value in the hash/ll library
+  
+
 ####################
 TODO:
 ###################
@@ -17,7 +26,11 @@ Long term:
      - add bstring library
      - add com_err error handling library
      - split the process up, use RPC to communicate (like OK web server)
-     
+     - add a menu to
+       * change port of the proxy
+       * print out list of ppl who have accessed the proxy
+       * list of objects in the cache
+       * option to list it all in a browser in html
 ####################################################################
 Brian's Proxy Web Server
 

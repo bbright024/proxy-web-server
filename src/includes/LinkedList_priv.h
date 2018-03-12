@@ -1,6 +1,7 @@
 #ifndef _LINKEDLIST_PRIV_H_
 #define _LINKEDLIST_PRIV_H_
 
+#include <pthread.h> // for list lock
 #include <stdint.h>      // for uint64_t
 #include "./LinkedList.h"  // for LinkedList and LLIter
 
@@ -25,6 +26,7 @@ typedef struct ll_node {
 // definition.  This struct contains metadata about the linked list.
 typedef struct ll_head {
   uint64_t          num_elements;  //  # elements in the list
+  pthread_mutex_t llock;        // for protecting in multithread proc
   LinkedListNodePtr head;  // head of linked list, or NULL if empty
   LinkedListNodePtr tail;  // tail of linked list, or NULL if empty
 } LinkedListHead;

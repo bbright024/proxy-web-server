@@ -18,8 +18,7 @@
  *  along with 333proj.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _HW1_HASHTABLE_PRIV_H_
-#define _HW1_HASHTABLE_PRIV_H_
+#pragma once
 
 #include "./LinkedList.h"
 #include "./HashTable.h"
@@ -47,5 +46,3 @@ typedef struct ht_itrec {
 // This is the internal hash function we use to map from uint64_t keys to a
 // bucket number.
 uint64_t HashKeyToBucketNum(HashTable ht, uint64_t key);
-
-#endif  // _HW1_HASHTABLE_PRIV_H_

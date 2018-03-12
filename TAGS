@@ -79,18 +79,37 @@ static int remove_cache_lru(313,7789
 void print_cache(344,8692
 uint64_t file_and_host_hash(399,10003
 
-src/pthread_wraps.c,274
-void Pthread_create(7,209
+src/pthread_wraps.c,537
+void Pthread_create(8,210
 void Pthread_cancel(16,440
 void Pthread_join(23,576
-void Pthread_detach(31,763
-void Pthread_exit(39,917
-pthread_t Pthread_self(43,980
-void Pthread_once(47,1042
-void Sem_init(55,1268
-void Sem_destroy(61,1414
-void P(67,1522
-void V(73,1605
+void Pthread_detach(30,743
+void Pthread_exit(36,878
+pthread_t Pthread_self(40,941
+void Pthread_once(44,1003
+void Pthread_mutex_init(48,1128
+void P_P(54,1324
+void Pthread_mutex_lock(57,1390
+void P_V(63,1547
+void Pthread_mutex_unlock(66,1615
+void Pthread_mutex_destroy(72,1778
+void Pthread_cond_init(78,1944
+void Pthread_cond_destroy(84,2133
+void Pthread_cond_signal(90,2293
+void Pthread_cond_broadcast(96,2451
+void Pthread_cond_wait(102,2618
+
+src/includes/sys_wraps.h,294
+void Pthread_create(8,210
+void Pthread_cancel(17,441
+void Pthread_join(24,577
+void Pthread_detach(31,744
+void Pthread_exit(38,880
+pthread_t Pthread_self(42,943
+void Pthread_once(46,1005
+void Pthread_mutex_init(50,1130
+void Pthread_mutex_lock(58,1332
+void Pthread_mutex_unlock(64,1482
 
 src/includes/proxy.h,55
 #define INVALID_URL 4,32
@@ -149,19 +168,18 @@ typedef struct sockaddr SA;42,904
 #define LISTENQ 64,1612
 typedef void handler_t(93,2419
 
-src/includes/HashTable_priv.h,395
-#define _HW1_HASHTABLE_PRIV_H_22,798
-typedef struct htrec 33,1157
-  uint64_t        num_buckets;34,1180
-  uint64_t        num_elements;35,1241
-  LinkedList     *buckets;buckets36,1313
-} HashTableRecord;37,1370
-typedef struct ht_itrec 40,1445
-  bool       is_valid;41,1471
-  HashTable  ht;42,1524
-  uint64_t   bucket_num;43,1580
-  LLIter     bucket_it;44,1633
-} HTIterRecord;45,1695
+src/includes/HashTable_priv.h,357
+typedef struct htrec 32,1108
+  uint64_t        num_buckets;33,1131
+  uint64_t        num_elements;34,1192
+  LinkedList     *buckets;buckets35,1264
+} HashTableRecord;36,1321
+typedef struct ht_itrec 39,1396
+  bool       is_valid;40,1422
+  HashTable  ht;41,1475
+  uint64_t   bucket_num;42,1531
+  LLIter     bucket_it;43,1584
+} HTIterRecord;44,1646
 
 src/includes/errors.h,25
 #define E_NO_SPACE 3,14
@@ -174,22 +192,23 @@ typedef void(*ValueFreeFnPtr)ValueFreeFnPtr44,1736
 } HTKeyValue, *HTKeyValuePtr;HTKeyValuePtr96,3653
 typedef struct ht_itrec *HTIter;HTIter225,7886
 
-src/includes/LinkedList_priv.h,529
+src/includes/LinkedList_priv.h,562
 #define _LINKEDLIST_PRIV_H_2,28
-typedef struct ll_node 17,716
-  void           *payload;payload18,741
-  struct ll_node *next;next19,806
-  struct ll_node *prev;prev20,864
-} LinkedListNode, *LinkedListNodePtr;LinkedListNodePtr21,922
-typedef struct ll_head 26,1178
-  uint64_t          num_elements;27,1203
-  LinkedListNodePtr head;28,1265
-  LinkedListNodePtr tail;29,1333
-} LinkedListHead;30,1401
-typedef struct ll_iter 35,1610
-  LinkedList        list;36,1635
-  LinkedListNodePtr node;37,1684
-} LLIterSt;38,1752
+typedef struct ll_node 18,754
+  void           *payload;payload19,779
+  struct ll_node *next;next20,844
+  struct ll_node *prev;prev21,902
+} LinkedListNode, *LinkedListNodePtr;LinkedListNodePtr22,960
+typedef struct ll_head 27,1216
+  uint64_t          num_elements;28,1241
+  pthread_mutex_t llock;29,1303
+  LinkedListNodePtr head;30,1373
+  LinkedListNodePtr tail;31,1441
+} LinkedListHead;32,1509
+typedef struct ll_iter 37,1718
+  LinkedList        list;38,1743
+  LinkedListNodePtr node;39,1792
+} LLIterSt;40,1860
 
 src/network_wraps.c,338
 void Getaddrinfo(7,130
@@ -241,45 +260,51 @@ void http_err(188,5920
 int url_parse(218,6964
 static inline void add_crlfnull(275,8232
 
+src/posix_wraps.c,76
+void Sem_init(8,159
+void Sem_destroy(14,305
+void P(20,413
+void V(26,496
+
 src/LinkedList.c,590
 LinkedList AllocateLinkedList(43,792
-void FreeLinkedList(55,1019
-uint64_t NumElementsInLinkedList(74,1443
-bool PushLinkedList(80,1549
-bool PopLinkedList(105,2018
-bool AppendLinkedList(130,2527
-bool SliceLinkedList(162,3196
-void SortLinkedList(192,3878
-LLIter LLMakeIterator(227,4650
-void LLIteratorFree(242,4954
-bool LLIteratorHasNext(248,5028
-bool LLIteratorNext(260,5213
-bool LLIteratorHasPrev(275,5437
-bool LLIteratorPrev(288,5622
-void LLIteratorGetPayload(302,5845
-bool LLIteratorDelete(311,6020
-bool LLIteratorMoveToHead(363,7330
-bool LLIteratorInsertBefore(391,7968
+void FreeLinkedList(61,1085
+uint64_t NumElementsInLinkedList(85,1641
+bool PushLinkedList(91,1747
+bool PopLinkedList(116,2216
+bool AppendLinkedList(141,2725
+bool SliceLinkedList(173,3394
+void SortLinkedList(203,4076
+LLIter LLMakeIterator(238,4848
+void LLIteratorFree(253,5152
+bool LLIteratorHasNext(259,5226
+bool LLIteratorNext(271,5411
+bool LLIteratorHasPrev(286,5635
+bool LLIteratorPrev(299,5820
+void LLIteratorGetPayload(313,6043
+bool LLIteratorDelete(322,6218
+bool LLIteratorMoveToHead(374,7528
+bool LLIteratorInsertBefore(402,8166
 
 src/HashTable.c,614
-static void NullFree(33,839
-HashTable AllocateHashTable(36,880
-void FreeHashTable(71,1579
-uint64_t NumElementsInHashTable(82,1831
-uint64_t FNVHash64(95,2110
-uint64_t FNVHashInt64(115,2646
-uint64_t HashKeyToBucketNum(127,2861
-static int find_key(133,2954
-int InsertHashTable(172,3815
-int LookupHashTable(219,5099
-int RemoveFromHashTable(228,5369
-HTIter HashTableMakeIterator(240,5707
-static void ResizeHashTable(277,6388
-void HTIteratorFree(324,7283
-int HTIteratorNext(334,7417
-int HTIteratorPastEnd(395,8915
-int HTIteratorGet(408,9132
-void PrintHashTable(425,9473
-int HTIteratorDelete(450,10055
+static void NullFree(33,841
+HashTable AllocateHashTable(36,882
+void FreeHashTable(71,1581
+uint64_t NumElementsInHashTable(82,1833
+uint64_t FNVHash64(95,2112
+uint64_t FNVHashInt64(115,2648
+uint64_t HashKeyToBucketNum(127,2863
+static int find_key(133,2956
+int InsertHashTable(172,3817
+int LookupHashTable(219,5101
+int RemoveFromHashTable(228,5371
+HTIter HashTableMakeIterator(240,5709
+static void ResizeHashTable(277,6390
+void HTIteratorFree(324,7285
+int HTIteratorNext(334,7419
+int HTIteratorPastEnd(395,8917
+int HTIteratorGet(408,9134
+void PrintHashTable(425,9475
+int HTIteratorDelete(450,10057
 
 src/includes/defs.h,0

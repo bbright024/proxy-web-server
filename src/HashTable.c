@@ -1,5 +1,5 @@
 /* 
- * Copyright 1969 bbb
+ * Brian Bright 2017-18
  */
 #include <stdio.h>
 #include <stdlib.h>
