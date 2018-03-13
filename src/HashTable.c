@@ -51,7 +51,7 @@ static void free_table_locks(int allocs, HashTable ht)
   }
   case 4: {
     for (i = 0; i < nbucks; i++) {
-      if ((pthread_mutex_destroy(&ht->buck_locks[i]) != 0)
+      if ((pthread_mutex_destroy(&ht->buck_locks[i]) != 0))
 	exit(-1);      
     }
   }
@@ -63,7 +63,7 @@ static void free_table_locks(int allocs, HashTable ht)
       exit(-1);
   }
   case 1: {
-    if((pthread_mutex_destroy(&ht->hlock)) != 0)
+    if ((pthread_mutex_destroy(&ht->hlock)) != 0)
       exit(-1);
   }
   default:
@@ -408,12 +408,11 @@ static void ResizeHashTable(HashTable ht)
 	HashTableRecord tmp;
 
 	//race conditions like mad here
-	P_P(newht->hlock);
 	
 	tmp = *ht;
 	*ht = *newht;
 
-	P_V(oldht)
+
 	*newht = tmp;
 	
 	FreeHashTable(newht, &NullFree);

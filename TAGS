@@ -155,21 +155,24 @@ typedef struct sockaddr SA;40,857
 #define LISTENQ 62,1565
 typedef void handler_t(91,2372
 
-src/includes/HashTable_priv.h,473
-typedef struct htrec 33,1129
-  uint64_t        num_buckets;34,1152
-  uint64_t        num_elements;35,1213
-  pthread_mutex_t *buck_locks;buck_locks36,1285
-  pthread_cond_t  hcond;37,1356
-  pthread_mutex_t hlock;38,1427
-  LinkedList     *buckets;buckets39,1488
-} HashTableRecord;40,1545
-typedef struct ht_itrec 43,1620
-  bool       is_valid;44,1646
-  HashTable  ht;45,1699
-  uint64_t   bucket_num;46,1755
-  LLIter     bucket_it;47,1808
-} HTIterRecord;48,1870
+src/includes/HashTable_priv.h,549
+typedef struct htrec 34,1152
+  uint64_t        num_buckets;35,1175
+  uint64_t        num_elements;36,1236
+  pthread_mutex_t *buck_locks;buck_locks37,1308
+  pthread_cond_t  hcond;38,1379
+  pthread_mutex_t hlock;39,1450
+  sem_t resize_lock;40,1511
+  int reading;41,1532
+  int resizing;42,1547
+  LinkedList     *buckets;buckets43,1563
+} HashTableRecord;44,1620
+typedef struct ht_itrec 47,1695
+  bool       is_valid;48,1721
+  HashTable  ht;49,1774
+  uint64_t   bucket_num;50,1830
+  LLIter     bucket_it;51,1883
+} HTIterRecord;52,1945
 
 src/includes/errors.h,25
 #define E_NO_SPACE 3,14
@@ -278,24 +281,24 @@ src/HashTable.c,684
 static void NullFree(36,923
 #define HT_ALLOCS 38,963
 static void free_table_locks(39,983
-HashTable AllocateHashTable(73,1691
-void FreeHashTable(144,3284
-uint64_t NumElementsInHashTable(155,3559
-uint64_t FNVHash64(168,3840
-uint64_t FNVHashInt64(188,4376
-uint64_t HashKeyToBucketNum(200,4591
-static int find_key(206,4684
-int InsertHashTable(248,5649
-int LookupHashTable(306,7159
-int RemoveFromHashTable(315,7429
-HTIter HashTableMakeIterator(327,7767
-static void ResizeHashTable(364,8448
-void HTIteratorFree(411,9343
-int HTIteratorNext(421,9477
-int HTIteratorPastEnd(482,10975
-int HTIteratorGet(495,11192
-void PrintHashTable(512,11533
-int HTIteratorDelete(537,12115
+HashTable AllocateHashTable(73,1695
+void FreeHashTable(144,3288
+uint64_t NumElementsInHashTable(155,3563
+uint64_t FNVHash64(168,3844
+uint64_t FNVHashInt64(188,4380
+uint64_t HashKeyToBucketNum(200,4595
+static int find_key(206,4688
+int InsertHashTable(248,5653
+int LookupHashTable(306,7163
+int RemoveFromHashTable(315,7433
+HTIter HashTableMakeIterator(327,7771
+static void ResizeHashTable(364,8452
+void HTIteratorFree(421,9553
+int HTIteratorNext(431,9687
+int HTIteratorPastEnd(492,11185
+int HTIteratorGet(505,11402
+void PrintHashTable(522,11743
+int HTIteratorDelete(547,12325
 
 src/includes/defs.h,0
 

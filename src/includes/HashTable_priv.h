@@ -21,6 +21,7 @@
 #pragma once
 
 #include <pthread.h>
+#include <semaphore.h>
 #include "./LinkedList.h"
 #include "./HashTable.h"
 
@@ -36,6 +37,8 @@ typedef struct htrec {
   pthread_mutex_t *buck_locks;   // array for holding locks to buckets
   pthread_cond_t  hcond;         // cond var for reader/writer problem
   pthread_mutex_t hlock;         // lock for this hash table
+  sem_t resize_lock;
+  int reading;
   int resizing;
   LinkedList     *buckets;       // the array of buckets
 } HashTableRecord;
