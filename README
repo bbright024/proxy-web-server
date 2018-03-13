@@ -4,6 +4,15 @@ I've decided to restart this project, in order to fix some annoyancies and impro
 I will also use this reboot time to fix up my HashTable and LinkedList library to better support fine-grain locking (maybe even lock free someday?) and to fully implement a few other libraries (com_err, bstring, zlog) that will help keep order.  Also, it'll let me do comments and unit testing a lot better than I presently have.
 If any job recruiters are reading this, well, sorry you have to see version 1.0 of my proxy.  It'll be back soon in 2.0!
 
+What I learned:
+  - How important unit testing/small testing is for seeing dependencies in your code tree
+           - and how long it takes to write proper big testing
+  - A lot of tricks for Makefiles, like the dep rule, tags rule, and patsubs to get all source code
+  - how to properly organize a project directory
+  - integration of libraries is trickyyyyy
+  - valgrind --tool=helgrind is great for multithreaded programs - finds races and doesn't throw a fit when a thread detatches
+  - parsing and sanitizing input strings is HARD
+  
 -Brian Bright
 
 
