@@ -1,6 +1,6 @@
-#include <includes/csapp.h>
 #include <includes/errors.h>
-
+#include <pthread.h>
+#include <includes/sys_wraps.h>
 /************************************************
  * Wrappers for Pthreads thread control functions
  ************************************************/

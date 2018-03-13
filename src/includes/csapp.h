@@ -1,9 +1,7 @@
 /*
  * csapp.h - prototypes and definitions for the CS:APP3e book
- */
-/* $begin csapp.h */
-#ifndef __CSAPP_H__
-#define __CSAPP_H__
+n */
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -167,7 +165,7 @@ void Inet_pton(int af, const char *src, void *dst);
 struct hostent *Gethostbyname(const char *name);
 struct hostent *Gethostbyaddr(const char *addr, int len, int type);
 
-/* Pthreads thread control wrappers */
+/* Pthreads thread control wrappers
 void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, 
 		    void * (*routine)(void *), void *argp);
 void Pthread_join(pthread_t tid, void **thread_return);
@@ -180,7 +178,7 @@ void Pthread_once(pthread_once_t *once_control, void (*init_function)());
 void Pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
 void Pthread_mutex_lock(pthread_mutex_t *mutex);
 void Pthread_mutex_unlock(pthread_mutex_t *mutex);
-
+*/
 /* POSIX semaphore wrappers */
 void Sem_init(sem_t *sem, int pshared, unsigned int value);
 void Sem_destroy(sem_t *sem);
@@ -210,6 +208,3 @@ int open_listenfd(char *port);
 int Open_clientfd(char *hostname, char *port);
 int Open_listenfd(char *port);
 
-
-#endif /* __CSAPP_H__ */
-/* $end csapp.h */

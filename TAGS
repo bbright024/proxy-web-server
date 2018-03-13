@@ -80,36 +80,24 @@ void print_cache(344,8692
 uint64_t file_and_host_hash(399,10003
 
 src/pthread_wraps.c,537
-void Pthread_create(8,210
-void Pthread_cancel(16,440
-void Pthread_join(23,576
-void Pthread_detach(30,743
-void Pthread_exit(36,878
-pthread_t Pthread_self(40,941
-void Pthread_once(44,1003
-void Pthread_mutex_init(48,1128
-void P_P(54,1324
-void Pthread_mutex_lock(57,1390
-void P_V(63,1547
-void Pthread_mutex_unlock(66,1615
-void Pthread_mutex_destroy(72,1778
-void Pthread_cond_init(78,1944
-void Pthread_cond_destroy(84,2133
-void Pthread_cond_signal(90,2293
-void Pthread_cond_broadcast(96,2451
-void Pthread_cond_wait(102,2618
-
-src/includes/sys_wraps.h,294
-void Pthread_create(8,210
-void Pthread_cancel(17,441
-void Pthread_join(24,577
-void Pthread_detach(31,744
-void Pthread_exit(38,880
-pthread_t Pthread_self(42,943
-void Pthread_once(46,1005
-void Pthread_mutex_init(50,1130
-void Pthread_mutex_lock(58,1332
-void Pthread_mutex_unlock(64,1482
+void Pthread_create(8,234
+void Pthread_cancel(16,464
+void Pthread_join(23,600
+void Pthread_detach(30,767
+void Pthread_exit(36,902
+pthread_t Pthread_self(40,965
+void Pthread_once(44,1027
+void Pthread_mutex_init(48,1152
+void P_P(54,1348
+void Pthread_mutex_lock(57,1414
+void P_V(63,1571
+void Pthread_mutex_unlock(66,1639
+void Pthread_mutex_destroy(72,1802
+void Pthread_cond_init(78,1968
+void Pthread_cond_destroy(84,2157
+void Pthread_cond_signal(90,2317
+void Pthread_cond_broadcast(96,2475
+void Pthread_cond_wait(102,2642
 
 src/includes/proxy.h,55
 #define INVALID_URL 4,32
@@ -152,34 +140,36 @@ src/includes/http.h,252
   char headers[headers19,572
 } ReqData;20,631
 
-src/includes/csapp.h,388
-#define __CSAPP_H__6,110
-#define DEF_MODE 36,695
-#define DEF_UMASK 37,762
-typedef struct sockaddr SA;42,904
-#define RIO_BUFSIZE 47,1031
-    int rio_fd;49,1073
-    int rio_cnt;50,1143
-    char *rio_bufptr;rio_bufptr51,1209
-    char rio_buf[rio_buf52,1279
-} rio_t;53,1332
-#define	MAXLINE	62,1513
-#define MAXBUF 63,1563
-#define LISTENQ 64,1612
-typedef void handler_t(93,2419
+src/includes/csapp.h,361
+#define DEF_MODE 34,648
+#define DEF_UMASK 35,715
+typedef struct sockaddr SA;40,857
+#define RIO_BUFSIZE 45,984
+    int rio_fd;47,1026
+    int rio_cnt;48,1096
+    char *rio_bufptr;rio_bufptr49,1162
+    char rio_buf[rio_buf50,1232
+} rio_t;51,1285
+#define	MAXLINE	60,1466
+#define MAXBUF 61,1516
+#define LISTENQ 62,1565
+typedef void handler_t(91,2372
 
-src/includes/HashTable_priv.h,357
-typedef struct htrec 32,1108
-  uint64_t        num_buckets;33,1131
-  uint64_t        num_elements;34,1192
-  LinkedList     *buckets;buckets35,1264
-} HashTableRecord;36,1321
-typedef struct ht_itrec 39,1396
-  bool       is_valid;40,1422
-  HashTable  ht;41,1475
-  uint64_t   bucket_num;42,1531
-  LLIter     bucket_it;43,1584
-} HTIterRecord;44,1646
+src/includes/HashTable_priv.h,473
+typedef struct htrec 33,1129
+  uint64_t        num_buckets;34,1152
+  uint64_t        num_elements;35,1213
+  pthread_mutex_t *buck_locks;buck_locks36,1285
+  pthread_cond_t  hcond;37,1356
+  pthread_mutex_t hlock;38,1427
+  LinkedList     *buckets;buckets39,1488
+} HashTableRecord;40,1545
+typedef struct ht_itrec 43,1620
+  bool       is_valid;44,1646
+  HashTable  ht;45,1699
+  uint64_t   bucket_num;46,1755
+  LLIter     bucket_it;47,1808
+} HTIterRecord;48,1870
 
 src/includes/errors.h,25
 #define E_NO_SPACE 3,14
@@ -192,23 +182,21 @@ typedef void(*ValueFreeFnPtr)ValueFreeFnPtr44,1736
 } HTKeyValue, *HTKeyValuePtr;HTKeyValuePtr96,3653
 typedef struct ht_itrec *HTIter;HTIter225,7886
 
-src/includes/LinkedList_priv.h,562
-#define _LINKEDLIST_PRIV_H_2,28
-typedef struct ll_node 18,754
-  void           *payload;payload19,779
-  struct ll_node *next;next20,844
-  struct ll_node *prev;prev21,902
-} LinkedListNode, *LinkedListNodePtr;LinkedListNodePtr22,960
-typedef struct ll_head 27,1216
-  uint64_t          num_elements;28,1241
-  pthread_mutex_t llock;29,1303
-  LinkedListNodePtr head;30,1373
-  LinkedListNodePtr tail;31,1441
-} LinkedListHead;32,1509
-typedef struct ll_iter 37,1718
-  LinkedList        list;38,1743
-  LinkedListNodePtr node;39,1792
-} LLIterSt;40,1860
+src/includes/LinkedList_priv.h,496
+typedef struct ll_node 17,709
+  void           *payload;payload18,734
+  struct ll_node *next;next19,799
+  struct ll_node *prev;prev20,857
+} LinkedListNode, *LinkedListNodePtr;LinkedListNodePtr21,915
+typedef struct ll_head 26,1171
+  uint64_t          num_elements;27,1196
+  LinkedListNodePtr head;28,1258
+  LinkedListNodePtr tail;29,1326
+} LinkedListHead;30,1394
+typedef struct ll_iter 35,1603
+  LinkedList        list;36,1628
+  LinkedListNodePtr node;37,1677
+} LLIterSt;38,1745
 
 src/network_wraps.c,338
 void Getaddrinfo(7,130
@@ -267,44 +255,48 @@ void P(20,413
 void V(26,496
 
 src/LinkedList.c,590
-LinkedList AllocateLinkedList(43,792
-void FreeLinkedList(61,1085
-uint64_t NumElementsInLinkedList(85,1641
-bool PushLinkedList(91,1747
-bool PopLinkedList(116,2216
-bool AppendLinkedList(141,2725
-bool SliceLinkedList(173,3394
-void SortLinkedList(203,4076
-LLIter LLMakeIterator(238,4848
-void LLIteratorFree(253,5152
-bool LLIteratorHasNext(259,5226
-bool LLIteratorNext(271,5411
-bool LLIteratorHasPrev(286,5635
-bool LLIteratorPrev(299,5820
-void LLIteratorGetPayload(313,6043
-bool LLIteratorDelete(322,6218
-bool LLIteratorMoveToHead(374,7528
-bool LLIteratorInsertBefore(402,8166
+LinkedList AllocateLinkedList(48,913
+void FreeLinkedList(62,1117
+uint64_t NumElementsInLinkedList(82,1546
+bool PushLinkedList(88,1652
+bool PopLinkedList(113,2121
+bool AppendLinkedList(138,2630
+bool SliceLinkedList(170,3299
+void SortLinkedList(200,3981
+LLIter LLMakeIterator(236,4810
+void LLIteratorFree(251,5114
+bool LLIteratorHasNext(257,5188
+bool LLIteratorNext(269,5373
+bool LLIteratorHasPrev(284,5597
+bool LLIteratorPrev(297,5782
+void LLIteratorGetPayload(311,6005
+bool LLIteratorDelete(320,6180
+bool LLIteratorMoveToHead(373,7583
+bool LLIteratorInsertBefore(402,8222
 
-src/HashTable.c,614
-static void NullFree(33,841
-HashTable AllocateHashTable(36,882
-void FreeHashTable(71,1581
-uint64_t NumElementsInHashTable(82,1833
-uint64_t FNVHash64(95,2112
-uint64_t FNVHashInt64(115,2648
-uint64_t HashKeyToBucketNum(127,2863
-static int find_key(133,2956
-int InsertHashTable(172,3817
-int LookupHashTable(219,5101
-int RemoveFromHashTable(228,5371
-HTIter HashTableMakeIterator(240,5709
-static void ResizeHashTable(277,6390
-void HTIteratorFree(324,7285
-int HTIteratorNext(334,7419
-int HTIteratorPastEnd(395,8917
-int HTIteratorGet(408,9134
-void PrintHashTable(425,9475
-int HTIteratorDelete(450,10057
+src/HashTable.c,684
+static void NullFree(36,923
+#define HT_ALLOCS 38,963
+static void free_table_locks(39,983
+HashTable AllocateHashTable(73,1691
+void FreeHashTable(144,3284
+uint64_t NumElementsInHashTable(155,3559
+uint64_t FNVHash64(168,3840
+uint64_t FNVHashInt64(188,4376
+uint64_t HashKeyToBucketNum(200,4591
+static int find_key(206,4684
+int InsertHashTable(248,5649
+int LookupHashTable(306,7159
+int RemoveFromHashTable(315,7429
+HTIter HashTableMakeIterator(327,7767
+static void ResizeHashTable(364,8448
+void HTIteratorFree(411,9343
+int HTIteratorNext(421,9477
+int HTIteratorPastEnd(482,10975
+int HTIteratorGet(495,11192
+void PrintHashTable(512,11533
+int HTIteratorDelete(537,12115
 
 src/includes/defs.h,0
+
+src/includes/sys_wraps.h,0

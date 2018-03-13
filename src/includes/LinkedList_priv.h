@@ -1,9 +1,8 @@
-#ifndef _LINKEDLIST_PRIV_H_
-#define _LINKEDLIST_PRIV_H_
+#pragma once
 
 #include <pthread.h> // for list lock
 #include <stdint.h>      // for uint64_t
-#include "./LinkedList.h"  // for LinkedList and LLIter
+#include "LinkedList.h"  // for LinkedList and LLIter
 
 // This file defines the internal structures associated with our LinkedList
 // implementation.  Customers should not include this file or assume anything
@@ -26,7 +25,6 @@ typedef struct ll_node {
 // definition.  This struct contains metadata about the linked list.
 typedef struct ll_head {
   uint64_t          num_elements;  //  # elements in the list
-  pthread_mutex_t llock;        // for protecting in multithread proc
   LinkedListNodePtr head;  // head of linked list, or NULL if empty
   LinkedListNodePtr tail;  // tail of linked list, or NULL if empty
 } LinkedListHead;
@@ -39,4 +37,4 @@ typedef struct ll_iter {
   LinkedListNodePtr node;  // the node we are at, or NULL if broken
 } LLIterSt;
 
-#endif  // _LINKEDLIST_PRIV_H_
+

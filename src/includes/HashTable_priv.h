@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <pthread.h>
 #include "./LinkedList.h"
 #include "./HashTable.h"
 
@@ -32,6 +33,10 @@
 typedef struct htrec {
   uint64_t        num_buckets;   // # of buckets in this HT?
   uint64_t        num_elements;  // # of elements currently in this HT?
+  pthread_mutex_t *buck_locks;   // array for holding locks to buckets
+  pthread_cond_t  hcond;         // cond var for reader/writer problem
+  pthread_mutex_t hlock;         // lock for this hash table
+  int resizing;
   LinkedList     *buckets;       // the array of buckets
 } HashTableRecord;
 

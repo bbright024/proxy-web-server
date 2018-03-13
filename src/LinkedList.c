@@ -2,7 +2,10 @@
  * Brian Bright 5/1/2017
  * 
  * This file is my implementation of UW CSE 333 assignment 1.
- * 
+ *
+ * IMPORTANT - 
+ * ALL FUNCTIONS besides allocate/free assume the caller holds
+ * the lock specific to the linked list.
  */
 
 #include <stdio.h>
@@ -11,6 +14,8 @@
 #include <assert.h>
 #include <includes/LinkedList.h>
 #include <includes/LinkedList_priv.h>
+
+
 //#include "includes/LinkedList.h"
 //#include "includes/LinkedList_priv.h"
 
@@ -47,10 +52,6 @@ LinkedList AllocateLinkedList(void)
   if(li == 0)
     return NULL;
 
-  int rc;
-  if ((rc =  pthread_mutex_init(&li->llock, NULL)) != 0){
-    return NULL;
-  }
   li->num_elements = 0;
   
   li->head = NULL;
@@ -73,10 +74,6 @@ void FreeLinkedList(LinkedList list,
     payload_free_function(curr_node->payload);
     free(curr_node);
     curr_node = temp;
-  }
-  if ((pthread_mutex_destroy(&list->llock)) != 0) {
-    fprintf(stderr, "error freeing linked list lock\n");
-    exit(-1);
   }
     
   free(list);
@@ -235,6 +232,7 @@ void SortLinkedList(LinkedList list, unsigned int ascending,
 	} while(swapped);
 }
 
+// assumes caller already holds lock for list, if needed
 LLIter LLMakeIterator(LinkedList list, int pos)
 {
 	assert(list != NULL);
@@ -322,54 +320,55 @@ void LLIteratorGetPayload(LLIter iter, void **payload)
 bool LLIteratorDelete(LLIter iter,
                       LLPayloadFreeFnPtr payload_free_function)
 {
-	assert(iter != NULL);
-	assert(iter->list != NULL);
-	assert(iter->node != NULL);
-	LinkedListNodePtr temp_node;
-	
-	if(iter->list->num_elements == 1) /* case 1: 1 node in list */
-		{
-			payload_free_function(iter->node);
-			iter->list->num_elements = 0;
-			return false;
-		}
+  assert(iter != NULL);
+  assert(iter->list != NULL);
+  assert(iter->node != NULL);
+  LinkedListNodePtr temp_node;
+  
+  if(iter->list->num_elements == 1) /* case 1: 1 node in list */
+    {
+      payload_free_function(iter->node);
+      iter->list->num_elements = 0;
+      return false;
+    }
 
-	if(iter->node->next == NULL) /* case 2: iter is at the tail */
-		{
-			temp_node = iter->node->prev;
-			temp_node->next = NULL;
+  if(iter->node->next == NULL) /* case 2: iter is at the tail */
+    {
+      temp_node = iter->node->prev;
+      temp_node->next = NULL;
+      
+      payload_free_function(iter->node->payload);
+      free(iter->node);
+      iter->node = temp_node;
 			
-			payload_free_function(iter->node->payload);
-			free(iter->node);
-			iter->node = temp_node;
-			
-			iter->list->num_elements -= 1;
-			return true;
-		}
-	if(iter->node->prev == NULL) /* case 3: iter is at head */
-		{
-			temp_node = iter->node->next;
-			temp_node->prev = NULL;
-			
-			payload_free_function(iter->node->payload);
-			free(iter->node);
-			iter->node = temp_node;
-			iter->list->head = temp_node;
-			iter->list->num_elements -= 1;
-			return true;
-		}
-	/* case 4: iter in a list of multiple nodes & not at the end */
-	temp_node = iter->node->next;
-	temp_node->prev = iter->node->prev;
-	iter->node->prev->next = temp_node;
-
-	payload_free_function(iter->node->payload);
-	free(iter->node);
-	iter->node = temp_node;
-	
-	iter->list->num_elements -= 1;
-	return true;
+      iter->list->num_elements -= 1;
+      return true;
+    }
+  if(iter->node->prev == NULL) /* case 3: iter is at head */
+    {
+      temp_node = iter->node->next;
+      temp_node->prev = NULL;
+      
+      payload_free_function(iter->node->payload);
+      free(iter->node);
+      iter->node = temp_node;
+      iter->list->head = temp_node;
+      iter->list->num_elements -= 1;
+      return true;
+    }
+  /* case 4: iter in a list of multiple nodes & not at the end */
+  temp_node = iter->node->next;
+  temp_node->prev = iter->node->prev;
+  iter->node->prev->next = temp_node;
+  
+  payload_free_function(iter->node->payload);
+  free(iter->node);
+  iter->node = temp_node;
+  
+  iter->list->num_elements -= 1;
+  return true;
 }
+
 /* implement LRU algorithm */
 bool LLIteratorMoveToHead(LLIter iter)
 {
@@ -399,35 +398,34 @@ bool LLIteratorMoveToHead(LLIter iter)
   return true;
 
 }
+
 bool LLIteratorInsertBefore(LLIter iter, void *payload)
 {
-	assert(iter != NULL);
-	assert(iter->list != NULL);
-	assert(iter->node != NULL);
-
-	if(iter->node->prev == NULL) /* case 1: iter is at head */
-		{
-			return PushLinkedList(iter->list, payload);
-		}
-
-	/* case 2: iter passed the head */
-	LinkedListNodePtr new_node, temp_prev;
-	if( (new_node = malloc(sizeof(struct ll_node))) == NULL)
-		return false;
-
-	new_node->payload = payload;
-	
-	/* stitch the nodes together */
-	temp_prev = iter->node->prev;
-	temp_prev->next = new_node;
-		
-	new_node->prev = temp_prev;
-	new_node->next = iter->node;
-	
-	iter->node->prev = new_node;
-	iter->list->num_elements += 1;
-	
-	return true;
+  assert(iter != NULL);
+  assert(iter->list != NULL);
+  assert(iter->node != NULL);
+  
+  if(iter->node->prev == NULL) /* case 1: iter is at head */
+    return PushLinkedList(iter->list, payload);
+  
+  /* case 2: iter passed the head */
+  LinkedListNodePtr new_node, temp_prev;
+  if( (new_node = malloc(sizeof(struct ll_node))) == NULL)
+    return false;
+  
+  new_node->payload = payload;
+  
+  /* stitch the nodes together */
+  temp_prev = iter->node->prev;
+  temp_prev->next = new_node;
+  
+  new_node->prev = temp_prev;
+  new_node->next = iter->node;
+  
+  iter->node->prev = new_node;
+  iter->list->num_elements += 1;
+  
+  return true;
 }
 
 
