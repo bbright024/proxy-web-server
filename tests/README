@@ -1,0 +1,5 @@
+This is an awkard directory.
+
+When I was building the core program, I wasn't implementing good modularity and I wasn't saving the test functions I made.
+
+Lesson learned, in a big way.  Going back to write test code after the program is completed and works is like trying to undo a tangled-up mess of cords/string.  
