@@ -1,7 +1,6 @@
-#FOR#####################################
+######################################
 # Makefile for Brian's Proxy 2018
 ######################################
-
 
 #####################
 # flags for cc/ld/etc.
@@ -28,7 +27,7 @@ AUX=$(patsubst %.h,%,$(H_SOURCES))
 TEST_SRC=$(wildcard tests/*_test.c)
 TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
-TESTABLE_OBJS = ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o ./src/proxy.o
+TESTABLE_OBJS = ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o ./src/proxy.o ./src/posix_wraps.o
 TARGET=./bin/proxy
 
 
@@ -42,6 +41,9 @@ LIBOBJS=$(patsubst %.c, %.o, $(LIBSRC))
 # directory variables
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+
+# if LinkedList & HashTable need to be tested:
+#DS_OBJS = LinkedList.o HashTable.o
 
 ##################
 # the build rules
@@ -67,10 +69,10 @@ test_coverage: $(OBJS) $(TESTS)
 $(TESTS):
 	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ $(TESTABLE_OBJS) $(LDFLAGS) $(LIBTARGET)
 	./bin/$@
-	mv *.gcda ./tests/
-	mv gmon.out ./tests/
-	mv *.gcno ./tests/
-	lcov -b $(mkfile_path) -c -d ./tests/ -o ./$@info.info
+#	mv *.gcda ./tests/
+#	mv ./src/*.gcno ./tests/
+#	mv gmon.out ./tests/
+	lcov -b $(mkfile_path) -c -d ./ -o ./$@info.info
 	genhtml ./$@info.info -o ./$@_html/
 	@echo "Open html files in a browser for coverage data"
 

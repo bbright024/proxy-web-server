@@ -51,33 +51,33 @@ int Accept(412,7758
 void Connect(421,7927
 
 src/cache.c,889
-HashTable h_table 12,257
-LinkedList ob_list 13,283
-static size_t cache_size;15,311
-static sem_t cache_size_mutex;17,338
-static sem_t cache_mutex;18,369
-static sem_t cache_table_mutex;19,395
-typedef struct cache_object{cache_object21,428
-  char *location;location22,457
-  size_t size;23,475
-  char type[type24,490
-  char host[host25,512
-  char filename[filename26,534
-} CacheOb;27,560
-static void NullFree(34,745
-int cache_init(38,934
-static void free_cache_ob(64,1491
-static void __cache_destroy(73,1688
-void cache_free_all(91,2272
-int check_cache(121,2830
-static CacheOb *new_cache_obj(new_cache_obj196,4674
-int add_to_cache_table(227,5443
-static inline void lock_all_cache(253,6072
-static inline void unlock_all_cache(260,6181
-int add_to_cache(276,6711
-static int remove_cache_lru(313,7789
-void print_cache(344,8692
-uint64_t file_and_host_hash(399,10003
+HashTable h_table 14,290
+LinkedList ob_list 15,316
+static size_t cache_size;17,344
+static sem_t cache_size_mutex;19,371
+static sem_t cache_mutex;20,402
+static sem_t cache_table_mutex;21,428
+typedef struct cache_object{cache_object23,461
+  char *location;location24,490
+  size_t size;25,508
+  char type[type26,523
+  char host[host27,545
+  char filename[filename28,567
+} CacheOb;29,593
+static void NullFree(36,778
+int cache_init(40,967
+static void free_cache_ob(66,1524
+static void __cache_destroy(75,1721
+void cache_free_all(93,2305
+int check_cache(123,2863
+static CacheOb *new_cache_obj(new_cache_obj198,4707
+int add_to_cache_table(229,5476
+static inline void lock_all_cache(255,6105
+static inline void unlock_all_cache(262,6214
+int add_to_cache(278,6744
+static int remove_cache_lru(315,7822
+void print_cache(346,8725
+uint64_t file_and_host_hash(401,10036
 
 src/pthread_wraps.c,537
 void Pthread_create(8,234
@@ -214,14 +214,14 @@ int open_listenfd(136,3845
 int Open_clientfd(188,5718
 int Open_listenfd(197,5885
 
-src/proxy.c,255
-static int run 21,518
-void run_proxy(34,948
-static void *command(command82,2535
-static void *process_client(process_client102,2922
-static int open_next_hop(185,5573
-static inline void thread_uninit(203,6052
-static inline int client_init(211,6227
+src/proxy.c,256
+static int run 22,570
+void run_proxy(35,1000
+static void *command(command83,2587
+static void *process_client(process_client103,2974
+static int open_next_hop(186,5625
+static inline void thread_uninit(204,6104
+static inline int client_init(212,6279
 
 src/errors.c,191
 void Usage(4,83

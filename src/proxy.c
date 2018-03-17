@@ -14,7 +14,8 @@
 #include <includes/cache.h>
 #include <includes/http.h>
 #include <includes/proxy.h>
-
+#include <pthread.h>
+#include <includes/sys_wraps.h>
 
 /* Global static variables */
 /* run: while true, server keeps looping. changed via user input. */

@@ -6,19 +6,16 @@
 #include <includes/cache.h>
 #include <includes/proxy.h>
 #include <includes/http.h>
+#include <includes/sys_wraps.h>
 #include "minunit.h"
 
 
-int test_cache()
-{
-  return add_to_cache_table(NULL);
-  
+
+//void run_proxy(char *proxy_port);
+int test_run_proxy() {
+  return 0;
 }
 
-int test_http()
-{
-  return http_read_request_line(NULL, NULL);
-}
 
 int main(int argc, char *argv[])
 {
@@ -26,8 +23,10 @@ int main(int argc, char *argv[])
   
   printf("Testing functions...\n");
 
-  ret += test_cache();
-  ret += test_http();
+  ret += test_();
+  ret += test_();
+  ret += test_();
+  ret += test_();
 
   printf("# of test failures: %d\n", ret);
 
