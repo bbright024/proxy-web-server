@@ -19,7 +19,7 @@
 //#include "includes/LinkedList.h"
 //#include "includes/LinkedList_priv.h"
 
-/* 
+
 void PrintLinkedList(LinkedList list)
 {
   assert(list);
@@ -43,7 +43,7 @@ void PrintLinkedList(LinkedList list)
   printf("NULL]\n");
   LLIteratorFree(iter);
 }
-*/
+
 
 LinkedList AllocateLinkedList(void)
 {

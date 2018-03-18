@@ -257,25 +257,26 @@ void Sem_destroy(14,305
 void P(20,413
 void V(26,496
 
-src/LinkedList.c,590
-LinkedList AllocateLinkedList(48,913
-void FreeLinkedList(62,1117
-uint64_t NumElementsInLinkedList(82,1546
-bool PushLinkedList(88,1652
-bool PopLinkedList(113,2121
-bool AppendLinkedList(138,2630
-bool SliceLinkedList(170,3299
-void SortLinkedList(200,3981
-LLIter LLMakeIterator(236,4810
-void LLIteratorFree(251,5114
-bool LLIteratorHasNext(257,5188
-bool LLIteratorNext(269,5373
-bool LLIteratorHasPrev(284,5597
-bool LLIteratorPrev(297,5782
-void LLIteratorGetPayload(311,6005
-bool LLIteratorDelete(320,6180
-bool LLIteratorMoveToHead(373,7583
-bool LLIteratorInsertBefore(402,8222
+src/LinkedList.c,619
+void PrintLinkedList(23,433
+LinkedList AllocateLinkedList(48,908
+void FreeLinkedList(62,1112
+uint64_t NumElementsInLinkedList(82,1541
+bool PushLinkedList(88,1647
+bool PopLinkedList(113,2116
+bool AppendLinkedList(138,2625
+bool SliceLinkedList(170,3294
+void SortLinkedList(200,3976
+LLIter LLMakeIterator(236,4805
+void LLIteratorFree(251,5109
+bool LLIteratorHasNext(257,5183
+bool LLIteratorNext(269,5368
+bool LLIteratorHasPrev(284,5592
+bool LLIteratorPrev(297,5777
+void LLIteratorGetPayload(311,6000
+bool LLIteratorDelete(320,6175
+bool LLIteratorMoveToHead(373,7578
+bool LLIteratorInsertBefore(402,8217
 
 src/HashTable.c,620
 static void NullFree(36,923

@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <includes/HashTable.h>
 
-#define ELEMENTS 250000
+#define ELEMENTS 25000
 #define BUCKETS  100
 typedef struct {
   int num;
