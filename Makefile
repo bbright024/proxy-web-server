@@ -69,13 +69,12 @@ test_coverage: $(OBJS) $(TESTS)
 $(TESTS):
 	$(CC) $(CFLAGS) $@.c $(LIBTARGET) -o ./bin/$@ $(TESTABLE_OBJS) $(LDFLAGS) $(LIBTARGET)
 	./bin/$@
-#	mv *.gcda ./tests/
-#	mv ./src/*.gcno ./tests/
-#	mv gmon.out ./tests/
 	lcov -b $(mkfile_path) -c -d ./ -o ./$@info.info
 	genhtml ./$@info.info -o ./$@_html/
 	@echo "Open html files in a browser for coverage data"
-
+#todo - have it so lcov only grabs the gcda of the files it's testing - presently grabs results from every .c file
+# could do it with pattern matching each test, but might be tricky.
+# at the moment it all works fine, just kind of misleading to see 22% coverage at top layer.
 
 # in case gprof is useful - timing data for the program.
 #	gprof -b ./bin/proxy ./gmon.out > ./build/proxyoput.stats
@@ -101,7 +100,7 @@ build:
 .PHONY: tests
 tests: CFLAGS += $(TARGET)
 tests: $(TESTS) 
-	bash ./tests/runtests.sh || true
+
 
 .PHONY: TAGS tags
 TAGS tags:

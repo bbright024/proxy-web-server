@@ -277,28 +277,26 @@ bool LLIteratorDelete(320,6180
 bool LLIteratorMoveToHead(373,7583
 bool LLIteratorInsertBefore(402,8222
 
-src/HashTable.c,684
+src/HashTable.c,620
 static void NullFree(36,923
-#define HT_ALLOCS 38,963
-static void free_table_locks(39,983
-HashTable AllocateHashTable(73,1695
-void FreeHashTable(144,3288
-uint64_t NumElementsInHashTable(155,3563
-uint64_t FNVHash64(168,3844
-uint64_t FNVHashInt64(188,4380
-uint64_t HashKeyToBucketNum(200,4595
-static int find_key(206,4688
-int InsertHashTable(248,5653
-int LookupHashTable(306,7163
-int RemoveFromHashTable(315,7433
-HTIter HashTableMakeIterator(327,7771
-static void ResizeHashTable(364,8452
-void HTIteratorFree(421,9553
-int HTIteratorNext(431,9687
-int HTIteratorPastEnd(492,11185
-int HTIteratorGet(505,11402
-void PrintHashTable(522,11743
-int HTIteratorDelete(547,12325
+HashTable AllocateHashTable(38,963
+void FreeHashTable(111,2582
+uint64_t NumElementsInHashTable(132,3089
+uint64_t FNVHash64(145,3370
+uint64_t FNVHashInt64(165,3906
+uint64_t HashKeyToBucketNum(177,4121
+static int find_key(183,4214
+int InsertHashTable(225,5179
+int LookupHashTable(283,6689
+int RemoveFromHashTable(292,6959
+HTIter HashTableMakeIterator(304,7297
+static void ResizeHashTable(341,7978
+void HTIteratorFree(398,9104
+int HTIteratorNext(408,9238
+int HTIteratorPastEnd(469,10736
+int HTIteratorGet(482,10953
+void PrintHashTable(499,11294
+int HTIteratorDelete(529,11976
 
 src/includes/defs.h,0
 

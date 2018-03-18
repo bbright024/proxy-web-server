@@ -35,46 +35,11 @@ static void ResizeHashTable(HashTable ht);
 /* free function that does nothing */
 static void NullFree(void *freeme) { }
 
-#define HT_ALLOCS 5
-static void free_table_locks(int allocs, HashTable ht)
-{
-
-  //have to hard exit if pthread_destroy ever fails;
-  //can't continue with allocated variable in a free'd space
-  
-  // this is designed to waterfall; DO NOT PUT IN BREAKS
-  uint64_t i;
-  uint64_t nbucks = ht->num_buckets;
-  switch (allocs) {
-  case 5: {
-    free(ht->buckets);
-  }
-  case 4: {
-    for (i = 0; i < nbucks; i++) {
-      if ((pthread_mutex_destroy(&ht->buck_locks[i]) != 0))
-	exit(-1);      
-    }
-  }
-  case 3: {
-    free(ht->buck_locks);
-  }
-  case 2: {
-    if ((pthread_cond_destroy(&ht->hcond)) != 0)
-      exit(-1);
-  }
-  case 1: {
-    if ((pthread_mutex_destroy(&ht->hlock)) != 0)
-      exit(-1);
-  }
-  default:
-    free(ht);
-  }
-}
 HashTable AllocateHashTable(uint32_t num_buckets)
 {
   HashTable ht;
   uint64_t i, j;
-  int allocs_done = 0;
+
   if (num_buckets == 0) {
     return NULL;
   }
@@ -82,30 +47,20 @@ HashTable AllocateHashTable(uint32_t num_buckets)
   if ((ht = malloc(sizeof(HashTableRecord))) == NULL)
     return NULL;
 
-  if (pthread_mutex_init(&ht->hlock, NULL) != 0) {
-    free(ht);
-    return NULL;
-  }
-  allocs_done++;
-  
-  if ((pthread_cond_init(&ht->hcond, NULL)) != 0) {
-    free_table_locks(allocs_done, ht);
-    return NULL;
-  }
-
-  allocs_done++;
+  if (pthread_mutex_init(&ht->hlock, NULL) != 0)
+    goto fail1;
+    
+      
+  if ((pthread_cond_init(&ht->hcond, NULL)) != 0)
+    goto fail2;
   
   ht->num_buckets = num_buckets;
   ht->num_elements = 0;
   
   ht->buck_locks = (pthread_mutex_t *)malloc(num_buckets * sizeof(pthread_mutex_t));
-  if(ht->buck_locks == NULL) {
-    free_table_locks(allocs_done, ht);
-    return NULL;
-  }
+  if(ht->buck_locks == NULL)
+    goto fail3;
 
-  allocs_done++;
-  
   // now pthread_init all the bucket locks
   for (i = 0; i < num_buckets; i++) {
     if((pthread_mutex_init(&ht->buck_locks[i], NULL)) != 0) {
@@ -113,43 +68,65 @@ HashTable AllocateHashTable(uint32_t num_buckets)
 	if(pthread_mutex_destroy(&ht->buck_locks[j]) != 0)
 	  exit(-1);
       }
-      free_table_locks(allocs_done, ht);
-      return NULL;
+      goto fail4;
     }
   }
 
-  allocs_done++;
-
   ht->buckets = (LinkedList *)malloc(num_buckets * sizeof(LinkedList));
-  if(ht->buckets == NULL) {
-    free_table_locks(allocs_done, ht);
-    return NULL;
-  }
-  
-  allocs_done++;
+  if(ht->buckets == NULL)
+    goto fail5;
 
+  
   for (i = 0; i < num_buckets; i++) {
     if ((ht->buckets[i] = AllocateLinkedList()) == NULL){
       fprintf(stderr, "error allocating buckets\n");
       for (j = 0; j < i; j++)
 	FreeLinkedList(ht->buckets[j], NullFree); /* cool trick, nothing in buckets yet*/
-
-      free_table_locks(allocs_done, ht);
-      return NULL;
+      goto fail6;
     }
   }
+  
   return ht;
+
+ fail6:
+  free(ht->buckets);
+ fail5:
+  for (i = 0; i < ht->num_buckets; i++) {
+    if ((pthread_mutex_destroy(&ht->buck_locks[i]) != 0))
+      exit(-1);
+  }
+ fail4:
+  free(ht->buck_locks);
+ fail3:
+   if ((pthread_cond_destroy(&ht->hcond)) != 0)
+     exit(-1);
+ fail2:
+   if ((pthread_mutex_destroy(&ht->hlock)) != 0)
+     exit(-1);
+ fail1:
+   free(ht);
+   return NULL;
 }
 
-void FreeHashTable(HashTable table, ValueFreeFnPtr value_free_function)
+void FreeHashTable(HashTable ht, ValueFreeFnPtr value_free_function)
 {
-  assert(table != NULL);
+  assert(ht != NULL);
   uint64_t i, n;
-  n = table->num_buckets;
+  n = ht->num_buckets;
+  for (i = 0; i < n; i++)
+    FreeLinkedList(ht->buckets[i], value_free_function);
+
+  free(ht->buckets);
   for (i = 0; i < n; i++) {
-    FreeLinkedList(table->buckets[i], value_free_function);
+    if ((pthread_mutex_destroy(&ht->buck_locks[i]) != 0))
+      exit(-1);
   }
-  free_table_locks(HT_ALLOCS, table);
+  free(ht->buck_locks);
+  if ((pthread_cond_destroy(&ht->hcond)) != 0)
+    exit(-1);
+  if ((pthread_mutex_destroy(&ht->hlock)) != 0)
+     exit(-1);
+  free(ht);
 }
 
 uint64_t NumElementsInHashTable(HashTable table)
@@ -365,13 +342,13 @@ static void ResizeHashTable(HashTable ht)
 {
 	/* resize if load factor > 3 */
 	if (ht->num_elements < (3 * ht->num_buckets))
-		return;
+	  return;
 
-	P_P(&ht->hlock);
-	while (ht->resizing != 0)
-	  Pthread_cond_wait(&ht->hcond, &ht->hlock);
+	//	P_P(&ht->hlock);
+	//	while (ht->resizing != 0)
+	  //	  Pthread_cond_wait(&ht->hcond, &ht->hlock);
 
-	ht->resizing = 1;
+	//	ht->resizing = 1;
 	/* resize case: allocate new hashtable & transfer payloads
 	 *           from old ht to new ht and free old ht
 	 */
@@ -379,14 +356,14 @@ static void ResizeHashTable(HashTable ht)
 	HashTable newht = AllocateHashTable(ht->num_buckets * 9);
 	if (newht == NULL) {
 	  fprintf(stderr, "error resizing hashtable\n");
-	  P_V(&ht->hlock);
+	  //	  P_V(&ht->hlock);
 	  exit(-1);
 	}
 	
 
 	HTIter it = HashTableMakeIterator(ht);
 	if (it == NULL) {
-	  P_V(&ht->hlock);
+	  //	  P_V(&ht->hlock);
 	  FreeHashTable(newht, &NullFree);
 	  exit(-1);
 	}
@@ -521,9 +498,14 @@ int HTIteratorGet(HTIter iter, HTKeyValue *keyvalue)
 
 void PrintHashTable(HashTable table)
 {
-  HTIter iter = HashTableMakeIterator(table);
+  if (!table)
+    return;
   printf("This hash table has %lu entries in %lu bucks:\n",
 	 table->num_elements, table->num_buckets);
+  if (table->num_buckets > 100 || table->num_elements > 100)
+    return;
+  HTIter iter = HashTableMakeIterator(table);
+
 
   HTKeyValue copy;
   int cur_buck = iter->bucket_num;
