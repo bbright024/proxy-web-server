@@ -108,7 +108,7 @@ src/includes/LinkedList.h,262
 typedef struct ll_head *LinkedList;LinkedList12,452
 typedef void(*LLPayloadFreeFnPtr)LLPayloadFreeFnPtr18,741
 typedef int(*LLPayloadComparatorFnPtr)LLPayloadComparatorFnPtr27,1115
-typedef struct ll_iter *LLIter;LLIter132,4453
+typedef struct ll_iter *LLIter;LLIter135,4548
 
 src/includes/params.h,23
 #define NBUCKETS 3,14
@@ -266,17 +266,17 @@ bool PushLinkedList(88,1647
 bool PopLinkedList(113,2116
 bool AppendLinkedList(138,2625
 bool SliceLinkedList(170,3294
-void SortLinkedList(200,3976
-LLIter LLMakeIterator(236,4805
-void LLIteratorFree(251,5109
-bool LLIteratorHasNext(257,5183
-bool LLIteratorNext(269,5368
-bool LLIteratorHasPrev(284,5592
-bool LLIteratorPrev(297,5777
-void LLIteratorGetPayload(311,6000
-bool LLIteratorDelete(320,6175
-bool LLIteratorMoveToHead(373,7578
-bool LLIteratorInsertBefore(402,8217
+void SortLinkedList(206,4254
+LLIter LLMakeIterator(242,5083
+void LLIteratorFree(257,5387
+bool LLIteratorHasNext(263,5461
+bool LLIteratorNext(275,5646
+bool LLIteratorHasPrev(288,5858
+bool LLIteratorPrev(299,6051
+void LLIteratorGetPayload(310,6244
+bool LLIteratorDelete(319,6419
+bool LLIteratorMoveToHead(374,7884
+bool LLIteratorInsertBefore(403,8523
 
 src/HashTable.c,620
 static void NullFree(36,923

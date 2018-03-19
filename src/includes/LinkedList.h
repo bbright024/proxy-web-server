@@ -26,6 +26,9 @@ typedef void(*LLPayloadFreeFnPtr)(void *payload);
 //    +1  if payload_a > payload_b
 typedef int(*LLPayloadComparatorFnPtr)(void *payload_a, void *payload_b);
 
+// Prints out an ASCII artwork representing the list
+void PrintLinkedList(LinkedList list);
+  
 // Allocate and return a new linked list.  The caller takes responsibility for
 // eventually calling FreeLinkedList to free memory associated with the list.
 //

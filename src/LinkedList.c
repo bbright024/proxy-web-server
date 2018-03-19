@@ -167,34 +167,40 @@ bool AppendLinkedList(LinkedList list, void *payload)
 	return true;
 }
 
-bool SliceLinkedList(LinkedList list, void **payload_ptr)
-{
-	assert(list != NULL);
-	assert(payload_ptr != NULL);
+bool SliceLinkedList(LinkedList list, void **payload_ptr){
+  assert(list != NULL);
+  assert(payload_ptr != NULL);
 
-	if(list->num_elements == 0) /* case 1: empty list */
-		return false;
+  if(list->num_elements == 0) /* case 1: empty list */
+    return false;
 
-	assert(list->tail != NULL);
-	assert(list->head != NULL);
+  assert(list->tail != NULL);
+  assert(list->head != NULL);
 	
-	if(list->num_elements == 1)	/* case 2: single element list */
-		{
-			*payload_ptr = list->head->payload;
-			free(list->head);
-			list->head = list->tail = NULL;
-			list->num_elements = 0;
-			return true;
-		}
+  if(list->num_elements == 1) {	/* case 2: single element list */
+    *payload_ptr = list->head->payload;
+    free(list->head);
+    list->head = list->tail = NULL;
+    list->num_elements = 0;
+    return true;
+  }
 
-	/* case 3: multi element list */
-	LinkedListNodePtr end_node = list->tail;
-	*payload_ptr = end_node->payload;
-	list->tail = end_node->prev;
-	list->tail->next = NULL;
-	free(end_node);
-	list->num_elements -= 1;
-	return true;
+  //  if (list->num_elements == 2) { // case 3: 2 element list
+  //    *payload_ptr = list->tail->payload;
+  //    free(list->tail);
+  //    list->head->next = NULL;
+  //    list->tail = list->head;
+  //    list->num_elements = 1;
+  //    return true;
+  //  }
+  /* case 3: multi element list */
+  LinkedListNodePtr end_node = list->tail;
+  *payload_ptr = end_node->payload;
+  list->tail = end_node->prev;
+  list->tail->next = NULL;
+  free(end_node);
+  list->num_elements -= 1;
+  return true;
 }
 
 void SortLinkedList(LinkedList list, unsigned int ascending,
@@ -272,12 +278,10 @@ bool LLIteratorNext(LLIter iter)
 	assert(iter->list != NULL);
 	assert(iter->node != NULL);
 
-	if(iter->node->next != NULL)
-		{
-			iter->node = iter->node->next;
-			return true;
-		}
-
+	if (iter->node->next){
+	  iter->node = iter->node->next;
+	  return true;
+	}
 	return false;
 }
 
@@ -286,11 +290,9 @@ bool LLIteratorHasPrev(LLIter iter)
 	assert(iter != NULL);
 	assert(iter->list != NULL);
 	assert(iter->node != NULL);
-
-	if(iter->node->prev != NULL)
-		return true;
-
-	return false;
+	if (!iter->node || !iter->node->prev)
+	  return false;
+	return true;
 }
 
 
@@ -298,14 +300,11 @@ bool LLIteratorPrev(LLIter iter)
 {
 	assert(iter != NULL);
 	assert(iter->list != NULL);
-	assert(iter->node != NULL);
+	if (!iter->node || !iter->node->prev)
+	  return false;
 
-	if(iter->node->prev != NULL)
-		{
-			iter->node = iter->node->prev;
-			return true;
-		}
-	return false;
+	iter->node = iter->node->prev;
+	return true;
 }
 
 void LLIteratorGetPayload(LLIter iter, void **payload)
@@ -329,6 +328,8 @@ bool LLIteratorDelete(LLIter iter,
     {
       payload_free_function(iter->node);
       iter->list->num_elements = 0;
+      iter->list->head = NULL;
+      iter->list->tail = NULL;
       return false;
     }
 
@@ -408,14 +409,29 @@ bool LLIteratorInsertBefore(LLIter iter, void *payload)
   if(iter->node->prev == NULL) /* case 1: iter is at head */
     return PushLinkedList(iter->list, payload);
   
-  /* case 2: iter passed the head */
+  /* case 2: iter beyond the head */
   LinkedListNodePtr new_node, temp_prev;
   if( (new_node = malloc(sizeof(struct ll_node))) == NULL)
     return false;
   
   new_node->payload = payload;
   
-  /* stitch the nodes together */
+  /* stitch the nodes together 
+    new_node->payload = payload;
+  new_node->next = iter->node;
+  new_node->prev = iter->node->prev;
+
+  new_node->prev->next = new_node;
+  new_node->next->prev = new_node;
+
+  temp_prev = iter->node->prev;
+  temp_prev->next = new_node;
+  
+  new_node->prev = temp_prev;
+  new_node->next = iter->node;
+  
+  iter->node->prev = new_node;
+  iter->list->num_elements += 1;*/
   temp_prev = iter->node->prev;
   temp_prev->next = new_node;
   
