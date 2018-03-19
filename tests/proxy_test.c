@@ -23,10 +23,10 @@ int main(int argc, char *argv[])
   
   printf("Testing functions...\n");
 
-  ret += test_();
-  ret += test_();
-  ret += test_();
-  ret += test_();
+  ret += test_run_proxy();
+  //  ret += test_();
+  //  ret += test_();
+  //  ret += test_();
 
   printf("# of test failures: %d\n", ret);
 
