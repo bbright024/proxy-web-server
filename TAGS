@@ -50,7 +50,7 @@ void Listen(404,7638
 int Accept(412,7758
 void Connect(421,7927
 
-src/cache.c,889
+src/cache.c,909
 HashTable h_table 14,290
 LinkedList ob_list 15,316
 static size_t cache_size;17,344
@@ -64,20 +64,21 @@ typedef struct cache_object{cache_object23,461
   char host[host27,545
   char filename[filename28,567
 } CacheOb;29,593
-static void NullFree(36,778
-int cache_init(40,967
-static void free_cache_ob(66,1524
-static void __cache_destroy(75,1721
-void cache_free_all(93,2305
-int check_cache(123,2863
-static CacheOb *new_cache_obj(new_cache_obj198,4707
-int add_to_cache_table(229,5476
-static inline void lock_all_cache(255,6105
-static inline void unlock_all_cache(262,6214
-int add_to_cache(278,6744
-static int remove_cache_lru(315,7822
-void print_cache(346,8725
-uint64_t file_and_host_hash(401,10036
+static int c_init;36,761
+static void NullFree(39,842
+int cache_init(43,1031
+static void free_cache_ob(69,1645
+static void __cache_destroy(78,1842
+void cache_free_all(96,2426
+int check_cache(129,3025
+CacheOb *new_cache_obj(new_cache_obj204,4869
+int add_to_cache_table(235,5631
+static inline void lock_all_cache(261,6260
+static inline void unlock_all_cache(268,6369
+int add_to_cache(284,6899
+static int remove_cache_lru(321,7977
+void print_cache(352,8880
+uint64_t file_and_host_hash(407,10191
 
 src/pthread_wraps.c,537
 void Pthread_create(8,234

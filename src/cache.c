@@ -32,6 +32,9 @@ typedef struct cache_object{
 static void free_cache_ob(CacheOb *cp);
 static int remove_cache_lru(size_t min_size);
 
+/* tracks if cache is initialized or not */
+static int c_init;
+
 /* free function that does nothing - for HashTable library*/
 static void NullFree(void *freeme) { }
 
@@ -39,7 +42,7 @@ static void NullFree(void *freeme) { }
 /* TODO: add a way to restart the cache by moving c_init to a global var */
 int cache_init()
 {
-  static int c_init;
+  //c_init shouldn't need to be locked, any concurrent program will be fucked
   if (c_init)
     return 0;
 
@@ -93,6 +96,9 @@ static void __cache_destroy()
 void cache_free_all()
 {
 
+  if (!c_init)
+    return;
+  c_init = 0;
   P(&cache_mutex);
   P(&cache_table_mutex);
 
@@ -195,7 +201,7 @@ int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *s
 }
 
 
-static CacheOb *new_cache_obj(void *object, size_t size, char *host, char *filename, char *type)
+CacheOb *new_cache_obj(void *object, size_t size, char *host, char *filename, char *type)
 {
   if (!object || !host || !filename || !size || !type)  {
     return NULL;
