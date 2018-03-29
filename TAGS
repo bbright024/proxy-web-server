@@ -1,55 +1,4 @@
 
-src/syscall_wraps.c,1182
-pid_t Fork(7,171
-void Execve(16,281
-pid_t Wait(22,432
-pid_t Waitpid(31,556
-void Kill(40,734
-void Pause(48,851
-unsigned int Sleep(54,901
-unsigned int Alarm(63,1042
-void Setpgid(67,1116
-pid_t Getpgrp(75,1251
-handler_t *Signal(Signal84,1415
-void Sigprocmask(97,1809
-void Sigemptyset(104,1968
-void Sigfillset(111,2081
-void Sigaddset(118,2192
-void Sigdelset(125,2319
-int Sigismember(132,2446
-int Sigsuspend(140,2606
-int Open(152,2884
-ssize_t Read(161,3049
-ssize_t Write(170,3202
-off_t Lseek(179,3363
-void Close(188,3527
-int Select(196,3623
-int Dup2(206,3866
-void Stat(215,3989
-void Fstat(221,4105
-DIR *Opendir(Opendir231,4311
-struct dirent *Readdir(Readdir240,4450
-int Closedir(251,4650
-void *Mmap(Mmap263,4905
-void Munmap(272,5124
-void *Malloc(Malloc282,5395
-void *Realloc(Realloc291,5521
-void *Calloc(Calloc300,5666
-void Free(309,5812
-void Fclose(317,5987
-FILE *Fdopen(Fdopen323,6069
-char *Fgets(Fgets333,6215
-FILE *Fopen(Fopen343,6395
-void Fputs(353,6558
-size_t Fread(359,6669
-void Fwrite(368,6873
-int Socket(379,7122
-void Setsockopt(388,7283
-void Bind(396,7480
-void Listen(404,7638
-int Accept(412,7758
-void Connect(421,7927
-
 src/cache.c,703
 HashTable h_table 14,290
 LinkedList ob_list 15,316
@@ -72,26 +21,6 @@ int add_to_cache(285,6928
 static int remove_cache_lru(329,8174
 void print_cache(369,9256
 uint64_t file_and_host_hash(426,10594
-
-src/pthread_wraps.c,537
-void Pthread_create(8,234
-void Pthread_cancel(16,464
-void Pthread_join(23,600
-void Pthread_detach(30,767
-void Pthread_exit(36,902
-pthread_t Pthread_self(40,965
-void Pthread_once(44,1027
-void Pthread_mutex_init(48,1152
-void P_P(54,1348
-void Pthread_mutex_lock(57,1414
-void P_V(63,1571
-void Pthread_mutex_unlock(66,1639
-void Pthread_mutex_destroy(72,1802
-void Pthread_cond_init(78,1968
-void Pthread_cond_destroy(84,2157
-void Pthread_cond_signal(90,2317
-void Pthread_cond_broadcast(96,2475
-void Pthread_cond_wait(102,2642
 
 src/includes/proxy.h,55
 #define INVALID_URL 4,32
@@ -202,19 +131,6 @@ typedef struct ll_iter 35,1603
   LinkedListNodePtr node;37,1677
 } LLIterSt;38,1745
 
-src/network_wraps.c,338
-void Getaddrinfo(7,130
-void Getnameinfo(17,381
-void Freeaddrinfo(27,698
-void Inet_ntop(32,766
-void Inet_pton(38,917
-struct hostent *Gethostbyname(Gethostbyname57,1382
-struct hostent *Gethostbyaddr(Gethostbyaddr67,1553
-int open_clientfd(89,2168
-int open_listenfd(136,3845
-int Open_clientfd(188,5718
-int Open_listenfd(197,5885
-
 src/proxy.c,316
 static int run 22,570
 #define PORT_ETH_MAX 35,1000
@@ -251,12 +167,6 @@ void http_serve(173,5354
 void http_err(188,5920
 int url_parse(218,6964
 static inline void add_crlfnull(277,8269
-
-src/posix_wraps.c,76
-void Sem_init(8,159
-void Sem_destroy(14,305
-void P(20,413
-void V(26,496
 
 src/LinkedList.c,619
 void PrintLinkedList(23,433

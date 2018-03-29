@@ -27,7 +27,7 @@ AUX=$(patsubst %.h,%,$(H_SOURCES))
 TEST_SRC=$(wildcard tests/*_test.c)
 TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
-TESTABLE_OBJS = ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o ./src/proxy.o ./src/posix_wraps.o
+TESTABLE_OBJS = ./src/cache.o ./src/http.o ./src/LinkedList.o ./src/HashTable.o ./src/errors.o ./src/proxy.o #./src/pthread_wraps.o ./src/network_wraps.o ./src/syscall_wraps.o ./src/proxy.o ./src/posix_wraps.o
 TARGET=./bin/proxy
 
 

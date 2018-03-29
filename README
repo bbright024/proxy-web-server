@@ -8,11 +8,7 @@ weird was going on with stdout and stdin redirection and it caused the driver.sh
 trying to get code coverage to 100%.
 
 Current coverage:
-LinkedList.c - 100% (well, the only thing not covered is the failing malloc code - could be 100% if I move malloc checks to a different file)
-HashTable.c - 67%
-cache.c - 76%
-http.c -
-proxy.c - 
+~76%
 
 #########
 FINAL EDIT - Tuesday Mar 13 2018
