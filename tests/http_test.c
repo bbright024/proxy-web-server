@@ -13,8 +13,15 @@ void const_test_reqdata(ReqData *r);
 //const char *http_read_request_line(rio_t *rio, ReqData *req_d)
 int test_http_read_request_line()
 {
-  
-  http_read_request_line(NULL, NULL);
+  char *errmsg;
+  errmsg = http_read_request_line(NULL, NULL);
+  //  rio_t test_rio;
+  //  Rio_readinitb(&test_rio, 0);
+  //  ReqData *test_req = malloc(sizeof(ReqData));
+  //  const_test_reqdata(test_req);
+  //  errmsg = http_read_request_line(&test_rio, test_req);
+
+  //  free(test_req);
   return 0;
 }
 
@@ -45,6 +52,7 @@ int test_http_serve()
 //		 char *shortmsg, const char *longmsg)
 int test_http_err()
 {
+  http_err(1, "this is a test", "111", "Forbidden", "this is only a test");
   return 0;
 }
 
