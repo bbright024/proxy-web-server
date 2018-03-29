@@ -297,6 +297,7 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
   if (cache_size + size > MAX_CACHE_SIZE) {
     /* need to free oldest obj in list that leaves enough space*/
     /* TODO: remove from cache_table as well */
+    printf("in addtocache, gonna try rmeove_cache_lru\n");
     if(remove_cache_lru(size) != 0) {
       /* if here, must be an error in the earlier space checks */
       free(obp->location);
@@ -304,8 +305,8 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
       unlock_all_cache();
       return -E_NO_SPACE;
     }
+    
   }
-  
   if (add_to_cache_table(obp) < 0 ||
       !PushLinkedList(ob_list, obp)) {
     unlock_all_cache();
@@ -313,6 +314,9 @@ int add_to_cache(void *object, size_t size, char *host, char *filename, char *ty
   }
     
   cache_size += size;
+  if (cache_size > MAX_CACHE_SIZE)
+    printf("cache is full\n");
+  
   unlock_all_cache();
   return 0;
 }
@@ -329,26 +333,35 @@ static int remove_cache_lru(size_t min_size)
     fprintf(stderr, "make iter error: remove_cache_lru");
     return -1;
   }
-  CacheOb *obp_r;
-  while (1) {
-    LLIteratorGetPayload(iter, (void **)&obp_r);
-    if (min_size < obp_r->size)
-      break;
-    if(!LLIteratorPrev(iter)){
-      // logically, this should never happen because it can only happen if the size of the obj was
-      // too big to ever be cached.  
-      LLIteratorFree(iter);
-      return -1;
-    }
-  }
-  cache_size -= obp_r->size;
+  printf("r_c_lru, at stage 1\n");
+  CacheOb *obp_r = Malloc(sizeof(CacheOb));
 
-  HTKeyValue old_kv;
-  RemoveFromHashTable(h_table, file_and_host_hash(obp_r->filename, obp_r->host), &old_kv);
-  LLIteratorDelete(iter, (LLPayloadFreeFnPtr)free_cache_ob);
+  //still corner case to check where list is 1 item
+  while (LLIteratorHasPrev(iter)) {
+    LLIteratorGetPayload(iter, (void **)&obp_r);
+
+    if (min_size <= obp_r->size) {
+      printf("r_c_lru, found a match\n obj size = %zu min size = %zu cache_size: %zu\n",
+	     obp_r->size, min_size, cache_size);
+      cache_size -= obp_r->size;
+      PrintLinkedList(ob_list);
+      LLIteratorDelete(iter, (LLPayloadFreeFnPtr)free_cache_ob);
+      LLIteratorFree(iter);
+      return 0;      
+    }
+    LLIteratorPrev(iter);
+    
+
+
+  }
 
   LLIteratorFree(iter);
-  return 0;
+  return -1;
+
+
+  //  HTKeyValue old_kv;
+  //  RemoveFromHashTable(h_table, file_and_host_hash(obp_r->filename, obp_r->host), &old_kv);
+
 }
 
 /* prints out detailed info on the current cache state.

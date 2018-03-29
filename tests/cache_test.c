@@ -89,6 +89,7 @@ int test_add_to_cache() {
       *filename = 'a' + i;
       add_to_cache(buf, MAX_OBJECT_SIZE, "a", filename, "t");
       free(filename);
+      
   }
 
   /* 

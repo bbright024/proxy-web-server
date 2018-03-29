@@ -31,12 +31,12 @@ void PrintLinkedList(LinkedList list)
   if (iter->node) {
 
     LLIteratorGetPayload(iter, (void *)&payload);
-    printf("p: %d]-->[", *(int *)payload);
+    printf("p: %zu]-->[", *(size_t *)payload);
     
     while (LLIteratorHasNext(iter)) {
       LLIteratorNext(iter);
       LLIteratorGetPayload(iter, (void *)&payload);
-      printf("p: %d]-->[", *(int *)payload);
+      printf("p: %zu]-->[", *(size_t *)payload);
     } 
   }
 
@@ -106,6 +106,8 @@ bool PushLinkedList(LinkedList list, void *payload)
 	
 	list->head = new_node;
 	list->num_elements += 1;
+	if (list->num_elements == 1)
+	  list->tail = new_node;
 	return true;
 }
 
@@ -373,7 +375,7 @@ bool LLIteratorDelete(LLIter iter,
 /* implement LRU algorithm */
 bool LLIteratorMoveToHead(LLIter iter)
 {
-  assert(iter && iter->list && iter->node);
+  assert(iter && iter->list);
   if (iter->list->num_elements < 2)
     return true;
   if (iter->list->head == iter->node)
@@ -404,9 +406,9 @@ bool LLIteratorInsertBefore(LLIter iter, void *payload)
 {
   assert(iter != NULL);
   assert(iter->list != NULL);
-  assert(iter->node != NULL);
+  //  assert(iter->node != NULL);
   
-  if(iter->node->prev == NULL) /* case 1: iter is at head */
+  if(iter->list->num_elements == 0 || iter->node->prev == NULL) /* case 1: iter is at head */
     return PushLinkedList(iter->list, payload);
   
   /* case 2: iter beyond the head */

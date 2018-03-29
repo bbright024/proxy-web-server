@@ -1,5 +1,22 @@
-FINAL EDIT - Tuesday Mar 13 2018
+##########
+The Final Edit was a lie!
 
+These later updates have been about trying to write better test code.  I wrote & finished this proxy before understanding unit testing, and decided to go back and fill stuff in for practice.
+While I was writing the proxy originally, I deleted all the printf() statements and test stuff after everything worked, because I was dumb.
+With the exception of LinkedList.c and HashTable.c, the testing of proxy was left up to the driver provided by CMU, and I couldn't figure out how to integrate that script with lcov - something
+weird was going on with stdout and stdin redirection and it caused the driver.sh to deadlock whenever run with code compiled for lcov/gcov.  This later stuff is my unit testing practice, cause it's fun
+trying to get code coverage to 100%.
+
+Current coverage:
+LinkedList.c - 100% (well, the only thing not covered is the failing malloc code - could be 100% if I move malloc checks to a different file)
+HashTable.c - 67%
+cache.c - 73%
+http.c -
+proxy.c - 
+
+#########
+FINAL EDIT - Tuesday Mar 13 2018
+#########
 I've decided to restart this project, in order to fix some annoyancies and improve security. Having a single process for all threads is super fast, but it won't scale at all and a compromise in one thread compromises them all.  My proxy 2.0 will be apache / OKWS style, with a master process using RPC to dispatch requests to a pool of worker processes, dynamically scaling them to a max limit.
 I will also use this reboot time to fix up my HashTable and LinkedList library to better support fine-grain locking (maybe even lock free someday?) and to fully implement a few other libraries (com_err, bstring, zlog) that will help keep order.  Also, it'll let me do comments and unit testing a lot better than I presently have.
 If any job recruiters are reading this, well, sorry you have to see version 1.0 of my proxy.  It'll be back soon in 2.0!

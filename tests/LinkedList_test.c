@@ -157,6 +157,80 @@ int main(int argc, char **argv) {
   //  if (SliceLinkedList(list, (void **) &payload))
   //    assert(0);
   FreeLinkedList(list, &TestPayloadFree);
+
+
+  LinkedList slice_test = AllocateLinkedList();
+  int *pyld = malloc(sizeof(int));
+  SliceLinkedList(slice_test, &pyld);
+  
+  int *rand0 = malloc(sizeof(int));
+  *rand0 = 1;
+
+  PushLinkedList(slice_test, rand0);
+  SliceLinkedList(slice_test, &pyld);
+  FreeLinkedList(slice_test, free);
+
+  
+  LinkedList lru_test = AllocateLinkedList();
+
+  int *rand1 = malloc(sizeof(int));
+  int *rand2 = malloc(sizeof(int));
+  int *rand3 = malloc(sizeof(int));
+  *rand1 = 1;
+  *rand2 = 2;
+  *rand3 = 3;
+
+  LLIter iter_lru = LLMakeIterator(lru_test, 1);
+    
+  PushLinkedList(lru_test, (void *)rand1);
+
+  LLIteratorMoveToHead(iter_lru);
+  LLIteratorFree(iter_lru);
+  
+  PushLinkedList(lru_test, (void *)rand2);
+  PushLinkedList(lru_test, (void *)rand3);
+
+  iter_lru = LLMakeIterator(lru_test, 1);
+  PrintLinkedList(lru_test);
+
+  LLIteratorMoveToHead(iter_lru);
+  PrintLinkedList(lru_test);
+  
+  LLIteratorFree(iter_lru);
+  FreeLinkedList(lru_test, free);
+
+
+  LinkedList insert_b4 = AllocateLinkedList();
+  rand1 = malloc(sizeof(int));
+  rand2 = malloc(sizeof(int));
+  rand3 = malloc(sizeof(int));
+  *rand1 = 1;
+  *rand2 = 2;
+  *rand3 = 3;
+
+  printf("\nTesting insert:\n");
+  PrintLinkedList(insert_b4);
+  
+  LLIter iter_ins1 = LLMakeIterator(insert_b4, 0);
+  LLIteratorInsertBefore(iter_ins1, (void *)rand2);
+  printf("LLIteratorIB into empty list:\n");
+  PrintLinkedList(insert_b4);
+  //  PushLinkedList(insert_b4, (void *)rand2);
+  LLIteratorFree(iter_ins1);
+  
+  PushLinkedList(insert_b4, (void *)rand3);
+  printf("PushLL after LLIteratorIB into empty list:\n");
+  PrintLinkedList(insert_b4);
+  LLIter iter_ins = LLMakeIterator(insert_b4, 1);
+
+  
+  LLIteratorInsertBefore(iter_ins, (void *)rand1);
+  printf("LLIteratorIB :\n");
+  PrintLinkedList(insert_b4);
+  
+  LLIteratorFree(iter_ins);
+  
+  FreeLinkedList(insert_b4, free);
   return 0;
 }
 
