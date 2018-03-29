@@ -215,14 +215,16 @@ int open_listenfd(136,3845
 int Open_clientfd(188,5718
 int Open_listenfd(197,5885
 
-src/proxy.c,256
+src/proxy.c,316
 static int run 22,570
-void run_proxy(35,1000
-static void *command(command83,2587
-static void *process_client(process_client103,2974
-static int open_next_hop(186,5625
-static inline void thread_uninit(204,6104
-static inline int client_init(212,6279
+#define PORT_ETH_MAX 35,1000
+#define PORT_ETH_MIN 36,1027
+void run_proxy(38,1054
+static void *command(command93,2774
+static void *process_client(process_client113,3161
+static int open_next_hop(196,5812
+static inline void thread_uninit(214,6291
+static inline int client_init(222,6466
 
 src/errors.c,191
 void Usage(4,83
@@ -234,10 +236,8 @@ void gai_error(41,732
 void app_error(48,902
 void dns_error(56,1029
 
-src/main.c,73
-#define PORT_ETH_MAX 7,133
-#define PORT_ETH_MIN 8,160
-int main(11,265
+src/main.c,17
+int main(10,213
 
 src/http.c,552
 static const char *user_agent_hdr user_agent_hdr20,365
@@ -250,7 +250,7 @@ const char *http_relay_resp_headers(http_relay_resp_headers117,3497
 void http_serve(173,5354
 void http_err(188,5920
 int url_parse(218,6964
-static inline void add_crlfnull(275,8232
+static inline void add_crlfnull(277,8269
 
 src/posix_wraps.c,76
 void Sem_init(8,159

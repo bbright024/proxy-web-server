@@ -32,8 +32,18 @@ static inline int client_init(int connfd, ReqData **req_d, void **obj_buf);
 /* set up listening socket and call doit 
  * to service any requests.
  */
+#define PORT_ETH_MAX 65535
+#define PORT_ETH_MIN 1025
+
 void run_proxy(char *proxy_port)
 {
+  if (!proxy_port)
+    return;
+  int port;
+  port = atoi(proxy_port);
+  if (port < PORT_ETH_MIN || port > PORT_ETH_MAX)
+    return;
+
 
   int listenfd, *connfdp;
   socklen_t clientlen;

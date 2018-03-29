@@ -217,6 +217,8 @@ void http_err(int fd, char *cause, char *errnum,
 /* URL decoder */
 int url_parse(ReqData *req_d, char *url)
 {
+  if (!req_d || !url)
+    return -1;
   char *host_pos = req_d->host;
   char *file_pos = req_d->filename;
   char *port_pos = req_d->dest_port;

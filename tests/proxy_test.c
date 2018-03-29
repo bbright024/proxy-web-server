@@ -13,6 +13,8 @@
 
 //void run_proxy(char *proxy_port);
 int test_run_proxy() {
+  run_proxy(NULL);
+  run_proxy("2");
   return 0;
 }
 
