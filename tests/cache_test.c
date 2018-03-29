@@ -9,11 +9,12 @@
 #include <includes/sys_wraps.h>
 #include "minunit.h"
 
+#define C_MAX_ELEMENTS (MAX_CACHE_SIZE / MAX_OBJECT_SIZE)
 
 int test_new_cache_obj();
 typedef struct test_struct {
-  char buf[MAXLINE]
-};
+  char buf[MAXLINE];
+} TestC;
 
 //int cache_init();
 int test_cache_init() {
@@ -40,16 +41,87 @@ int test_check_cache() {
 
 //int add_to_cache_table(CacheOb *obp)
 int test_add_to_cache_table() {
+  cache_init();
+  int i;
+  CacheOb *test_c;
+  char *filename;
+  add_to_cache_table(NULL);
+
+  for (i = 0; i < MAX_OBJECTS_MAX_SIZE + 5; i++) {
+    filename = malloc(1);
+    *filename = 'a' + i;
+    test_c = malloc(sizeof(CacheOb));
+    test_c->filename[0] = *filename;
+    test_c->host[0] = 'b' + i;
+    test_c->size = MAX_OBJECT_SIZE;
+    add_to_cache_table(test_c);
+    
+  }
+
+  cache_free_all();
   return 0;
+  
 }
 
 //int add_to_cache(void *object, size_t size, char *host, char *filename, char *type);
 int test_add_to_cache() {
+  int r;
+  r = add_to_cache(NULL, NULL, NULL, NULL, NULL);
+  if (!r)
+    return 1;
+
+  cache_free_all();
+  char *asdf = "asdf";
+  r = add_to_cache((void *) asdf, 1, asdf, asdf, asdf);
+  if (!r)
+    return 1;
+  
+  cache_init();
+  //TestC *test_c;
+  //  int i;
+  //  char *filename;
+
+  char *filename;
+  void *buf = malloc(MAX_OBJECT_SIZE);
+  int i;
+  for (i = 0; i < MAX_OBJECTS_MAX_SIZE + 5; i++) {
+      filename = malloc(1);
+      *filename = 'a' + i;
+      add_to_cache(buf, MAX_OBJECT_SIZE, "a", filename, "t");
+      free(filename);
+  }
+
+  /* 
+  for (i = 0; i < C_MAX_ELEMENTS + 2; i++) {
+    test_c = malloc(sizeof(struct test_struct));
+    filename = 'a' + (i % 128);
+    add_to_cache((void *)test_c, MAX_OBJECT_SIZE, filename, asdf, asdf);
+    
+  }
+     */
+
+  //  add_to_cache((void *)test_c, MAX_OBJECT_SIZE, asdf, asdf, asdf);
+  cache_free_all();
+  
   return 0;
 }
 
 //void print_cache(int human);
 int test_print_cache() {
+  cache_free_all();
+  print_cache(1);
+  print_cache(0);
+  
+  cache_init();
+  print_cache(1);
+  print_cache(0);
+
+  TestC *test_c = malloc(sizeof(struct test_struct));
+  add_to_cache((void *)test_c, sizeof(struct test_struct), "asdf", "asdf", "asdf" );
+  print_cache(1);
+  print_cache(0);
+  cache_free_all();
+  
   return 0;
 }
 
@@ -91,22 +163,17 @@ int main(int argc, char *argv[])
   // CacheOb *new_cache_obj(void *object, size_t size, char *host, char *filename, char *type)
   //now build up some testable objects in the cache
 
-  struct test_struct t = {0};
-  CacheOb *test_ob = NULL;
-  size_t size = sizeof(struct test_struct);
-  char *host = "foo";
-  char *filename = "bar";
-  char *type = "baz";
-  
-  
   ret += test_check_cache();
   ret += test_add_to_cache_table();
   ret += test_add_to_cache();
   ret += test_print_cache();
   ret += test_file_and_host_hash();
 
-  cache_free_all();
 
+  print_cache(1);
+  print_cache(0);
+
+  cache_free_all();
   printf("# of test failures: %d\n", ret);
 
   return 0;

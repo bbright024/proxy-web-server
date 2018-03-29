@@ -20,6 +20,7 @@ static sem_t cache_size_mutex;
 static sem_t cache_mutex;
 static sem_t cache_table_mutex;
 
+/* 
 typedef struct cache_object{
   char *location;
   size_t size;
@@ -27,7 +28,7 @@ typedef struct cache_object{
   char host[MAXLINE];
   char filename[MAXLINE];
 } CacheOb;
-
+ */
 /* Internal functions */
 static void free_cache_ob(CacheOb *cp);
 static int remove_cache_lru(size_t min_size);
@@ -128,7 +129,7 @@ int check_cache_table(uint64_t key)
 
 int check_cache(char *host, char *filename, void *obj_buf, char *type, size_t *sizep)
 {
-  if (!host || !filename || !obj_buf || !sizep || !type)
+  if (!c_init || !host || !filename || !obj_buf || !sizep || !type)
     return -EINVAL;
   
   P(&cache_mutex);
@@ -235,7 +236,7 @@ CacheOb *new_cache_obj(void *object, size_t size, char *host, char *filename, ch
 int add_to_cache_table(CacheOb *obp)
 {
   
-  if (!obp)
+  if (!obp || !c_init)
     return -E_NO_SPACE;
 
   /* TODO: fix how HTKeyValue has to be passed by value to insert hash table */
@@ -283,6 +284,9 @@ static inline void unlock_all_cache()
 
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type)
 {
+  if (!c_init)
+    return -ENOMEM;
+  
   CacheOb *obp = new_cache_obj(object, size, host, filename, type);
   if (!obp) {
     return -ENOMEM;
@@ -351,6 +355,8 @@ static int remove_cache_lru(size_t min_size)
  * passing in HUMAN_READABLE translates bytes to kilobytes  */
 void print_cache(int human)
 {
+  if (!c_init)
+    return;
   CacheOb *op;
   int n, i = 0;
   LLIter iter;

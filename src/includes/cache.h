@@ -7,11 +7,17 @@
  */
 #define MAX_CACHE_SIZE 1049000
 #define MAX_OBJECT_SIZE 102400
-
+#define MAX_OBJECTS_MAX_SIZE (MAX_CACHE_SIZE / MAX_OBJECT_SIZE)
 /* declared here, but defined elsewhere to keep implementation hidden */
 struct cache_object;
-typedef struct cache_object CacheOb;
-
+//typedef struct cache_object CacheOb;
+typedef struct cache_object{
+  char *location;
+  size_t size;
+  char type[MAXLINE];
+  char host[MAXLINE];
+  char filename[MAXLINE];
+} CacheOb;
 uint64_t file_and_host_hash(char *filename, char *host);
 int cache_init();
 int add_to_cache(void *object, size_t size, char *host, char *filename, char *type);
