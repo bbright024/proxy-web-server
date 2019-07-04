@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
   if (argc != 2 || strlen(argv[1]) > 5)
     Usage(argv[0]);
 
+  fprintf(stdout, "Server initializing...\n");
+  
   Signal(SIGPIPE, SIG_IGN); //ignores any sigpipe errors
   
   if (cache_init() < 0)
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
   
   run_proxy(argv[1]);
 
-  fprintf(stdout, "server terminated\n");
+  fprintf(stdout, "Server terminated!  Have a good day.\n");
 
   return 0;
 }
